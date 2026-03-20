@@ -1,0 +1,1166 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Quản lý chỗ đỗ xe - Admin{% endblock %}
+
+{% block page_title %}Quản lý chỗ đỗ xe{% endblock %}
+{% block page_subtitle %}Theo dõi và điều chỉnh số chỗ đỗ trong bãi{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --motorbike-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --car-gradient: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+        --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+        --shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    body {
+        background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+    }
+
+    /* Section Header */
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin: 40px 0 25px 0;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .section-header h4 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-header i {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: var(--primary-gradient);
+        color: white;
+        font-size: 18px;
+    }
+
+    /* Tabs Styling */
+    .nav-tabs {
+        border-bottom: 3px solid #e2e8f0;
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(10px);
+        border-radius: 15px 15px 0 0;
+        padding: 10px 10px 0 10px;
+    }
+
+    .nav-tabs .nav-link {
+        border: none;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 1.1rem;
+        padding: 15px 30px;
+        border-radius: 10px 10px 0 0;
+        transition: all 0.3s ease;
+        margin-right: 5px;
+    }
+
+    .nav-tabs .nav-link:hover {
+        color: #667eea;
+        background: rgba(102, 126, 234, 0.1);
+    }
+
+    .nav-tabs .nav-link.active {
+        color: white;
+        background: var(--primary-gradient);
+        box-shadow: var(--shadow-md);
+    }
+
+    .nav-tabs .nav-link i {
+        margin-right: 8px;
+        font-size: 1.2rem;
+    }
+
+    /* Stats Cards */
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transition: height 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card:hover::before {
+        height: 100%;
+        opacity: 0.1;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        margin-bottom: 15px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stat-icon.primary { background: var(--primary-gradient); }
+    .stat-icon.success { background: var(--success-gradient); }
+    .stat-icon.warning { background: var(--warning-gradient); }
+    .stat-icon.info { background: var(--info-gradient); }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 10px 0;
+        line-height: 1;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .stat-subtext {
+        color: #94a3b8;
+        font-size: 0.75rem;
+        margin-top: 8px;
+    }
+
+    /* Parking Section */
+    .parking-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 0 0 20px 20px;
+        padding: 30px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-top: none;
+    }
+
+    /* Occupancy Bar */
+    .occupancy-bar-container {
+        margin: 25px 0;
+    }
+
+    .occupancy-bar {
+        height: 35px;
+        background: #e2e8f0;
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 12px;
+    }
+
+    .occupancy-fill {
+        height: 100%;
+        transition: width 0.5s ease;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .occupancy-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-weight: 700;
+        color: #1e293b;
+        text-shadow: 0 0 3px rgba(255,255,255,0.8);
+        z-index: 2;
+    }
+
+    .occupancy-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 8px;
+    }
+
+    /* Parking Grid */
+    .parking-grid-wrapper {
+        margin-top: 20px;
+    }
+
+    .parking-grid-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .parking-grid-header h6 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .parking-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px; /* Tăng khoảng cách từ 8px lên 12px */
+        padding: 20px;
+        background: #f8fafc;
+        border-radius: 15px;
+        max-height: 450px;
+        overflow-y: auto;
+        border: 2px solid #e2e8f0;
+    }
+
+    .parking-spot {
+        width: 45px;
+        height: 45px;
+        border: 2px solid #cbd5e1;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        margin-bottom: 8px; /* Thêm khoảng cách phía dưới để dấu chấm không bị đè */
+    }
+
+    .parking-spot.available {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        border-color: #0d7c65;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .parking-spot.occupied {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        border-color: #991b1b;
+        animation: pulse 2s infinite;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .parking-spot:hover {
+        transform: scale(1.2);
+        z-index: 10;
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* Duplicate indicator dot - NẰM NGOÀI Ô */
+    .parking-spot::after {
+        content: '';
+        position: absolute;
+        bottom: -13px; /* Dịch xuống phía dưới ô */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        z-index: 5;
+    }
+
+    .parking-spot.has-duplicate::after {
+        opacity: 1;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+
+    /* Legend */
+    .legend {
+        display: flex;
+        gap: 30px;
+        margin: 15px 0;
+        padding: 15px;
+        background: #f8fafc;
+        border-radius: 10px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #475569;
+    }
+
+    .legend-color {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        border: 2px solid #cbd5e1;
+    }
+
+    /* Config Card */
+    .config-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .config-card h6 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-group label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-motorbike {
+        background: var(--car-gradient);
+        color: white;
+    }
+
+    .btn-motorbike:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-car {
+        background: var(--car-gradient);
+        color: white;
+    }
+
+    .btn-car:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-refresh {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        background: #e2e8f0;
+        color: #475569;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .btn-refresh:hover {
+        background: #cbd5e1;
+        transform: rotate(180deg);
+    }
+
+    /* Animations */
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-in {
+        animation: slideInUp 0.5s ease forwards;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .parking-section {
+            padding: 20px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+        }
+
+        .parking-grid {
+            max-height: 350px;
+        }
+
+        .legend {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-tabs .nav-link {
+            font-size: 0.95rem;
+            padding: 12px 20px;
+        }
+    }
+
+    /* Modal */
+    .modal-content {
+        border-radius: 15px;
+        border: none;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .modal-header {
+        border-bottom: 2px solid #e2e8f0;
+        background: linear-gradient(135deg, #f8fafc 0%, white 100%);
+    }
+
+    .modal-header h5 {
+        font-weight: 700;
+        color: #1e293b;
+    }
+</style>
+
+<!-- Section Title -->
+<div class="section-header animate-in">
+    <h4><i class="fas fa-square-parking"></i> Quản lý chỗ đỗ</h4>
+</div>
+<!--
+<div class="row mb-3">
+    <div class="col-12">
+        <button id="btnMigrate" class="btn btn-warning" onclick="migrateSpots()">
+            <i class="fas fa-sync-alt"></i> Gán vị trí cho xe cũ (Chạy 1 lần)
+        </button>
+    </div>
+</div>
+-->
+<!-- Tabs Navigation -->
+<ul class="nav nav-tabs mb-0" id="parkingTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="motorbike-tab" data-bs-toggle="tab" data-bs-target="#motorbike-pane" type="button" role="tab">
+            <i class="fas fa-motorcycle"></i> Khu Xe Máy
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="car-tab" data-bs-toggle="tab" data-bs-target="#car-pane" type="button" role="tab">
+            <i class="fas fa-car"></i> Khu Xe Hơi
+        </button>
+    </li>
+</ul>
+
+<!-- Tabs Content -->
+<div class="tab-content" id="parkingTabsContent">
+    <!-- TAB XE MÁY -->
+    <div class="tab-pane fade show active" id="motorbike-pane" role="tabpanel">
+        <div class="parking-section">
+            <!-- Stats Row -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">
+                            <i class="fas fa-door-open"></i>
+                        </div>
+                        <div class="stat-label">Chỗ mở hôm nay</div>
+                        <div class="stat-value" id="motorbikeDaily">{{ motorbike_daily }}</div>
+                        <div class="stat-subtext">Tổng: {{ motorbike_max }} chỗ</div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <div class="stat-label">Đang sử dụng</div>
+                        <div class="stat-value" id="motorbikeOccupied">{{ motorbike_occupied }}</div>
+                        <div class="stat-subtext">Chỗ bận</div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-label">Còn trống</div>
+                        <div class="stat-value" id="motorbikeAvailable">{{ motorbike_available }}</div>
+                        <div class="stat-subtext">Chỗ rỗi</div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-icon info">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-label">Tỷ lệ lấp đầy</div>
+                        <div class="stat-value" id="motorbikeRate">{{ motorbike_rate }}%</div>
+                        <div class="stat-subtext">Công suất</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Occupancy Bar -->
+            <div class="occupancy-bar-container">
+                <div class="occupancy-label">Mức độ lấp đầy</div>
+                <div class="occupancy-bar">
+                    <div class="occupancy-fill motorbike" id="motorbikeBar" style="width: {{ motorbike_rate }}%; background: var(--car-gradient);"></div>
+                    <div class="occupancy-text" id="motorbikeText">{{ motorbike_occupied }} / {{ motorbike_daily }} chỗ</div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Config -->
+                <div class="col-lg-4 mb-4">
+                    <div class="config-card">
+                        <h6><i class="fas fa-sliders-h"></i> Cấu hình</h6>
+                        <form id="motorbikeConfigForm">
+                            <div class="form-group">
+                                <label>Tổng số chỗ</label>
+                                <input type="number" id="motorbikeMaxInput" value="{{ motorbike_max }}" min="1" max="10000">
+                            </div>
+                            <div class="form-group">
+                                <label>Chỗ mở hôm nay</label>
+                                <input type="number" id="motorbikeDailyInput" value="{{ motorbike_daily }}" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Ghi chú</label>
+                                <textarea id="motorbikeDescInput" rows="3">{{ motorbike_desc }}</textarea>
+                            </div>
+                            <button type="submit" class="btn-submit btn-motorbike">
+                                <i class="fas fa-save"></i> Cập nhật
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Grid -->
+                <div class="col-lg-8 mb-4">
+                    <div class="config-card">
+                        <div class="parking-grid-header">
+                            <h6><i class="fas fa-th"></i> Sơ đồ bãi đỗ</h6>
+                            <button class="btn-refresh" onclick="refreshMotorbikeGrid()">
+                                <i class="fas fa-sync-alt"></i> Làm mới
+                            </button>
+                        </div>
+
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);"></div>
+                                <span>Trống</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);"></div>
+                                <span>Có xe</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="width: 8px; height: 8px; border-radius: 50%; background: #fbbf24;"></div>
+                                <span>Biển trùng</span>
+                            </div>
+                        </div>
+
+                        <div class="parking-grid" id="motorbikeGrid">
+                            {% for spot in motorbike_spots %}
+                            <div class="parking-spot {{ spot.status }}"
+                                 data-spot-id="{{ spot.spot_id }}"
+                                 data-vehicle-type="motorbike"
+                                 data-vehicle-id="{{ spot.vehicle_info.id if spot.vehicle_info else '' }}"
+                                 data-license-plate="{{ spot.vehicle_info.license_plate if spot.vehicle_info else '' }}"
+                                 title="Chỗ {{ spot.spot_id }}: {% if spot.vehicle_info %}{{ spot.vehicle_info.license_plate }}{% else %}Trống{% endif %}">
+                                {{ spot.spot_id }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB XE HƠI -->
+    <div class="tab-pane fade" id="car-pane" role="tabpanel">
+        <div class="parking-section">
+            <!-- Stats Row -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">
+                            <i class="fas fa-door-open"></i>
+                        </div>
+                        <div class="stat-label">Chỗ mở hôm nay</div>
+                        <div class="stat-value" id="carDaily">{{ car_daily }}</div>
+                        <div class="stat-subtext">Tổng: {{ car_max }} chỗ</div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <div class="stat-label">Đang sử dụng</div>
+                        <div class="stat-value" id="carOccupied">{{ car_occupied }}</div>
+                        <div class="stat-subtext">Chỗ bận</div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-label">Còn trống</div>
+                        <div class="stat-value" id="carAvailable">{{ car_available }}</div>
+                        <div class="stat-subtext">Chỗ rỗi</div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-icon info">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-label">Tỷ lệ lấp đầy</div>
+                        <div class="stat-value" id="carRate">{{ car_rate }}%</div>
+                        <div class="stat-subtext">Công suất</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Occupancy Bar -->
+            <div class="occupancy-bar-container">
+                <div class="occupancy-label">Mức độ lấp đầy</div>
+                <div class="occupancy-bar">
+                    <div class="occupancy-fill car" id="carBar" style="width: {{ car_rate }}%; background: var(--car-gradient);"></div>
+                    <div class="occupancy-text" id="carText">{{ car_occupied }} / {{ car_daily }} chỗ</div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Config -->
+                <div class="col-lg-4 mb-4">
+                    <div class="config-card">
+                        <h6><i class="fas fa-sliders-h"></i> Cấu hình</h6>
+                        <form id="carConfigForm">
+                            <div class="form-group">
+                                <label>Tổng số chỗ</label>
+                                <input type="number" id="carMaxInput" value="{{ car_max }}" min="1" max="10000">
+                            </div>
+                            <div class="form-group">
+                                <label>Chỗ mở hôm nay</label>
+                                <input type="number" id="carDailyInput" value="{{ car_daily }}" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Ghi chú</label>
+                                <textarea id="carDescInput" rows="3">{{ car_desc }}</textarea>
+                            </div>
+                            <button type="submit" class="btn-submit btn-car">
+                                <i class="fas fa-save"></i> Cập nhật
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Grid -->
+                <div class="col-lg-8 mb-4">
+                    <div class="config-card">
+                        <div class="parking-grid-header">
+                            <h6><i class="fas fa-th"></i> Sơ đồ bãi đỗ</h6>
+                            <button class="btn-refresh" onclick="refreshCarGrid()">
+                                <i class="fas fa-sync-alt"></i> Làm mới
+                            </button>
+                        </div>
+
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);"></div>
+                                <span>Trống</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);"></div>
+                                <span>Có xe</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="width: 8px; height: 8px; border-radius: 50%; background: #fbbf24;"></div>
+                                <span>Biển trùng</span>
+                            </div>
+                        </div>
+
+                        <div class="parking-grid" id="carGrid">
+                            {% for spot in car_spots %}
+                            <div class="parking-spot {{ spot.status }}"
+                                 data-spot-id="{{ spot.spot_id }}"
+                                 data-vehicle-type="car"
+                                 data-vehicle-id="{{ spot.vehicle_info.id if spot.vehicle_info else '' }}"
+                                 data-license-plate="{{ spot.vehicle_info.license_plate if spot.vehicle_info else '' }}"
+                                 title="Chỗ {{ spot.spot_id }}: {% if spot.vehicle_info %}{{ spot.vehicle_info.license_plate }}{% else %}Trống{% endif %}">
+                                {{ spot.spot_id }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vehicle Details Modal -->
+<div class="modal fade" id="vehicleModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thông tin xe đỗ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="vehicleDetails">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== COLOR PALETTE FOR DUPLICATES ====================
+const DUPLICATE_COLORS = [
+    '#06b6d4', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6',
+    '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16',
+    '#a855f7', '#f43f5e', '#eab308', '#22c55e', '#6366f1',
+    '#d946ef', '#0ea5e9', '#f59e0b', '#10b981', '#8b5cf6'
+];
+
+let duplicateColorMap = {};
+let colorIndex = 0;
+
+// ==================== DETECT AND MARK DUPLICATES ====================
+function markDuplicatePlates(gridId) {
+    const grid = document.getElementById(gridId);
+    const spots = grid.querySelectorAll('.parking-spot.occupied');
+
+    // Reset previous duplicate markings
+    spots.forEach(spot => {
+        spot.classList.remove('has-duplicate');
+        spot.style.removeProperty('--duplicate-color');
+    });
+
+    // Count license plates
+    const plateCount = {};
+    spots.forEach(spot => {
+        const plate = spot.getAttribute('data-license-plate');
+        if (plate) {
+            plateCount[plate] = (plateCount[plate] || 0) + 1;
+        }
+    });
+
+    // Find duplicates
+    const duplicatePlates = Object.keys(plateCount).filter(plate => plateCount[plate] > 1);
+
+    // Reset color mapping for new duplicates
+    duplicateColorMap = {};
+    colorIndex = 0;
+
+    // Assign colors and mark duplicates
+    duplicatePlates.forEach(plate => {
+        if (!duplicateColorMap[plate]) {
+            duplicateColorMap[plate] = DUPLICATE_COLORS[colorIndex % DUPLICATE_COLORS.length];
+            colorIndex++;
+        }
+    });
+
+    // Apply duplicate styling
+    spots.forEach(spot => {
+        const plate = spot.getAttribute('data-license-plate');
+        if (duplicatePlates.includes(plate)) {
+            spot.classList.add('has-duplicate');
+            const color = duplicateColorMap[plate];
+            spot.style.setProperty('--duplicate-color', color);
+            spot.style.setProperty('--after-bg', color);
+            // Apply color to ::after pseudo-element
+            const style = document.createElement('style');
+            style.textContent = `
+                .parking-spot[data-license-plate="${plate}"]::after {
+                    background-color: ${color} !important;
+                }
+            `;
+            if (!document.getElementById(`duplicate-style-${plate}`)) {
+                style.id = `duplicate-style-${plate}`;
+                document.head.appendChild(style);
+            }
+        }
+    });
+}
+
+// ==================== FORM HANDLERS ====================
+document.getElementById('motorbikeConfigForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    updateConfig('Xe máy',
+        parseInt(document.getElementById('motorbikeMaxInput').value),
+        parseInt(document.getElementById('motorbikeDailyInput').value),
+        document.getElementById('motorbikeDescInput').value
+    );
+});
+
+document.getElementById('carConfigForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    updateConfig('Xe hơi',
+        parseInt(document.getElementById('carMaxInput').value),
+        parseInt(document.getElementById('carDailyInput').value),
+        document.getElementById('carDescInput').value
+    );
+});
+
+// ==================== UPDATE CONFIG ====================
+function updateConfig(vehicleType, maxCapacity, dailyCapacity, description) {
+    if (dailyCapacity > maxCapacity) {
+        alert('Số chỗ mở không thể vượt quá tổng số chỗ!');
+        return;
+    }
+
+    fetch('/admin/parking_spaces/update_config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            vehicle_type: vehicleType,
+            max_capacity: maxCapacity,
+            daily_capacity: dailyCapacity,
+            description: description
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        if (data.success) location.reload();
+    })
+    .catch(error => alert('Lỗi: ' + error));
+}
+
+// ==================== REALTIME UPDATE ====================
+function updateRealtimeData() {
+    fetch('/admin/parking_spaces/api/realtime')
+    .then(response => response.json())
+    .then(data => {
+        // Xe máy
+        const motorbike = data.motorbike;
+        document.getElementById('motorbikeDaily').textContent = motorbike.daily_capacity;
+        document.getElementById('motorbikeOccupied').textContent = motorbike.occupied_spaces;
+        document.getElementById('motorbikeAvailable').textContent = motorbike.available_spaces;
+        document.getElementById('motorbikeRate').textContent = motorbike.occupancy_rate + '%';
+
+        const motorbikeBar = document.getElementById('motorbikeBar');
+        motorbikeBar.style.width = motorbike.occupancy_rate + '%';
+        document.getElementById('motorbikeText').textContent = `${motorbike.occupied_spaces} / ${motorbike.daily_capacity} chỗ`;
+
+        if (motorbike.occupancy_rate >= 90) {
+            motorbikeBar.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+        } else if (motorbike.occupancy_rate >= 70) {
+            motorbikeBar.style.background = 'linear-gradient(135deg, #f59f00 0%, #fd7e14 100%)';
+        } else {
+            motorbikeBar.style.background = 'var(--car-gradient)';
+        }
+
+        updateParkingGrid('motorbikeGrid', motorbike.spots_status);
+        markDuplicatePlates('motorbikeGrid');
+
+        // Xe hơi
+        const car = data.car;
+        document.getElementById('carDaily').textContent = car.daily_capacity;
+        document.getElementById('carOccupied').textContent = car.occupied_spaces;
+        document.getElementById('carAvailable').textContent = car.available_spaces;
+        document.getElementById('carRate').textContent = car.occupancy_rate + '%';
+
+        const carBar = document.getElementById('carBar');
+        carBar.style.width = car.occupancy_rate + '%';
+        document.getElementById('carText').textContent = `${car.occupied_spaces} / ${car.daily_capacity} chỗ`;
+
+        if (car.occupancy_rate >= 90) {
+            carBar.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+        } else if (car.occupancy_rate >= 70) {
+            carBar.style.background = 'linear-gradient(135deg, #f59f00 0%, #fd7e14 100%)';
+        } else {
+            carBar.style.background = 'var(--car-gradient)';
+        }
+
+        updateParkingGrid('carGrid', car.spots_status);
+        markDuplicatePlates('carGrid');
+    })
+    .catch(error => console.error('Lỗi cập nhật:', error));
+}
+
+// ==================== UPDATE GRID ====================
+function updateParkingGrid(gridId, spotsData) {
+    const grid = document.getElementById(gridId);
+
+    spotsData.forEach(spot => {
+        const spotElement = grid.querySelector(`[data-spot-id="${spot.spot_id}"]`);
+        if (spotElement) {
+            spotElement.classList.remove('available', 'occupied');
+            spotElement.classList.add(spot.status);
+
+            if (spot.status === 'occupied' && spot.license_plate) {
+                spotElement.setAttribute('data-vehicle-id', spot.vehicle_id || '');
+                spotElement.setAttribute('data-license-plate', spot.license_plate || '');
+                spotElement.title = `Chỗ ${spot.spot_id}: ${spot.license_plate}`;
+            } else {
+                spotElement.setAttribute('data-license-plate', '');
+                spotElement.title = `Chỗ ${spot.spot_id}: Trống`;
+            }
+        }
+    });
+}
+
+// ==================== SPOT CLICK HANDLER ====================
+function handleSpotClick(event) {
+    const spot = event.target;
+    const vehicleId = spot.getAttribute('data-vehicle-id');
+    const spotId = spot.getAttribute('data-spot-id');
+    const vehicleType = spot.getAttribute('data-vehicle-type');
+
+    if (vehicleId && spot.classList.contains('occupied')) {
+        showVehicleDetails(vehicleId, spotId, vehicleType);
+    } else {
+        const typeText = vehicleType === 'motorbike' ? 'xe máy' : 'xe hơi';
+        alert(`Chỗ số ${spotId} (${typeText}): Trống`);
+    }
+}
+
+// ==================== SHOW VEHICLE DETAILS ====================
+function showVehicleDetails(vehicleId, spotId, vehicleType) {
+    const modal = new bootstrap.Modal(document.getElementById('vehicleModal'));
+    const modalBody = document.getElementById('vehicleDetails');
+
+    modalBody.innerHTML = '<div class="text-center"><div class="spinner-border"></div></div>';
+    modal.show();
+
+    fetch(`/admin/parking_spaces/vehicle/${vehicleId}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const vehicle = data.vehicle;
+            const typeIcon = vehicleType === 'motorbike' ? '🏍️' : '🚗';
+            const typeText = vehicleType === 'motorbike' ? 'Xe máy' : 'Xe hơi';
+
+            modalBody.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>${typeIcon} Thông tin xe</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Khu đỗ:</th>
+                                <td><span class="badge bg-primary">${typeText}</span></td>
+                            </tr>
+                            <tr>
+                                <th>Chỗ đỗ:</th>
+                                <td><span class="badge bg-secondary">Số ${spotId}</span></td>
+                            </tr>
+                            <tr>
+                                <th>Biển số:</th>
+                                <td><strong class="text-primary">${vehicle.license_plate}</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Màu biển:</th>
+                                <td>${vehicle.plate_color}</td>
+                            </tr>
+                            <tr>
+                                <th>Loại xe:</th>
+                                <td>${vehicle.plate_type}</td>
+                            </tr>
+                            <tr>
+                                <th>Thời gian vào:</th>
+                                <td>${vehicle.entry_time}</td>
+                            </tr>
+                            <tr>
+                                <th>Thời gian đỗ:</th>
+                                <td><span class="badge bg-info">${vehicle.duration}</span></td>
+                            </tr>
+                            <tr>
+                                <th>Phí dự kiến:</th>
+                                <td><strong class="text-success">${vehicle.estimated_fee.toLocaleString()} VNĐ</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>📷 Hình ảnh</h6>
+                        ${vehicle.face_image_path ? `
+                            <div class="mb-2">
+                                <small>Khuôn mặt:</small><br>
+                                <img src="/${vehicle.face_image_path}" class="img-thumbnail" style="max-width: 100px;">
+                            </div>
+                        ` : ''}
+                        ${vehicle.plate_image_path ? `
+                            <div class="mb-2">
+                                <small>Biển số:</small><br>
+                                <img src="/${vehicle.plate_image_path}" class="img-thumbnail" style="max-width: 150px;">
+                            </div>
+                        ` : ''}
+                        ${vehicle.qr_code_path ? `
+                            <div class="mb-2">
+                                <small>Mã QR:</small><br>
+                                <img src="/${vehicle.qr_code_path}" class="img-thumbnail" style="max-width: 80px;">
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="/admin/vehicles/${vehicle.id}" class="btn btn-primary btn-sm" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> Xem chi tiết
+                    </a>
+                </div>
+            `;
+        } else {
+            modalBody.innerHTML = '<div class="alert alert-warning">Không thể tải thông tin</div>';
+        }
+    })
+    .catch(error => {
+        modalBody.innerHTML = '<div class="alert alert-danger">Lỗi: ' + error + '</div>';
+    });
+}
+
+function migrateSpots() {
+    if (!confirm('Bạn có chắc muốn gán vị trí cho tất cả xe hiện tại không?')) return;
+
+    const btn = document.getElementById('btnMigrate');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+
+    fetch('/admin/migrate_parking_spots', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Lỗi: ' + data.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sync-alt"></i> Gán vị trí cho xe cũ';
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Lỗi kết nối!');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sync-alt"></i> Gán vị trí cho xe cũ';
+    });
+}
+
+// ==================== REFRESH ====================
+function refreshMotorbikeGrid() {
+    updateRealtimeData();
+}
+
+function refreshCarGrid() {
+    updateRealtimeData();
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', function() {
+    const spots = document.querySelectorAll('.parking-spot');
+    spots.forEach(spot => {
+        spot.addEventListener('click', handleSpotClick);
+    });
+
+    // Initial duplicate detection
+    markDuplicatePlates('motorbikeGrid');
+    markDuplicatePlates('carGrid');
+
+    updateRealtimeData();
+    setInterval(updateRealtimeData, 10000);
+});
+</script>
+
+{% endblock %}

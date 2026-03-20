@@ -1,0 +1,985 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Dashboard - Admin{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Tổng quan hệ thống bãi đỗ xe{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --motorbike-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --car-gradient: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+        --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+        --shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    body {
+        background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+    }
+
+    /* Stats Cards - Modern Glass Morphism */
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transition: height 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card:hover::before {
+        height: 100%;
+        opacity: 0.1;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        margin-bottom: 15px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stat-icon.primary { background: var(--primary-gradient); }
+    .stat-icon.success { background: var(--success-gradient); }
+    .stat-icon.warning { background: var(--warning-gradient); }
+    .stat-icon.info { background: var(--info-gradient); }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 10px 0;
+        line-height: 1;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .stat-subtext {
+        color: #94a3b8;
+        font-size: 0.75rem;
+        margin-top: 8px;
+    }
+
+    /* Section Headers */
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin: 40px 0 25px 0;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .section-header h4 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-header i {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: var(--primary-gradient);
+        color: white;
+        font-size: 18px;
+    }
+
+    /* Vehicle Type Cards */
+    .vehicle-type-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+        border-left: 5px solid;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .vehicle-type-card.motorbike {
+        border-color: #f59f00;
+        background: linear-gradient(135deg, rgba(245, 159, 0, 0.05) 0%, white 100%);
+    }
+
+    .vehicle-type-card.car {
+        border-color: #5f3dc4;
+        background: linear-gradient(135deg, rgba(95, 61, 196, 0.05) 0%, white 100%);
+    }
+
+    .vehicle-type-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .vehicle-type-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .vehicle-type-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+    }
+
+    .vehicle-type-icon.motorbike {
+        background: linear-gradient(135deg, #f59f00, #f76707);
+    }
+
+    .vehicle-type-icon.car {
+        background: linear-gradient(135deg, #5f3dc4, #7048e8);
+    }
+
+    .vehicle-type-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .metric-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .metric-row:last-child {
+        border-bottom: none;
+    }
+
+    .metric-label {
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .progress-bar-custom {
+        height: 8px;
+        border-radius: 10px;
+        background: #e2e8f0;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+
+    .progress-fill.motorbike {
+        background: linear-gradient(90deg, #f59f00, #f76707);
+    }
+
+    .progress-fill.car {
+        background: linear-gradient(90deg, #5f3dc4, #7048e8);
+    }
+
+    /* Chart Cards */
+    .chart-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+        height: 100%;
+    }
+
+    .chart-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .chart-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: white;
+    }
+
+    .chart-icon.success {
+        background: var(--success-gradient);
+    }
+
+    .chart-icon.info {
+        background: var(--info-gradient);
+    }
+
+    .chart-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+
+    .chart-container.tall {
+        height: 350px;
+    }
+
+    /* Revenue Details */
+    .revenue-detail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 15px;
+        background: #f8fafc;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        transition: all 0.2s ease;
+    }
+
+    .revenue-detail:hover {
+        background: #f1f5f9;
+        transform: translateX(5px);
+    }
+
+    .revenue-detail-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        color: #475569;
+    }
+
+    .revenue-detail-value {
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .revenue-detail-percent {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-left: 8px;
+    }
+
+    /* Vehicle List */
+    .vehicle-list-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+    }
+
+    .vehicle-item {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 12px;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+
+    .vehicle-item:hover {
+        background: white;
+        box-shadow: var(--shadow-sm);
+        border-left-color: #667eea;
+        transform: translateX(5px);
+    }
+
+    .vehicle-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .vehicle-plate {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .badge-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    .badge-custom.secondary {
+        background: #e2e8f0;
+        color: #475569;
+    }
+
+    .badge-custom.motorbike {
+        background: linear-gradient(135deg, #f59f00, #f76707);
+        color: white;
+    }
+
+    .badge-custom.car {
+        background: linear-gradient(135deg, #5f3dc4, #7048e8);
+        color: white;
+    }
+
+    .badge-custom.danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+
+    .vehicle-time {
+        color: #64748b;
+        font-size: 0.875rem;
+        margin-top: 5px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #94a3b8;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        opacity: 0.3;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .stat-value {
+            font-size: 2rem;
+        }
+
+        .section-header h4 {
+            font-size: 1.25rem;
+        }
+
+        .chart-container {
+            height: 250px;
+        }
+    }
+
+    /* Animations */
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-in {
+        animation: slideInUp 0.5s ease forwards;
+    }
+
+    .row > div {
+        animation: slideInUp 0.5s ease forwards;
+    }
+
+    .row > div:nth-child(1) { animation-delay: 0.1s; }
+    .row > div:nth-child(2) { animation-delay: 0.2s; }
+    .row > div:nth-child(3) { animation-delay: 0.3s; }
+    .row > div:nth-child(4) { animation-delay: 0.4s; }
+</style>
+
+<!-- Thống kê tổng quan -->
+<div class="section-header animate-in">
+    <h4><i class="fas fa-chart-line"></i> Tổng quan hệ thống</h4>
+</div>
+
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <i class="fas fa-parking"></i>
+            </div>
+            <div class="stat-label">Tổng Xe Trong Bãi</div>
+            <div class="stat-value">{{ vehicles_in_parking }}</div>
+            <div class="stat-subtext">Tổng: {{ total_capacity }} chỗ</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-sign-in-alt"></i>
+            </div>
+            <div class="stat-label">Xe Vào Hôm Nay</div>
+            <div class="stat-value">{{ today_entries }}</div>
+            <div class="stat-subtext">Trong 24h qua</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card">
+            <div class="stat-icon warning">
+                <i class="fas fa-sign-out-alt"></i>
+            </div>
+            <div class="stat-label">Xe Ra Hôm Nay</div>
+            <div class="stat-value">{{ today_exits }}</div>
+            <div class="stat-subtext">Đã hoàn thành</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card">
+            <div class="stat-icon info">
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <div class="stat-label">Tỷ Lệ Lấp Đầy</div>
+            <div class="stat-value">{{ occupancy_rate }}%</div>
+            <div class="stat-subtext">{{ vehicles_in_parking }}/{{ total_capacity }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Thống kê theo loại xe -->
+<div class="section-header animate-in">
+    <h4><i class="fas fa-layer-group"></i> Thống kê theo loại xe</h4>
+</div>
+
+<div class="row">
+    <!-- Xe Máy -->
+    <div class="col-lg-6 mb-4">
+        <div class="vehicle-type-card motorbike">
+            <div class="vehicle-type-header">
+                <div class="vehicle-type-icon motorbike">
+                    <i class="fas fa-motorcycle"></i>
+                </div>
+                <h5 class="vehicle-type-title">Khu Xe Máy</h5>
+            </div>
+
+            <div class="metric-row">
+                <span class="metric-label">Trong bãi</span>
+                <span class="metric-value">{{ motorbike_in_parking }}<small style="font-size: 1rem; color: #64748b;">/{{ motorbike_capacity }}</small></span>
+            </div>
+            <div class="progress-bar-custom">
+                <div class="progress-fill motorbike" style="width: {{ motorbike_occupancy_rate }}%"></div>
+            </div>
+            <small style="color: #64748b; font-weight: 600;">{{ motorbike_occupancy_rate }}% đã sử dụng</small>
+
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #f1f5f9;">
+                <div class="metric-row">
+                    <span class="metric-label"><i class="fas fa-arrow-up text-success"></i> Xe vào hôm nay</span>
+                    <span class="metric-value" style="font-size: 1.25rem; color: #10b981;">{{ motorbike_today_entries }}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label"><i class="fas fa-arrow-down text-danger"></i> Xe ra hôm nay</span>
+                    <span class="metric-value" style="font-size: 1.25rem; color: #ef4444;">{{ motorbike_today_exits }}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label"><i class="fas fa-dollar-sign text-warning"></i> Doanh thu hôm nay</span>
+                    <span class="metric-value" style="font-size: 1.125rem; color: #f59f00;">{{ "{:,}".format(motorbike_revenue) }} đ</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Xe Hơi -->
+    <div class="col-lg-6 mb-4">
+        <div class="vehicle-type-card car">
+            <div class="vehicle-type-header">
+                <div class="vehicle-type-icon car">
+                    <i class="fas fa-car"></i>
+                </div>
+                <h5 class="vehicle-type-title">Khu Xe Hơi</h5>
+            </div>
+
+            <div class="metric-row">
+                <span class="metric-label">Trong bãi</span>
+                <span class="metric-value">{{ car_in_parking }}<small style="font-size: 1rem; color: #64748b;">/{{ car_capacity }}</small></span>
+            </div>
+            <div class="progress-bar-custom">
+                <div class="progress-fill car" style="width: {{ car_occupancy_rate }}%"></div>
+            </div>
+            <small style="color: #64748b; font-weight: 600;">{{ car_occupancy_rate }}% đã sử dụng</small>
+
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #f1f5f9;">
+                <div class="metric-row">
+                    <span class="metric-label"><i class="fas fa-arrow-up text-success"></i> Xe vào hôm nay</span>
+                    <span class="metric-value" style="font-size: 1.25rem; color: #10b981;">{{ car_today_entries }}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label"><i class="fas fa-arrow-down text-danger"></i> Xe ra hôm nay</span>
+                    <span class="metric-value" style="font-size: 1.25rem; color: #ef4444;">{{ car_today_exits }}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label"><i class="fas fa-dollar-sign text-primary"></i> Doanh thu hôm nay</span>
+                    <span class="metric-value" style="font-size: 1.125rem; color: #5f3dc4;">{{ "{:,}".format(car_revenue) }} đ</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Doanh thu và biểu đồ -->
+<div class="section-header animate-in">
+    <h4><i class="fas fa-chart-bar"></i> Doanh thu & Phân tích</h4>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-4 mb-4">
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-icon success">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <h6 class="chart-title">Doanh thu hôm nay</h6>
+            </div>
+            <div class="text-center" style="margin-bottom: 20px;">
+                <div style="font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #11998e, #38ef7d); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    {{ "{:,}".format(daily_revenue) }} đ
+                </div>
+                <p style="color: #64748b; margin-top: 5px;">Từ {{ today_exits }} xe đã ra bãi</p>
+            </div>
+
+            <div class="chart-container" style="height: 200px;">
+                <canvas id="revenueChart"></canvas>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <div class="revenue-detail">
+                    <span class="revenue-detail-label">
+                        <i class="fas fa-motorcycle" style="color: #f59f00;"></i>
+                        Xe máy
+                    </span>
+                    <span class="revenue-detail-value">
+                        {{ "{:,}".format(motorbike_revenue) }} đ
+                        <span class="revenue-detail-percent">({{ "%.1f" | format((motorbike_revenue / daily_revenue * 100) if daily_revenue > 0 else 0) }}%)</span>
+                    </span>
+                </div>
+                <div class="revenue-detail">
+                    <span class="revenue-detail-label">
+                        <i class="fas fa-car" style="color: #5f3dc4;"></i>
+                        Xe hơi
+                    </span>
+                    <span class="revenue-detail-value">
+                        {{ "{:,}".format(car_revenue) }} đ
+                        <span class="revenue-detail-percent">({{ "%.1f" | format((car_revenue / daily_revenue * 100) if daily_revenue > 0 else 0) }}%)</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8 mb-4">
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-icon info">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h6 class="chart-title">Xe vào và ra theo giờ (trong ngày hôm nay)</h6>
+            </div>
+            <div class="chart-container tall">
+                <canvas id="hourlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Danh sách xe đỗ lâu nhất -->
+<div class="section-header animate-in">
+    <h4><i class="fas fa-clock"></i> Xe đỗ lâu nhất</h4>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="vehicle-list-card">
+            {% if top_vehicles %}
+                {% for vehicle in top_vehicles %}
+                <div class="vehicle-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="vehicle-plate">{{ vehicle.license_plate }}</span>
+                            <span class="badge-custom secondary">{{ vehicle.plate_color }}</span>
+                            {% if vehicle.vehicle_type == 'Xe máy' %}
+                                <span class="badge-custom motorbike">
+                                    <i class="fas fa-motorcycle"></i> {{ vehicle.vehicle_type }}
+                                </span>
+                            {% else %}
+                                <span class="badge-custom car">
+                                    <i class="fas fa-car"></i> {{ vehicle.vehicle_type }}
+                                </span>
+                            {% endif %}
+                            <div class="vehicle-time">
+                                <i class="fas fa-calendar-alt"></i> Vào: {{ vehicle.entry_time.strftime('%d/%m/%Y %H:%M') }}
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge-custom danger" style="font-size: 1rem; padding: 8px 16px;">
+                                <i class="fas fa-hourglass-half"></i> {{ vehicle.duration }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-car"></i>
+                    <p style="font-size: 1.125rem; margin: 0;">Chưa có xe nào trong bãi</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// ============================================
+// BIỂU ĐỒ TRÒN DOANH THU
+// ============================================
+const motorbikeRevenue = {{ motorbike_revenue }};
+const carRevenue = {{ car_revenue }};
+const totalRevenue = {{ daily_revenue }};
+
+const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+const revenueChart = new Chart(revenueCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Xe máy', 'Xe hơi'],
+        datasets: [{
+            data: [motorbikeRevenue, carRevenue],
+            backgroundColor: [
+                'rgba(245, 159, 0, 0.9)',
+                'rgba(95, 61, 196, 0.9)'
+            ],
+            borderColor: 'white',
+            borderWidth: 3,
+            hoverOffset: 15
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                cornerRadius: 8,
+                titleFont: {
+                    size: 14,
+                    weight: 'bold'
+                },
+                bodyFont: {
+                    size: 13
+                },
+                callbacks: {
+                    label: function(context) {
+                        const value = context.parsed;
+                        const percentage = totalRevenue > 0 ? ((value / totalRevenue) * 100).toFixed(1) : 0;
+                        return `${value.toLocaleString('vi-VN')} đ (${percentage}%)`;
+                    }
+                }
+            }
+        },
+        cutout: '70%'
+    }
+});
+
+// ============================================
+// BIỂU ĐỒ XE VÀO/RA THEO GIỜ
+// ============================================
+const hourlyEntriesByType = {{ hourly_entries_by_type | tojson | safe }};
+const hourlyExitsByType = {{ hourly_exits_by_type | tojson | safe }};
+
+const today = new Date();
+const dateStr = today.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+});
+
+const hours = Array.from({length: 24}, (_, i) => i);
+
+const motorbikeEntryCounts = hours.map(hour => {
+    const found = hourlyEntriesByType.find(data => parseInt(data[0]) === hour && data[1] === 'Xe máy');
+    return found ? found[2] : 0;
+});
+
+const carEntryCounts = hours.map(hour => {
+    const found = hourlyEntriesByType.find(data => parseInt(data[0]) === hour && data[1] === 'Xe hơi');
+    return found ? found[2] : 0;
+});
+
+const motorbikeExitCounts = hours.map(hour => {
+    const found = hourlyExitsByType.find(data => parseInt(data[0]) === hour && data[1] === 'Xe máy');
+    return found ? found[2] : 0;
+});
+
+const carExitCounts = hours.map(hour => {
+    const found = hourlyExitsByType.find(data => parseInt(data[0]) === hour && data[1] === 'Xe hơi');
+    return found ? found[2] : 0;
+});
+
+const ctx = document.getElementById('hourlyChart').getContext('2d');
+const hourlyChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: hours.map(h => h + 'h'),
+        datasets: [
+            {
+                label: 'Xe máy vào',
+                data: motorbikeEntryCounts,
+                borderColor: '#f59f00',
+                backgroundColor: 'rgba(245, 159, 0, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 7,
+                pointBackgroundColor: '#f59f00',
+                pointBorderColor: 'white',
+                pointBorderWidth: 2
+            },
+            {
+                label: 'Xe máy ra',
+                data: motorbikeExitCounts,
+                borderColor: '#fd7e14',
+                backgroundColor: 'rgba(253, 126, 20, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 7,
+                pointBackgroundColor: '#fd7e14',
+                pointBorderColor: 'white',
+                pointBorderWidth: 2,
+                borderDash: [8, 4]
+            },
+            {
+                label: 'Xe hơi vào',
+                data: carEntryCounts,
+                borderColor: '#5f3dc4',
+                backgroundColor: 'rgba(95, 61, 196, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 7,
+                pointBackgroundColor: '#5f3dc4',
+                pointBorderColor: 'white',
+                pointBorderWidth: 2
+            },
+            {
+                label: 'Xe hơi ra',
+                data: carExitCounts,
+                borderColor: '#7048e8',
+                backgroundColor: 'rgba(112, 72, 232, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 7,
+                pointBackgroundColor: '#7048e8',
+                pointBorderColor: 'white',
+                pointBorderWidth: 2,
+                borderDash: [8, 4]
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                align: 'end',
+                labels: {
+                    usePointStyle: true,
+                    padding: 15,
+                    font: {
+                        size: 12,
+                        weight: '600'
+                    },
+                    boxWidth: 8,
+                    boxHeight: 8
+                }
+            },
+            title: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                cornerRadius: 8,
+                titleFont: {
+                    size: 14,
+                    weight: 'bold'
+                },
+                bodyFont: {
+                    size: 13
+                },
+                bodySpacing: 6,
+                callbacks: {
+                    title: function(context) {
+                        return `Giờ ${context[0].label}`;
+                    },
+                    afterBody: function(context) {
+                        const hour = parseInt(context[0].label);
+                        let totalEntries = motorbikeEntryCounts[hour] + carEntryCounts[hour];
+                        let totalExits = motorbikeExitCounts[hour] + carExitCounts[hour];
+                        return `\nTổng vào: ${totalEntries} | Tổng ra: ${totalExits}`;
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1,
+                    font: {
+                        size: 11
+                    },
+                    color: '#64748b'
+                },
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)',
+                    drawBorder: false
+                },
+                border: {
+                    display: false
+                }
+            },
+            x: {
+                ticks: {
+                    maxTicksLimit: 12,
+                    font: {
+                        size: 11
+                    },
+                    color: '#64748b'
+                },
+                grid: {
+                    display: false,
+                    drawBorder: false
+                },
+                border: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+
+// ============================================
+// AUTO REFRESH & ANIMATIONS
+// ============================================
+// Auto-refresh sau 5 phút
+setTimeout(() => {
+    location.reload();
+}, 300000);
+
+// Animate progress bars on load
+window.addEventListener('load', function() {
+    const progressBars = document.querySelectorAll('.progress-fill');
+    progressBars.forEach((bar, index) => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 100 + (index * 100));
+    });
+});
+
+// Add real-time clock
+function updateClock() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    const dateString = now.toLocaleDateString('vi-VN', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    // You can add a clock element to display this if needed
+    console.log(`${dateString} - ${timeString}`);
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+</script>
+
+{% endblock %}

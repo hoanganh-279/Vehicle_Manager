@@ -1,0 +1,911 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Chi tiết xe {{ vehicle.license_plate }} - Admin{% endblock %}
+{% block page_title %}Chi tiết xe {{ vehicle.license_plate }}{% endblock %}
+{% block page_subtitle %}Thông tin chi tiết và quản lý xe{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --motorbike-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --car-gradient: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+        --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+        --shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    body {
+        background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+    }
+
+    /* Modern Glass Card */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* Card Header with Gradient */
+    .card-header-custom {
+        background: var(--primary-gradient);
+        padding: 25px 30px;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-header-custom::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+    }
+
+    .card-header-custom h5 {
+        margin: 0;
+        color: white;
+        font-weight: 700;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .card-header-custom i {
+        font-size: 1.5rem;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        margin-left: auto;
+        position: relative;
+        z-index: 1;
+    }
+
+    .status-badge.parked {
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .status-badge.exited {
+        background: rgba(16, 185, 129, 0.25);
+        color: white;
+        border: 2px solid rgba(16, 185, 129, 0.5);
+    }
+
+    /* Card Body */
+    .card-body-custom {
+        padding: 30px;
+    }
+
+    /* Info Table */
+    .info-table {
+        width: 100%;
+    }
+
+    .info-table tr {
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .info-table tr:last-child {
+        border-bottom: none;
+    }
+
+    .info-table td {
+        padding: 15px 0;
+        vertical-align: middle;
+    }
+
+    .info-table td:first-child {
+        font-weight: 700;
+        color: #64748b;
+        width: 40%;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-table td:last-child {
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .license-plate-display {
+        font-size: 2rem;
+        font-weight: 900;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: 2px;
+    }
+
+    /* Badge Styles */
+    .badge-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        border: 2px solid;
+    }
+
+    .badge-custom.xanh {
+        background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+        color: #0369a1;
+        border-color: #0ea5e9;
+    }
+
+    .badge-custom.do {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #dc2626;
+        border-color: #ef4444;
+    }
+
+    .badge-custom.vang {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #d97706;
+        border-color: #f59e0b;
+    }
+
+    .badge-custom.trang {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        color: #475569;
+        border-color: #94a3b8;
+    }
+
+    .badge-custom.motorbike {
+        background: var(--motorbike-gradient);
+        color: white;
+        border-color: #fa709a;
+    }
+
+    .badge-custom.car {
+        background: var(--car-gradient);
+        color: white;
+        border-color: #30cfd0;
+    }
+
+    .duration-display {
+        color: #f59f00;
+        font-weight: 700;
+        font-size: 1.125rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .duration-display i {
+        font-size: 1.25rem;
+    }
+
+    /* Action Buttons */
+    .action-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        overflow: hidden;
+    }
+
+    .action-header {
+        background: var(--warning-gradient);
+        padding: 20px 25px;
+        border: none;
+    }
+
+    .action-header h5 {
+        margin: 0;
+        color: white;
+        font-weight: 700;
+        font-size: 1.125rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .action-body {
+        padding: 25px;
+    }
+
+    .btn-custom {
+        width: 100%;
+        padding: 14px 20px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        margin-bottom: 12px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-custom:last-child {
+        margin-bottom: 0;
+    }
+
+    .btn-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-custom i {
+        font-size: 1.125rem;
+    }
+
+    .btn-warning-custom {
+        background: var(--warning-gradient);
+        color: white;
+    }
+
+    .btn-danger-custom {
+        background: var(--danger-gradient);
+        color: white;
+    }
+
+    .btn-secondary-custom {
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        color: white;
+    }
+
+    /* Fee Card */
+    .fee-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        overflow: hidden;
+    }
+
+    .fee-header {
+        background: var(--success-gradient);
+        padding: 20px 25px;
+    }
+
+    .fee-header h5 {
+        margin: 0;
+        color: white;
+        font-weight: 700;
+        font-size: 1.125rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .fee-body {
+        padding: 30px 25px;
+        text-align: center;
+    }
+
+    .fee-amount {
+        font-size: 2.5rem;
+        font-weight: 900;
+        background: var(--success-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+        margin-bottom: 10px;
+    }
+
+    .fee-label {
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Image Card */
+    .image-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+
+    .image-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .image-card-header {
+        padding: 18px 25px;
+        border-bottom: 2px solid #f1f5f9;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+
+    .image-card-header.entry {
+        background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%);
+        border-bottom-color: rgba(79, 172, 254, 0.3);
+    }
+
+    .image-card-header.exit {
+        background: linear-gradient(135deg, rgba(17, 153, 142, 0.1) 0%, rgba(56, 239, 125, 0.1) 100%);
+        border-bottom-color: rgba(17, 153, 142, 0.3);
+    }
+
+    .image-card-header h6 {
+        margin: 0;
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .image-card-header.entry h6 i {
+        color: #4facfe;
+    }
+
+    .image-card-header.exit h6 i {
+        color: #11998e;
+    }
+
+    .image-card-body {
+        padding: 25px;
+        text-align: center;
+        background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+    }
+
+    .image-card-body img {
+        width: 100%;
+        max-height: 300px;
+        object-fit: contain;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-sm);
+        background: white;
+    }
+
+    .image-card-body img:hover {
+        transform: scale(1.05);
+        box-shadow: var(--shadow-md);
+    }
+
+    .no-image {
+        padding: 60px 20px;
+        color: #94a3b8;
+    }
+
+    .no-image i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        opacity: 0.3;
+    }
+
+    .no-image p {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    /* Section Headers */
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin: 40px 0 20px 0;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .section-header h4 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-header i {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: var(--info-gradient);
+        color: white;
+        font-size: 18px;
+    }
+
+    /* Loading Overlay */
+    #loadingOverlay {
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 100%);
+        backdrop-filter: blur(8px);
+        z-index: 9999;
+    }
+
+    /* Modal Custom */
+    .modal-content {
+        border-radius: 20px;
+        border: none;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .modal-header {
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: 20px 20px 0 0;
+        border: none;
+        padding: 20px 25px;
+    }
+
+    .modal-title {
+        font-weight: 700;
+    }
+
+    .modal-body {
+        padding: 30px;
+    }
+
+    /* Animations */
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-in {
+        animation: slideInUp 0.5s ease forwards;
+    }
+
+    .row > div {
+        animation: slideInUp 0.5s ease forwards;
+    }
+
+    .row > div:nth-child(1) { animation-delay: 0.1s; }
+    .row > div:nth-child(2) { animation-delay: 0.2s; }
+    .row > div:nth-child(3) { animation-delay: 0.3s; }
+    .row > div:nth-child(4) { animation-delay: 0.4s; }
+
+    @media (max-width: 768px) {
+        .license-plate-display {
+            font-size: 1.5rem;
+        }
+
+        .fee-amount {
+            font-size: 2rem;
+        }
+
+        .image-card-body img {
+            max-height: 200px;
+        }
+    }
+</style>
+
+<div class="row">
+    <!-- Thông tin cơ bản -->
+    <div class="col-lg-8 mb-4">
+        <div class="glass-card animate-in">
+            <div class="card-header-custom">
+                <h5>
+                    <i class="fas fa-info-circle"></i>
+                    Thông tin xe
+                    {% if vehicle.status == 'parked' %}
+                        <span class="status-badge parked">
+                            <i class="fas fa-parking"></i> Đang gửi
+                        </span>
+                    {% elif vehicle.status == 'exited' %}
+                        <span class="status-badge exited">
+                            <i class="fas fa-check-circle"></i> Đã ra
+                        </span>
+                    {% else %}
+                        <span class="status-badge">{{ vehicle.status }}</span>
+                    {% endif %}
+                </h5>
+            </div>
+
+            <div class="card-body-custom">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="info-table">
+                            <tr>
+                                <td><i class="fas fa-id-card"></i> Biển số:</td>
+                                <td>
+                                    <div class="license-plate-display">{{ vehicle.license_plate }}</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-palette"></i> Màu biển:</td>
+                                <td>
+                                    <span class="badge-custom {{ vehicle.plate_color|lower if vehicle.plate_color else '' }}">
+                                        {{ vehicle.plate_color or 'N/A' }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-car"></i> Loại xe:</td>
+                                <td>
+                                    {% if vehicle.vehicle_type == 'Xe máy' %}
+                                        <span class="badge-custom motorbike">
+                                            <i class="fas fa-motorcycle"></i> Xe máy
+                                        </span>
+                                    {% else %}
+                                        <span class="badge-custom car">
+                                            <i class="fas fa-car"></i> Xe hơi
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-tag"></i> Loại biển:</td>
+                                <td>{{ vehicle.plate_type or 'N/A' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="col-md-6">
+                        <table class="info-table">
+                            <tr>
+                                <td><i class="fas fa-sign-in-alt"></i> Thời gian vào:</td>
+                                <td>{{ vehicle.entry_time.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                            </tr>
+                            {% if vehicle.exit_time %}
+                            <tr>
+                                <td><i class="fas fa-sign-out-alt"></i> Thời gian ra:</td>
+                                <td>{{ vehicle.exit_time.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td><i class="fas fa-hourglass-half"></i> Thời gian đỗ:</td>
+                                <td>
+                                    <div class="duration-display">
+                                        <i class="fas fa-clock"></i>
+                                        {{ vehicle.duration }}
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar: Actions & Fee -->
+    <div class="col-lg-4">
+        <!-- Thao tác nhanh -->
+        <div class="action-card animate-in mb-4" style="animation-delay: 0.2s;">
+            <div class="action-header">
+                <h5><i class="fas fa-tools"></i> Thao tác</h5>
+            </div>
+            <div class="action-body">
+                {% if vehicle.status == 'parked' %}
+                <button class="btn-custom btn-warning-custom" onclick="forceExitVehicle()">
+                    <i class="fas fa-sign-out-alt"></i> Ép buộc ra bãi
+                </button>
+                {% endif %}
+
+                <button class="btn-custom btn-danger-custom" onclick="deleteVehicle()">
+                    <i class="fas fa-trash"></i> Xóa xe khỏi hệ thống
+                </button>
+
+                <a href="/admin/vehicles" class="btn-custom btn-secondary-custom" style="text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                </a>
+            </div>
+        </div>
+
+        <!-- Thông tin phí -->
+        <div class="fee-card animate-in" style="animation-delay: 0.3s;">
+            <div class="fee-header">
+                <h5><i class="fas fa-dollar-sign"></i> Thông tin phí</h5>
+            </div>
+            <div class="fee-body">
+                {% if vehicle.status == 'parked' %}
+                <div class="fee-amount">{{ "{:,}".format(vehicle.estimated_fee) }} đ</div>
+                <div class="fee-label">Phí dự kiến (đang đỗ)</div>
+                {% else %}
+                <div class="fee-amount">{{ "{:,}".format(vehicle.actual_fee) }} đ</div>
+                <div class="fee-label">Phí đã thanh toán</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hình ảnh lúc vào -->
+<div class="section-header animate-in" style="animation-delay: 0.4s;">
+    <h4><i class="fas fa-image"></i> Hình ảnh lúc vào bãi</h4>
+</div>
+
+<div class="row animate-in" style="animation-delay: 0.5s;">
+    <div class="col-md-4">
+        <div class="image-card">
+            <div class="image-card-header entry">
+                <h6><i class="fas fa-user"></i> Khuôn mặt lúc vào</h6>
+            </div>
+            <div class="image-card-body">
+                {% if vehicle.face_image_path %}
+                <img src="/{{ vehicle.face_image_path }}" alt="Face" onclick="enlargeImage(this, 'Khuôn mặt lúc vào')">
+                {% else %}
+                <div class="no-image">
+                    <i class="fas fa-user-slash"></i>
+                    <p>Không có ảnh</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="image-card">
+            <div class="image-card-header entry">
+                <h6><i class="fas fa-id-card"></i> Biển số lúc vào</h6>
+            </div>
+            <div class="image-card-body">
+                {% if vehicle.plate_image_path %}
+                <img src="/{{ vehicle.plate_image_path }}" alt="License Plate" onclick="enlargeImage(this, 'Biển số lúc vào')">
+                {% else %}
+                <div class="no-image">
+                    <i class="fas fa-id-card"></i>
+                    <p>Không có ảnh</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="image-card">
+            <div class="image-card-header entry">
+                <h6><i class="fas fa-qrcode"></i> Mã QR</h6>
+            </div>
+            <div class="image-card-body">
+                {% if vehicle.qr_code_path %}
+                <img src="/{{ vehicle.qr_code_path }}" alt="QR Code" onclick="enlargeImage(this, 'Mã QR')">
+                {% else %}
+                <div class="no-image">
+                    <i class="fas fa-qrcode"></i>
+                    <p>Không có mã QR</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if vehicle.status == 'exited' %}
+<!-- Hình ảnh lúc ra -->
+<div class="section-header animate-in" style="animation-delay: 0.6s;">
+    <h4><i class="fas fa-image"></i> Hình ảnh lúc ra bãi</h4>
+</div>
+
+<div class="row animate-in" style="animation-delay: 0.7s;">
+    <div class="col-md-6">
+        <div class="image-card">
+            <div class="image-card-header exit">
+                <h6><i class="fas fa-user"></i> Khuôn mặt lúc ra</h6>
+            </div>
+            <div class="image-card-body">
+                {% if vehicle.exit_face_image_path %}
+                <img src="/{{ vehicle.exit_face_image_path }}" alt="Exit Face" onclick="enlargeImage(this, 'Khuôn mặt lúc ra')">
+                {% else %}
+                <div class="no-image">
+                    <i class="fas fa-user-slash"></i>
+                    <p>Không có ảnh</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="image-card">
+            <div class="image-card-header exit">
+                <h6><i class="fas fa-id-card"></i> Biển số lúc ra</h6>
+            </div>
+            <div class="image-card-body">
+                {% if vehicle.exit_plate_image_path %}
+                <img src="/{{ vehicle.exit_plate_image_path }}" alt="Exit License Plate" onclick="enlargeImage(this, 'Biển số lúc ra')">
+                {% else %}
+                <div class="no-image">
+                    <i class="fas fa-id-card"></i>
+                    <p>Không có ảnh</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Modal phóng to ảnh -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalImageTitle">Xem ảnh</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" class="img-fluid rounded" alt="Enlarged Image" style="max-height: 80vh;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="d-none position-fixed top-0 start-0 w-100 h-100">
+    <div class="d-flex justify-content-center align-items-center h-100">
+        <div class="spinner-border text-light" role="status" style="width: 4rem; height: 4rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Phóng to ảnh với tiêu đề
+    function enlargeImage(img, title) {
+        document.getElementById('modalImageTitle').textContent = title;
+        document.getElementById('modalImage').src = img.src;
+        new bootstrap.Modal(document.getElementById('imageModal')).show();
+    }
+
+    // Ép buộc xe ra bãi
+    function forceExitVehicle() {
+        if (confirm(`Bạn có chắc muốn ép buộc xe {{ vehicle.license_plate }} ra khỏi bãi?`)) {
+            showLoading(true);
+
+            fetch(`/admin/vehicles/force_exit/{{ vehicle.id }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                if (data.success) {
+                    alert(`${data.message}\nPhí đỗ xe: ${data.parking_fee.toLocaleString()} VND`);
+                    window.location.href = '/admin/vehicles';
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                alert('Lỗi kết nối: ' + error.message);
+            });
+        }
+    }
+
+    // Xóa xe
+    function deleteVehicle() {
+        if (confirm(`CẢNH BÁO: Bạn có chắc muốn XÓA VĨNH VIỄN xe {{ vehicle.license_plate }} khỏi hệ thống?\nHành động này không thể hoàn tác!`)) {
+            showLoading(true);
+
+            fetch(`/admin/vehicles/delete/{{ vehicle.id }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                if (data.success) {
+                    alert(data.message);
+                    window.location.href = '/admin/vehicles';
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                alert('Lỗi kết nối: ' + error.message);
+            });
+        }
+    }
+
+    // Hiển thị/ẩn loading
+    function showLoading(show) {
+        const overlay = document.getElementById('loadingOverlay');
+        if (show) {
+            overlay.classList.remove('d-none');
+        } else {
+            overlay.classList.add('d-none');
+        }
+    }
+
+    // Helper function to get color class
+    function getColorClass(plateColor) {
+        if (!plateColor) return '';
+        const normalized = plateColor.trim().toLowerCase();
+        const colorMap = {
+            'xanh': 'xanh',
+            'đỏ': 'do',
+            'do': 'do',
+            'vàng': 'vang',
+            'vang': 'vang',
+            'trắng': 'trang',
+            'trang': 'trang'
+        };
+        return colorMap[normalized] || '';
+    }
+
+    // Add hover effect to images
+    document.addEventListener('DOMContentLoaded', function() {
+        const images = document.querySelectorAll('.image-card-body img');
+        images.forEach(img => {
+            img.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.05)';
+            });
+            img.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+
+        // Animate stats on load
+        const statElements = document.querySelectorAll('.license-plate-display, .fee-amount');
+        statElements.forEach((el, index) => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                el.style.transition = 'all 0.5s ease';
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, 100 + (index * 100));
+        });
+    });
+</script>
+{% endblock %}

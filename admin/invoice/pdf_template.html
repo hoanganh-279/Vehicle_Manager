@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hóa Đơn {{ invoice_number }}</title>
+    <style>
+        /*
+        ================================================================
+        PDF TEMPLATE — Hóa Đơn Nạp Tiền Thẻ Xe
+        Render bằng: pdfkit (wkhtmltopdf) — Internal CSS only
+        ----------------------------------------------------------------
+        Biến Jinja2 nhận từ backend (khớp với detail.html):
+          transaction[0]   → ID giao dịch (int)
+          transaction[1]   → Mã thẻ xe (string)
+          transaction[2]   → Tên khách hàng (string)
+          transaction[3]   → Số điện thoại (string)
+          transaction[4]   → Email (string)
+          transaction[6]   → Phương thức thanh toán (string)
+          transaction[7]   → Mã giao dịch / transaction_id (string)
+          transaction[9]   → Thời gian giao dịch (datetime object)
+          invoice_number   → Số hóa đơn, vd: "HD-000001" (string)
+          amount_formatted → Số tiền đã định dạng, vd: "500,000 đ" (string)
+          status_text      → Trạng thái: "Hoàn thành" / "Đang chờ" / "Thất bại"
+          now              → Thời điểm xuất hóa đơn (datetime object)
+        ================================================================
+        */
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DejaVu Sans', 'Segoe UI', Arial, sans-serif;
+            background: #fff;
+            color: #1a1a2e;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .page {
+            width: 794px;
+            min-height: 1123px;
+            margin: 0 auto;
+            background: #fff;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            background: #1e293b;
+            padding: 34px 48px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header:before {
+            content: '';
+            position: absolute; top: -55px; right: -55px;
+            width: 175px; height: 175px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+        }
+
+        .header:after {
+            content: '';
+            position: absolute; bottom: -75px; right: 90px;
+            width: 215px; height: 215px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.03);
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand { display: flex; align-items: center; gap: 14px; }
+
+        .brand-icon {
+            width: 52px; height: 52px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.16);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: white; flex-shrink: 0;
+        }
+
+        .brand-name {
+            font-size: 17px; font-weight: 700; color: #fff; letter-spacing: 0.3px;
+        }
+
+        .brand-sub {
+            font-size: 10.5px; color: rgba(255,255,255,0.48); margin-top: 4px;
+        }
+
+        .invoice-meta { text-align: right; }
+
+        .inv-type {
+            font-size: 11px; font-weight: 700;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;
+        }
+
+        .inv-number {
+            font-size: 25px; font-weight: 800; color: #fff;
+        }
+
+        .inv-date {
+            font-size: 11px; color: rgba(255,255,255,0.48); margin-top: 6px;
+        }
+
+        /* ── STATUS BANNER ── */
+        .status-banner {
+            padding: 9px 48px;
+            display: flex; align-items: center; gap: 9px;
+        }
+
+        .banner-completed { background: #15803d; }
+        .banner-pending   { background: #b45309; }
+        .banner-failed    { background: #b91c1c; }
+        .banner-default   { background: #475569; }
+
+        .banner-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: rgba(255,255,255,0.85); flex-shrink: 0;
+        }
+
+        .banner-text {
+            font-size: 10.5px; font-weight: 700;
+            color: #fff; letter-spacing: 1.5px; text-transform: uppercase;
+        }
+
+        /* ── BODY ── */
+        .body { padding: 38px 48px; }
+
+        .doc-heading {
+            text-align: center;
+            padding-bottom: 18px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .doc-heading h2 {
+            font-size: 19px; font-weight: 800;
+            color: #1e293b; letter-spacing: 1px; text-transform: uppercase;
+        }
+
+        .doc-heading p { font-size: 11.5px; color: #94a3b8; margin-top: 4px; }
+
+        /* ── 2 CỘT THÔNG TIN ── */
+        .two-col { display: flex; gap: 22px; margin-bottom: 30px; }
+
+        .info-box {
+            flex: 1;
+            background: #f8fafc;
+            border-radius: 11px;
+            padding: 18px 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .info-box-title {
+            font-size: 10px; font-weight: 700; color: #94a3b8;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            margin-bottom: 12px; padding-bottom: 9px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .info-item {
+            display: flex; justify-content: space-between; align-items: baseline;
+            padding: 5px 0; border-bottom: 1px dashed #eef1f5;
+        }
+
+        .info-item:last-child { border-bottom: none; }
+
+        .i-key { font-size: 11.5px; color: #64748b; }
+
+        .i-val {
+            font-size: 12px; color: #1e293b; font-weight: 600;
+            text-align: right; max-width: 60%;
+        }
+
+        /* ── BẢNG DỊCH VỤ ── */
+        .section-label {
+            font-size: 10px; font-weight: 700; color: #94a3b8;
+            letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px;
+        }
+
+        .svc-table {
+            width: 100%; border-collapse: collapse;
+            border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0;
+        }
+
+        .svc-table thead tr { background: #1e293b; }
+
+        .svc-table thead th {
+            padding: 12px 15px;
+            text-align: left; font-size: 10px; font-weight: 700;
+            color: rgba(255,255,255,0.6); letter-spacing: 1px; text-transform: uppercase;
+        }
+
+        .svc-table thead th:last-child { text-align: right; }
+
+        .svc-table tbody td {
+            padding: 14px 15px; font-size: 12.5px; color: #334155;
+            background: #fff; border-bottom: 1px solid #f1f5f9;
+        }
+
+        .svc-table tbody td:last-child { text-align: right; }
+        .svc-table tbody tr:last-child td { border-bottom: none; }
+
+        .svc-name  { font-weight: 700; color: #1e293b; display: block; margin-bottom: 2px; }
+        .svc-sub   { font-size: 11px; color: #94a3b8; }
+
+        .txn-code {
+            font-family: 'Courier New', monospace; font-size: 11px;
+            background: #f1f5f9; padding: 2px 7px; border-radius: 4px; color: #475569;
+        }
+
+        .method-badge {
+            display: inline-block; padding: 3px 9px; border-radius: 20px;
+            font-size: 11px; font-weight: 600; background: #dbeafe; color: #1d4ed8;
+        }
+
+        /* ── TỔNG TIỀN ── */
+        .total-wrap { display: flex; justify-content: flex-end; margin-top: 20px; }
+
+        .total-box { width: 285px; }
+
+        .t-row {
+            display: flex; justify-content: space-between;
+            padding: 7px 0; border-bottom: 1px solid #f1f5f9;
+        }
+
+        .t-row:last-child { border-bottom: none; }
+        .t-lbl { font-size: 12px; color: #64748b; }
+        .t-val { font-size: 12px; color: #1e293b; font-weight: 600; }
+
+        .grand-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 9px; padding: 14px 16px;
+            background: #1e293b; border-radius: 9px;
+        }
+
+        .grand-row .t-lbl { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7); }
+        .grand-row .t-val { font-size: 19px; font-weight: 800; color: #4ade80; }
+
+        /* ── STATUS + XÁC NHẬN ── */
+        .bottom-info {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 28px; padding: 17px 20px;
+            background: #f8fafc; border-radius: 11px; border: 1px solid #e2e8f0;
+        }
+
+        .st-label {
+            font-size: 10px; font-weight: 700; color: #94a3b8;
+            letter-spacing: 1px; text-transform: uppercase; margin-bottom: 7px;
+        }
+
+        .st-pill {
+            display: inline-block; padding: 5px 15px;
+            border-radius: 20px; font-size: 12px; font-weight: 700;
+        }
+
+        .st-completed { background: #dcfce7; color: #15803d; }
+        .st-pending   { background: #fef3c7; color: #92400e; }
+        .st-failed    { background: #fee2e2; color: #b91c1c; }
+        .st-default   { background: #f1f5f9; color: #475569; }
+
+        .confirm-right { text-align: right; }
+
+        .c-label {
+            font-size: 10px; font-weight: 700; color: #94a3b8;
+            letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px;
+        }
+
+        .c-code {
+            font-family: 'Courier New', monospace;
+            font-size: 15px; font-weight: 800; color: #1e293b; letter-spacing: 1px;
+        }
+
+        /* ── GHI CHÚ ── */
+        .note-box {
+            margin-top: 22px; padding: 15px 18px;
+            background: #fffbeb; border-radius: 9px; border: 1px solid #fde68a;
+        }
+
+        .note-box p { font-size: 11.5px; color: #78350f; margin-bottom: 4px; }
+        .note-box p:last-child { margin-bottom: 0; }
+
+        /* ── FOOTER ── */
+        .footer {
+            margin-top: 32px; padding: 20px 48px;
+            background: #f8fafc; border-top: 2px solid #e2e8f0;
+        }
+
+        .footer-inner { display: flex; justify-content: space-between; align-items: center; }
+
+        .footer-left p { font-size: 11px; color: #94a3b8; margin-bottom: 3px; }
+        .footer-left p strong { color: #475569; }
+
+        .footer-stamp {
+            width: 82px; height: 82px; border-radius: 50%;
+            border: 2px dashed #cbd5e1;
+            display: flex; align-items: center; justify-content: center; text-align: center;
+        }
+
+        .footer-stamp span {
+            font-size: 9px; font-weight: 700;
+            color: #94a3b8; text-transform: uppercase; line-height: 1.5;
+        }
+
+        .footer-note {
+            margin-top: 12px; text-align: center;
+            font-size: 10px; color: #cbd5e1;
+            padding-top: 11px; border-top: 1px solid #e2e8f0;
+        }
+
+        @media print {
+            body { background: white; }
+            .page { width: 100%; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-inner">
+            <div class="brand">
+                <div class="brand-icon">&#x1F17F;</div>
+                <div>
+                    <div class="brand-name">HỆ THỐNG BÃI XE NQT</div>
+                    <div class="brand-sub">63 Trần Văn Ơn, Thủ Dầu Một, TP.HCM</div>
+                    <div class="brand-sub">&#9990; 0963 920 003 &nbsp;|&nbsp; &#9993; 2124802010371@student.tdmu.edu.vn</div>
+                </div>
+            </div>
+            <div class="invoice-meta">
+                <div class="inv-type">Hóa đơn nạp tiền thẻ xe</div>
+                <div class="inv-number">{{ invoice_number }}</div>
+                <div class="inv-date">Ngày: {{ transaction[9].strftime('%d/%m/%Y %H:%M:%S') }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATUS BANNER -->
+    {% set st = status_text | lower %}
+    <div class="status-banner {% if 'hoàn thành' in st %}banner-completed{% elif 'chờ' in st %}banner-pending{% elif 'thất bại' in st %}banner-failed{% else %}banner-default{% endif %}">
+        <div class="banner-dot"></div>
+        <div class="banner-text">
+            {% if 'hoàn thành' in st %}&#10003; Giao dịch đã hoàn thành &amp; xác nhận thành công
+            {% elif 'chờ' in st %}&#9201; Giao dịch đang chờ xử lý
+            {% elif 'thất bại' in st %}&#10007; Giao dịch thất bại
+            {% else %}{{ status_text }}{% endif %}
+        </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="body">
+
+        <!-- Tiêu đề -->
+        <div class="doc-heading">
+            <h2>HÓA ĐƠN NẠP TIỀN THẺ XE</h2>
+            <p>Hóa đơn điện tử — không cần chữ ký và con dấu</p>
+        </div>
+
+        <!-- 2 cột thông tin -->
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title">Thông tin khách hàng</div>
+                <div class="info-item">
+                    <span class="i-key">Họ và tên</span>
+                    <span class="i-val">{{ transaction[2] or 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="i-key">Số điện thoại</span>
+                    <span class="i-val">{{ transaction[3] or 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="i-key">Email</span>
+                    <span class="i-val">{{ transaction[4] or 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="i-key">Mã thẻ xe</span>
+                    <span class="i-val">{{ transaction[1] }}</span>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-box-title">Thông tin giao dịch</div>
+                <div class="info-item">
+                    <span class="i-key">Số hóa đơn</span>
+                    <span class="i-val">{{ invoice_number }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="i-key">Mã giao dịch</span>
+                    <span class="i-val">{{ transaction[7] or 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="i-key">Phương thức</span>
+                    <span class="i-val">{{ transaction[6] | capitalize }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="i-key">Thời gian</span>
+                    <span class="i-val">{{ transaction[9].strftime('%d/%m/%Y %H:%M') }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bảng chi tiết -->
+        <div class="section-label">Chi tiết dịch vụ</div>
+        <table class="svc-table">
+            <thead>
+                <tr>
+                    <th>Dịch vụ</th>
+                    <th>Mã giao dịch</th>
+                    <th>Phương thức</th>
+                    <th>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <span class="svc-name">Nạp tiền thẻ xe</span>
+                        <span class="svc-sub">Thẻ: {{ transaction[1] }}</span>
+                    </td>
+                    <td><span class="txn-code">{{ transaction[7] or 'N/A' }}</span></td>
+                    <td><span class="method-badge">{{ transaction[6] | capitalize }}</span></td>
+                    <td><strong style="color:#15803d;font-size:14px;">{{ amount_formatted }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Tổng tiền -->
+        <div class="total-wrap">
+            <div class="total-box">
+                <div class="t-row">
+                    <span class="t-lbl">Số tiền nạp</span>
+                    <span class="t-val">{{ amount_formatted }}</span>
+                </div>
+                <div class="t-row">
+                    <span class="t-lbl">Phí giao dịch</span>
+                    <span class="t-val">0 đ</span>
+                </div>
+                <div class="t-row">
+                    <span class="t-lbl">Giảm giá</span>
+                    <span class="t-val">0 đ</span>
+                </div>
+                <div class="grand-row">
+                    <span class="t-lbl">TỔNG CỘNG</span>
+                    <span class="t-val">{{ amount_formatted }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trạng thái + Mã xác nhận -->
+        <div class="bottom-info">
+            <div>
+                <div class="st-label">Trạng thái giao dịch</div>
+                <span class="st-pill {% if 'hoàn thành' in st %}st-completed{% elif 'chờ' in st %}st-pending{% elif 'thất bại' in st %}st-failed{% else %}st-default{% endif %}">
+                    {% if 'hoàn thành' in st %}&#10003; {% elif 'chờ' in st %}&#9201; {% elif 'thất bại' in st %}&#10007; {% endif %}
+                    {{ status_text }}
+                </span>
+            </div>
+            <div class="confirm-right">
+                <div class="c-label">Mã xác nhận</div>
+                <div class="c-code">INV-{{ '%06d' % transaction[0] }}</div>
+            </div>
+        </div>
+
+        <!-- Ghi chú -->
+        <div class="note-box">
+            <p><strong>Lưu ý:</strong> Đây là hóa đơn điện tử được tạo tự động, không cần chữ ký và con dấu.</p>
+            <p>Vui lòng liên hệ hotline <strong>0963 920 003</strong> nếu có bất kỳ thắc mắc nào về giao dịch này.</p>
+            <p>Cảm ơn quý khách đã sử dụng dịch vụ của <strong>Hệ Thống Bãi Xe NQT</strong>!</p>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <div class="footer-inner">
+            <div class="footer-left">
+                <p><strong>Hệ Thống Bãi Xe NQT</strong></p>
+                <p>63 Trần Văn Ơn, Thủ Dầu Một, TP.HCM</p>
+                <p>Hotline: 0963 920 003</p>
+                <p>Email: 2124802010371@student.tdmu.edu.vn</p>
+            </div>
+            <div class="footer-stamp">
+                <span>Đã xác nhận &#10003;</span>
+            </div>
+        </div>
+        <div class="footer-note">
+            Hóa đơn tạo lúc {{ now.strftime('%d/%m/%Y %H:%M:%S') }}
+            &nbsp;|&nbsp; {{ invoice_number }}
+            &nbsp;|&nbsp; Hệ Thống Bãi Xe NQT
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,3867 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Header -->
+<div class="page-hero">
+    <div class="hero-content">
+        <div class="hero-badge">
+            <i class="fas fa-sign-out-alt"></i> Xe ra bãi
+        </div>
+        <h1 class="hero-title">Quản lý xe ra khỏi bãi</h1>
+        <p class="hero-subtitle">Hệ thống AI tự động nhận diện và xử lý thanh toán</p>
+    </div>
+    <div class="hero-stats-mini">
+        <div class="stat-mini">
+            <i class="fas fa-qrcode"></i>
+            <span>Quét QR</span>
+        </div>
+        <div class="stat-mini">
+            <i class="fas fa-camera"></i>
+            <span>Nhận diện AI</span>
+        </div>
+        <div class="stat-mini">
+            <i class="fas fa-credit-card"></i>
+            <span>Thanh toán</span>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <!-- Main Camera Control Section -->
+        <div class="modern-card card-gradient-primary mb-4">
+            <div class="card-header-modern">
+                <div class="header-left">
+                    <div class="icon-wrapper icon-primary">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <div>
+                        <h4 class="card-title-modern">Camera quản lý xe ra bãi</h4>
+                        <p class="card-subtitle-modern">Sử dụng AI để nhận diện tự động</p>
+                    </div>
+                </div>
+                <div class="status-badge badge-active">
+                    <i class="fas fa-circle pulse-dot"></i> Đang hoạt động
+                </div>
+            </div>
+
+            <div class="card-body-modern">
+                <!-- Card QR Scanner Section -->
+                <div class="modern-card card-secondary mb-4" id="cardQrSection" style="display: none;">
+                    <div class="card-header-modern border-bottom">
+                        <div class="header-left">
+                            <div class="icon-wrapper icon-warning">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0">Quét mã QR thẻ thanh toán</h5>
+                                <small class="text-muted">Quét thẻ và xác thực gương mặt để thanh toán</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body-modern">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="camera-section">
+                                    <div class="camera-header">
+                                        <i class="fas fa-qrcode"></i>
+                                        <span>Camera QR Thẻ</span>
+                                    </div>
+                                    <select class="form-select-modern mb-3" id="cardQrCameraSelect">
+                                        <option value="">Chọn camera cho QR thẻ</option>
+                                    </select>
+                                    <div class="video-container">
+                                        <video autoplay id="cardQrVideo" playsinline></video>
+                                        <div class="video-overlay">
+                                            <div class="scan-line"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="camera-section">
+                                    <div class="camera-header">
+                                        <i class="fas fa-user"></i>
+                                        <span>Camera Gương Mặt Thẻ</span>
+                                    </div>
+                                    <select class="form-select-modern mb-3" id="cardFaceCameraSelect">
+                                        <option value="">Chọn camera cho gương mặt thẻ</option>
+                                    </select>
+                                    <div class="video-container">
+                                        <video autoplay id="cardFaceVideo" playsinline></video>
+                                        <canvas id="cardFaceCanvas" style="display:none;"></canvas>
+                                        <div id="cardFacePreview" class="preview-overlay"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons-group mt-4">
+                            <button class="btn-modern btn-primary" id="startCardScannerBtn">
+                                <i class="fas fa-camera"></i>
+                                <span>Bật quét QR thẻ</span>
+                            </button>
+                            <button class="btn-modern btn-danger" id="stopCardScannerBtn" style="display: none;">
+                                <i class="fas fa-stop"></i>
+                                <span>Dừng quét</span>
+                            </button>
+                            <button class="btn-modern btn-info" id="captureCardFaceBtn" style="display: none;">
+                                <i class="fas fa-camera"></i>
+                                <span>Chụp gương mặt thẻ</span>
+                            </button>
+                        </div>
+
+                        <div class="result-section mt-4" id="cardQrResult">
+                            <div class="result-box">
+                                <div class="result-icon">
+                                    <i class="fas fa-credit-card"></i>
+                                </div>
+                                <div class="result-content">
+                                    <p class="result-label">Kết quả quét QR thẻ</p>
+                                    <div id="cardQrContent" class="result-text">Chưa quét mã QR thẻ</div>
+                                </div>
+                            </div>
+
+                            <div class="info-grid mt-3" id="cardInfo" style="display: none;">
+                                <div class="info-item">
+                                    <span class="info-label">Tên:</span>
+                                    <span class="info-value" id="cardName"></span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Số điện thoại:</span>
+                                    <span class="info-value" id="cardPhone"></span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Số dư:</span>
+                                    <span class="info-value highlight" id="cardBalance"></span> VND
+                                </div>
+                            </div>
+
+                            <div class="comparison-box mt-3" id="cardFaceComparison" style="display: none;">
+                                <p class="comparison-title">Gương mặt hiện tại:</p>
+                                <img class="img-preview" id="currentCardFaceImg" src="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QR Scanner for Vehicle -->
+                <div class="modern-card card-secondary mb-4" id="qrSection">
+                    <div class="card-header-modern border-bottom">
+                        <div class="header-left">
+                            <div class="icon-wrapper icon-success">
+                                <i class="fas fa-qrcode"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0">Quét mã QR xe</h5>
+                                <small class="text-muted">Bắt buộc quét mã QR trước khi ra bãi</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body-modern text-center">
+                        <select class="form-select-modern mb-3" id="qrCameraSelect">
+                            <option value="">Chọn camera cho QR xe</option>
+                        </select>
+                        <div class="video-container mx-auto" style="max-width: 400px;">
+                            <video autoplay id="qrVideo" playsinline></video>
+                            <div class="video-overlay">
+                                <div class="scan-frame"></div>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons-group mt-4">
+                            <button class="btn-modern btn-primary" id="startScannerBtn">
+                                <i class="fas fa-camera"></i>
+                                <span>Bật quét QR xe</span>
+                            </button>
+                            <button class="btn-modern btn-danger" id="stopScannerBtn" style="display: none;">
+                                <i class="fas fa-stop"></i>
+                                <span>Dừng quét</span>
+                            </button>
+                        </div>
+
+                        <div class="result-section mt-4" id="qrResult">
+                            <div class="result-box">
+                                <div class="result-icon">
+                                    <i class="fas fa-qrcode"></i>
+                                </div>
+                                <div class="result-content">
+                                    <p class="result-label">Kết quả quét QR xe</p>
+                                    <div id="qrContent" class="result-text">Chưa quét mã QR xe</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Camera Sections Grid -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="modern-card card-secondary">
+                            <div class="card-header-modern">
+                                <div class="icon-wrapper icon-info">
+                                    <i class="fas fa-car"></i>
+                                </div>
+                                <h5 class="mb-0">Camera biển số</h5>
+                            </div>
+                            <div class="card-body-modern">
+                                <select class="form-select-modern mb-3" id="licensePlateCameraSelect">
+                                    <option value="">Chọn camera cho biển số</option>
+                                </select>
+                                <div class="video-container">
+                                    <video autoplay id="licensePlateVideo" playsinline></video>
+                                    <canvas id="licensePlateCanvas" style="display:none;"></canvas>
+                                    <div id="platePreview" class="preview-overlay"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="modern-card card-secondary">
+                            <div class="card-header-modern">
+                                <div class="icon-wrapper icon-purple">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <h5 class="mb-0">Camera gương mặt</h5>
+                            </div>
+                            <div class="card-body-modern">
+                                <select class="form-select-modern mb-3" id="faceCameraSelect">
+                                    <option value="">Chọn camera cho gương mặt</option>
+                                </select>
+                                <div class="video-container">
+                                    <video autoplay id="faceVideo" playsinline></video>
+                                    <canvas id="faceCanvas" style="display:none;"></canvas>
+                                    <div id="facePreview" class="preview-overlay"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparison Section -->
+                <div class="modern-card card-info mb-4" id="comparisonSection" style="display: none;">
+                    <div class="card-header-modern">
+                        <div class="icon-wrapper icon-info">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <h5 class="mb-0">So sánh thông tin</h5>
+                    </div>
+                    <div class="card-body-modern">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="comparison-section">
+                                    <h6 class="section-title">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                        Thông tin khi vào bãi
+                                    </h6>
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <div class="image-box">
+                                                <p class="image-label">Gương mặt</p>
+                                                <img class="img-comparison" id="originalFaceImg" src="">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="image-box">
+                                                <p class="image-label">Biển số</p>
+                                                <img class="img-comparison" id="originalPlateImg" src="">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="comparison-section">
+                                    <h6 class="section-title">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        Thông tin hiện tại (ra bãi)
+                                    </h6>
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <div class="image-box">
+                                                <p class="image-label">Gương mặt</p>
+                                                <img class="img-comparison" id="currentFaceImg" src="">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="image-box">
+                                                <p class="image-label">Biển số</p>
+                                                <img class="img-comparison" id="currentPlateImg" src="">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method Selection -->
+                <div class="modern-card card-payment mb-4" id="paymentMethodSection" style="display: none;">
+                    <div class="card-header-modern">
+                        <div class="icon-wrapper icon-success">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">Chọn phương thức thanh toán</h5>
+                            <small class="text-muted">Chọn phương thức phù hợp để thanh toán phí đỗ xe</small>
+                        </div>
+                    </div>
+                    <div class="card-body-modern">
+                        <div class="payment-methods-grid">
+                            <button class="payment-method-btn" id="selectCardBtn">
+                                <div class="payment-icon">
+                                    <i class="fas fa-credit-card"></i>
+                                </div>
+                                <span class="payment-name">Thẻ</span>
+                                <div class="payment-check">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                            </button>
+                            <button class="payment-method-btn" id="selectStripeBtn">
+                                <div class="payment-icon">
+                                    <i class="fab fa-cc-stripe"></i>
+                                </div>
+                                <span class="payment-name">Stripe</span>
+                                <div class="payment-check">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                            </button>
+                            <button class="payment-method-btn" id="selectMomoBtn">
+                                <div class="payment-icon">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <span class="payment-name">MoMo</span>
+                                <div class="payment-check">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                            </button>
+                            <button class="payment-method-btn" id="selectVNPayBtn">
+                                <div class="payment-icon">
+                                    <i class="fas fa-university"></i>
+                                </div>
+                                <span class="payment-name">VNPay</span>
+                                <div class="payment-check">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stripe Payment Section -->
+                <div class="modern-card card-stripe mb-4" id="stripePaymentSection" style="display: none;">
+                    <div class="card-header-modern">
+                        <div class="icon-wrapper icon-success">
+                            <i class="fab fa-cc-stripe"></i>
+                        </div>
+                        <h5 class="mb-0">Thanh toán qua Stripe</h5>
+                    </div>
+                    <div class="card-body-modern">
+                        <div class="payment-info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Biển số xe:</span>
+                                <span class="info-value" id="stripeLicensePlate"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Phí đỗ xe:</span>
+                                <span class="info-value highlight" id="stripeParkingFee"></span> VND
+                            </div>
+                        </div>
+
+                        <div class="stripe-card-element mt-4" id="stripeCardElement"></div>
+                        <div class="error-message" id="stripeCardErrors"></div>
+
+                        <button class="btn-modern btn-success btn-large mt-4" id="stripePaymentBtn">
+                            <i class="fas fa-lock"></i>
+                            <span>Thanh toán <span id="stripePaymentAmount"></span> VND</span>
+                        </button>
+
+                        <div class="processing-overlay" id="stripePaymentProcessing" style="display: none;">
+                            <div class="spinner-modern"></div>
+                            <p>Đang xử lý thanh toán...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VNPay Payment Section -->
+                <div class="modern-card card-vnpay mb-4" id="vnpayPaymentSection" style="display: none;">
+                    <div class="card-header-modern">
+                        <div class="icon-wrapper icon-danger">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <h5 class="mb-0">Thanh toán qua VNPay</h5>
+                    </div>
+                    <div class="card-body-modern">
+                        <div class="payment-info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Biển số xe:</span>
+                                <span class="info-value" id="vnpayLicensePlate"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Phí đỗ xe:</span>
+                                <span class="info-value highlight" id="vnpayParkingFee"></span> VND
+                            </div>
+                        </div>
+
+                        <div class="payment-link-section mt-4" id="vnpayPaymentLink">
+                            <p class="link-instruction">Vui lòng truy cập link sau để thanh toán qua VNPay:</p>
+                            <a class="btn-modern btn-danger btn-large" href="#" id="vnpayPayUrl" target="_blank">
+                                <i class="fas fa-university"></i>
+                                <span>Thanh toán qua VNPay</span>
+                            </a>
+                        </div>
+
+                        <div class="status-box mt-4" id="vnpayPaymentStatus" style="display: none;">
+                            <div class="status-content">
+                                <i class="fas fa-clock status-icon"></i>
+                                <span id="vnpayStatusText">Đang chờ thanh toán...</span>
+                                <div class="spinner-small"></div>
+                            </div>
+                            <small class="status-note">Vui lòng hoàn tất thanh toán trên tab mới. Trang này sẽ tự động cập nhật.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MoMo Payment Section -->
+                <div class="modern-card card-momo mb-4" id="momoPaymentSection" style="display: none;">
+                    <div class="card-header-modern">
+                        <div class="icon-wrapper icon-momo">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h5 class="mb-0">Thanh toán qua MoMo</h5>
+                    </div>
+                    <div class="card-body-modern">
+                        <div class="payment-info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Biển số xe:</span>
+                                <span class="info-value" id="momoLicensePlate"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Phí đỗ xe:</span>
+                                <span class="info-value highlight" id="momoParkingFee"></span> VND
+                            </div>
+                        </div>
+
+                        <div class="payment-link-section mt-4" id="momoPaymentLink">
+                            <p class="link-instruction">Vui lòng truy cập link sau để thanh toán qua MoMo:</p>
+                            <a class="btn-modern btn-momo btn-large" href="#" id="momoPayUrl" target="_blank">
+                                <i class="fas fa-mobile-alt"></i>
+                                <span>Thanh toán qua MoMo</span>
+                            </a>
+                        </div>
+
+                        <div class="status-box mt-4" id="momoPaymentStatus" style="display: none;">
+                            <div class="status-content">
+                                <i class="fas fa-clock status-icon"></i>
+                                <span id="paymentStatusText">Đang chờ thanh toán...</span>
+                                <div class="spinner-small"></div>
+                            </div>
+                            <small class="status-note">Vui lòng hoàn tất thanh toán trên tab mới. Trang này sẽ tự động cập nhật.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top-up Section -->
+                <div class="modern-card card-topup mb-4" id="topupSection" style="display: none;">
+                    <div class="card-header-modern">
+                        <div class="icon-wrapper icon-info">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <h5 class="mb-0">Nạp tiền vào thẻ</h5>
+                    </div>
+                    <div class="card-body-modern">
+                        <div class="info-grid mb-4">
+                            <div class="info-item">
+                                <span class="info-label">Thẻ ID:</span>
+                                <span class="info-value" id="topupCardId"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Số dư hiện tại:</span>
+                                <span class="info-value" id="topupCardBalance"></span> VND
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Phí cần thanh toán:</span>
+                                <span class="info-value highlight" id="requiredFee"></span> VND
+                            </div>
+                        </div>
+
+                        <div class="form-group-modern mb-3">
+                            <label class="form-label-modern">Phương thức nạp tiền:</label>
+                            <select class="form-select-modern" id="topupPaymentMethod">
+                                <option value="card">Thẻ ngân hàng</option>
+                                <option value="momo">MoMo</option>
+                            </select>
+                        </div>
+
+                        <div id="cardPaymentForm" style="display: none;">
+                            <div class="form-group-modern mb-3">
+                                <label class="form-label-modern">Số tiền nạp (VND):</label>
+                                <input class="form-control-modern" id="topupAmount" min="1000" placeholder="Nhập số tiền" step="1000" type="number">
+                            </div>
+                            <div class="stripe-card-element mb-3" id="cardElement"></div>
+                            <button class="btn-modern btn-success" id="topupBtn">
+                                <i class="fas fa-credit-card"></i>
+                                <span>Nạp tiền qua thẻ</span>
+                            </button>
+                        </div>
+
+                        <div id="momoTopupLink" style="display: none;">
+                            <p class="link-instruction">Vui lòng truy cập link sau để nạp tiền qua MoMo:</p>
+                            <a class="btn-modern btn-momo" href="#" id="momoTopupUrl" target="_blank">
+                                <i class="fas fa-mobile-alt"></i>
+                                <span>Nạp tiền qua MoMo</span>
+                            </a>
+                        </div>
+
+                        <div class="message-box mt-3" id="topupMessage"></div>
+                    </div>
+                </div>
+
+                <!-- Error Details -->
+                <div class="alert-modern alert-danger mb-4" id="errorDetails" style="display:none;">
+                    <div class="alert-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="alert-content">
+                        <h5 class="alert-title">Chi tiết lỗi:</h5>
+                        <div id="errorContent"></div>
+                        <div class="error-comparison mt-3">
+                            <div class="error-item">
+                                <p class="error-label">Biển số từ QR:</p>
+                                <div class="badge-modern badge-info" id="qrPlate"></div>
+                            </div>
+                            <div class="error-item">
+                                <p class="error-label">Biển số nhận diện:</p>
+                                <div class="badge-modern badge-warning" id="detectedPlate"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instructions & Processing -->
+                <div class="modern-card card-instructions mb-4">
+                    <div class="card-header-modern">
+                        <div class="icon-wrapper icon-warning">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <h5 class="mb-0">Hướng dẫn sử dụng</h5>
+                    </div>
+                    <div class="card-body-modern">
+                        <div class="instructions-grid">
+                            <div class="instruction-step">
+                                <div class="step-number">1</div>
+                                <p>Quét mã QR xe trước</p>
+                            </div>
+                            <div class="instruction-step">
+                                <div class="step-number">2</div>
+                                <p>Chọn phương thức thanh toán</p>
+                            </div>
+                            <div class="instruction-step">
+                                <div class="step-number">3</div>
+                                <p>Nếu chọn Thẻ: Quét QR thẻ và chụp ảnh gương mặt</p>
+                            </div>
+                            <div class="instruction-step">
+                                <div class="step-number">4</div>
+                                <p>Chụp ảnh xác thực</p>
+                            </div>
+                            <div class="instruction-step">
+                                <div class="step-number">5</div>
+                                <p>Chọn biển số chính xác từ danh sách (nếu có)</p>
+                            </div>
+
+                        </div>
+
+                        <div class="capture-section mt-4">
+                            <button class="btn-modern btn-capture" id="captureBtn">
+                                <i class="fas fa-camera"></i>
+                                <span>Chụp ảnh xác thực</span>
+                                <span class="capture-hint">Nhấn Space</span>
+                            </button>
+                        </div>
+
+                        <div class="processing-overlay" id="captureProcessing" style="display:none;">
+                            <div class="spinner-modern"></div>
+                            <p>Đang nhận diện biển số...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Bar -->
+                <div class="status-bar-modern mb-4">
+                    <div class="status-info">
+                        <span class="badge-modern badge-exit">
+                            <i class="fas fa-sign-out-alt"></i> RA BÃI
+                        </span>
+                        <span class="badge-modern badge-plate" id="currentLicensePlate">
+                            <i class="fas fa-car"></i> Đang chờ...
+                        </span>
+                        <span class="badge-modern badge-color" id="plateColorBadge" style="display:none;">
+                            <i class="fas fa-palette"></i> Màu: N/A
+                        </span>
+                        <span class="badge-modern badge-type" id="plateTypeBadge" style="display:none;">
+                            <i class="fas fa-tag"></i> Loại: N/A
+                        </span>
+                        <span class="badge-modern badge-confidence" id="confidenceBadge" style="display:none;">
+                            <i class="fas fa-chart-line"></i> Độ chính xác: 0%
+                        </span>
+                    </div>
+                    <button class="btn-modern btn-process" disabled id="processBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Xác nhận</span>
+                    </button>
+                </div>
+
+                <!-- Message Area -->
+                <div class="alert-modern" id="messageArea" style="display: none;"></div>
+
+                <!-- Plate Selection Area -->
+                <div id="plateSelectionArea"></div>
+
+                <!-- Exit Result -->
+                <div class="modern-card card-success mb-4" id="exitResult" style="display: none;">
+                    <div class="card-header-modern">
+                        <div class="icon-wrapper icon-success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h5 class="mb-0">Kết quả ra bãi</h5>
+                    </div>
+                    <div class="card-body-modern">
+                        <div id="exitMessage"></div>
+
+                        <!-- Payment Info -->
+                        <div class="modern-card card-info mt-4" id="paymentInfo" style="display: none;">
+                            <div class="card-header-modern">
+                                <div class="icon-wrapper icon-info">
+                                    <i class="fas fa-receipt"></i>
+                                </div>
+                                <h5 class="mb-0">Thông tin thanh toán</h5>
+                            </div>
+                            <div class="card-body-modern">
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="info-grid">
+                                            <div class="info-item">
+                                                <span class="info-label">
+                                                    <i class="fas fa-sign-in-alt"></i> Thời gian vào:
+                                                </span>
+                                                <span class="info-value" id="entryTime"></span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">
+                                                    <i class="fas fa-sign-out-alt"></i> Thời gian ra:
+                                                </span>
+                                                <span class="info-value" id="exitTime"></span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">
+                                                    <i class="fas fa-clock"></i> Thời gian gửi:
+                                                </span>
+                                                <span class="info-value" id="parkingDuration"></span>
+                                            </div>
+                                            <div class="info-item" id="newBalanceRow">
+                                                <span class="info-label">
+                                                    <i class="fas fa-wallet"></i> Số dư sau thanh toán:
+                                                </span>
+                                                <span class="info-value highlight" id="newBalance"></span> VND
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="total-fee-box">
+                                            <div class="fee-icon">
+                                                <i class="fas fa-money-bill-wave"></i>
+                                            </div>
+                                            <div class="fee-content">
+                                                <p class="fee-label">Tổng tiền</p>
+                                                <h3 class="fee-amount">
+                                                    <span id="totalFee"></span> VND
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Exit Comparison -->
+                        <div class="modern-card card-info mt-4" id="exitComparison" style="display: none;">
+                            <div class="card-header-modern">
+                                <div class="icon-wrapper icon-info">
+                                    <i class="fas fa-images"></i>
+                                </div>
+                                <h5 class="mb-0">So sánh hình ảnh</h5>
+                            </div>
+                            <div class="card-body-modern">
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="comparison-section">
+                                            <h6 class="section-title">
+                                                <i class="fas fa-sign-in-alt"></i>
+                                                Khi vào bãi
+                                            </h6>
+                                            <div class="row g-3">
+                                                <div class="col-6">
+                                                    <div class="image-box">
+                                                        <p class="image-label">Gương mặt</p>
+                                                        <img class="img-comparison" id="exitOriginalFace" src="">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="image-box">
+                                                        <p class="image-label">Biển số</p>
+                                                        <img class="img-comparison" id="exitOriginalPlate" src="">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="comparison-section">
+                                            <h6 class="section-title">
+                                                <i class="fas fa-sign-out-alt"></i>
+                                                Khi ra bãi
+                                            </h6>
+                                            <div class="row g-3">
+                                                <div class="col-6">
+                                                    <div class="image-box">
+                                                        <p class="image-label">Gương mặt</p>
+                                                        <img class="img-comparison" id="exitCurrentFace" src="">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="image-box">
+                                                        <p class="image-label">Biển số</p>
+                                                        <img class="img-comparison" id="exitCurrentPlate" src="">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let licensePlateImage = null;
+        let faceImage = null;
+        let cardFaceImage = null;
+        let licensePlateStream = null;
+        let faceStream = null;
+        let qrStream = null;
+        let cardQrStream = null;
+        let cardFaceStream = null;
+        let qrScanning = false;
+        let cardQrScanning = false;
+        let isCapturing = false;
+        let qrData = null;
+        let cardId = null;
+        let detectedLicensePlate = null;
+        let plateColor = null;
+        let plateType = null;
+        let confidence = 0;
+        let paymentMethod = null;
+        const stripe = Stripe('{{ stripe_publishable_key }}');
+        let elements;
+        let videoDevices = [];
+        let stripeCardElement = null;
+        let stripeClientSecret = null;
+        let stripePaymentIntentId = null;
+        let stripeVehicleId = null;
+
+        // ==================== HÀM HIGHLIGHT NÚT PHƯƠNG THỨC ====================
+        function highlightSelectedPaymentMethod(method) {
+            const cardBtn = document.getElementById('selectCardBtn');
+            const stripeBtn = document.getElementById('selectStripeBtn');
+            const momoBtn = document.getElementById('selectMomoBtn');
+            const vnpayBtn = document.getElementById('selectVNPayBtn');
+
+            cardBtn.className = 'btn btn-outline-primary mr-2';
+            stripeBtn.className = 'btn btn-outline-success mr-2 mb-2';
+            momoBtn.className = 'btn btn-outline-info';
+            vnpayBtn.className = 'btn btn-outline-danger';
+
+            if (method === 'card') {
+                cardBtn.className = 'btn btn-primary mr-2 active';
+            } else if (method === 'stripe') {
+                stripeBtn.className = 'btn btn-success mr-2 mb-2 active';
+            } else if (method === 'momo') {
+                momoBtn.className = 'btn btn-info active';
+            } else if (method === 'vnpay') {
+                vnpayBtn.className = 'btn btn-danger active';
+            }
+        }
+
+        // ==================== HÀM RESET CÁC SECTION THANH TOÁN ====================
+        function resetPaymentSections() {
+            document.getElementById('cardQrSection').style.display = 'none';
+            document.getElementById('momoPaymentSection').style.display = 'none';
+            document.getElementById('stripePaymentSection').style.display = 'none';
+            document.getElementById('vnpayPaymentSection').style.display = 'none';
+            document.getElementById('topupSection').style.display = 'none';
+        }
+
+        function initStripePaymentElements() {
+            const elements = stripe.elements();
+            stripeCardElement = elements.create('card', {
+                style: {
+                    base: {
+                        fontSize: '16px',
+                        color: '#32325d',
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                        '::placeholder': {
+                            color: '#aab7c4'
+                        }
+                    },
+                    invalid: {
+                        color: '#fa755a',
+                        iconColor: '#fa755a'
+                    }
+                }
+            });
+            stripeCardElement.mount('#stripeCardElement');
+
+            stripeCardElement.on('change', function(event) {
+                const displayError = document.getElementById('stripeCardErrors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+
+            return stripeCardElement;
+        }
+
+        // ==================== EVENT LISTENERS CHO CÁC NÚT PHƯƠNG THỨC ====================
+        document.getElementById('selectStripeBtn').addEventListener('click', function() {
+            paymentMethod = 'stripe';
+            resetPaymentSections();
+            highlightSelectedPaymentMethod('stripe');
+            document.getElementById('processBtn').disabled = false;
+            showMessage('Đã chọn thanh toán qua Stripe. Vui lòng nhấn "Xác nhận" để tiếp tục.', 'info');
+        });
+
+        document.getElementById('selectCardBtn').addEventListener('click', function() {
+            paymentMethod = 'card';
+            resetPaymentSections();
+            document.getElementById('cardQrSection').style.display = 'block';
+            document.getElementById('captureCardFaceBtn').style.display = 'inline-block';
+            highlightSelectedPaymentMethod('card');
+            document.getElementById('processBtn').disabled = false;
+            showMessage('Đã chọn thanh toán bằng thẻ. Vui lòng quét mã QR thẻ và chụp ảnh gương mặt.', 'info');
+        });
+
+        document.getElementById('selectMomoBtn').addEventListener('click', async function() {
+            paymentMethod = 'momo';
+            resetPaymentSections();
+            highlightSelectedPaymentMethod('momo');
+            document.getElementById('processBtn').disabled = false;
+            showMessage('Đã chọn thanh toán qua MoMo. Vui lòng nhấn "Xác nhận" để tạo link thanh toán.', 'info');
+        });
+
+        document.getElementById('selectVNPayBtn').addEventListener('click', function() {
+            paymentMethod = 'vnpay';
+            resetPaymentSections();
+            highlightSelectedPaymentMethod('vnpay');
+            document.getElementById('processBtn').disabled = false;
+            showMessage('Đã chọn thanh toán qua VNPay. Vui lòng nhấn "Xác nhận" để tiếp tục.', 'info');
+        });
+
+        document.getElementById('stripePaymentBtn').addEventListener('click', async function() {
+            if (!stripeClientSecret || !stripeCardElement) {
+                showMessage('Thông tin thanh toán không hợp lệ', 'danger');
+                return;
+            }
+
+            const btn = document.getElementById('stripePaymentBtn');
+            btn.disabled = true;
+            document.getElementById('stripePaymentProcessing').style.display = 'block';
+
+            try {
+                const { error, paymentIntent } = await stripe.confirmCardPayment(stripeClientSecret, {
+                    payment_method: {
+                        card: stripeCardElement,
+                        billing_details: {
+                            name: document.getElementById('stripeLicensePlate').textContent
+                        }
+                    }
+                });
+
+                if (error) {
+                    showMessage('Thanh toán thất bại: ' + error.message, 'danger');
+                    btn.disabled = false;
+                    document.getElementById('stripePaymentProcessing').style.display = 'none';
+                } else if (paymentIntent.status === 'succeeded') {
+                    const formData = new FormData();
+                    formData.append('action', 'confirm_stripe_payment');
+                    formData.append('payment_intent_id', paymentIntent.id);
+                    formData.append('vehicle_id', stripeVehicleId);
+
+                    const response = await fetch('/parking/exit', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        document.getElementById('stripePaymentSection').style.display = 'none';
+
+                        document.getElementById('exitMessage').innerHTML = `
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i> ${result.message}
+                            </div>
+                        `;
+
+                        document.getElementById('entryTime').textContent = result.entry_time;
+                        document.getElementById('exitTime').textContent = result.exit_time;
+                        document.getElementById('parkingDuration').textContent = result.duration;
+                        document.getElementById('totalFee').textContent = result.parking_fee.toLocaleString();
+
+                        document.getElementById('newBalanceRow').style.display = 'none';
+
+                        document.getElementById('paymentInfo').style.display = 'block';
+                        document.getElementById('exitResult').style.display = 'block';
+
+                        showMessage('Thanh toán Stripe thành công! Xe đã ra bãi.', 'success');
+
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 5000);
+                    } else {
+                        showMessage(result.message, 'danger');
+                    }
+                }
+            } catch (error) {
+                console.error('Stripe payment error:', error);
+                showMessage('Lỗi khi xử lý thanh toán: ' + error.message, 'danger');
+            } finally {
+                btn.disabled = false;
+                document.getElementById('stripePaymentProcessing').style.display = 'none';
+            }
+        });
+
+        async function populateCameraDropdowns() {
+            try {
+                await navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(stream => stream.getTracks().forEach(track => track.stop()));
+                videoDevices = (await navigator.mediaDevices.enumerateDevices())
+                    .filter(device => device.kind === 'videoinput');
+                console.log('Danh sách camera:', videoDevices);
+
+                if (videoDevices.length === 0) {
+                    showMessage('Không tìm thấy camera nào', 'danger');
+                    return;
+                }
+
+                const licensePlateSelect = document.getElementById('licensePlateCameraSelect');
+                const faceCameraSelect = document.getElementById('faceCameraSelect');
+                const qrCameraSelect = document.getElementById('qrCameraSelect');
+                const cardQrCameraSelect = document.getElementById('cardQrCameraSelect');
+                const cardFaceCameraSelect = document.getElementById('cardFaceCameraSelect');
+
+                licensePlateSelect.innerHTML = '<option value="">Chọn camera cho biển số</option>';
+                faceCameraSelect.innerHTML = '<option value="">Chọn camera cho gương mặt</option>';
+                qrCameraSelect.innerHTML = '<option value="">Chọn camera cho QR xe</option>';
+                cardQrCameraSelect.innerHTML = '<option value="">Chọn camera cho QR thẻ</option>';
+                cardFaceCameraSelect.innerHTML = '<option value="">Chọn camera cho gương mặt thẻ</option>';
+
+                videoDevices.forEach((device, index) => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || `Camera ${index + 1}`;
+                    licensePlateSelect.appendChild(option.cloneNode(true));
+                    faceCameraSelect.appendChild(option.cloneNode(true));
+                    qrCameraSelect.appendChild(option.cloneNode(true));
+                    cardQrCameraSelect.appendChild(option.cloneNode(true));
+                    cardFaceCameraSelect.appendChild(option.cloneNode(true));
+                });
+
+                if (videoDevices.length >= 1) {
+                    licensePlateSelect.value = videoDevices[0].deviceId;
+                    await startCamera('licensePlateVideo', videoDevices[0].deviceId, 'environment', { ideal: 1280 }, { ideal: 720 });
+                }
+                if (videoDevices.length >= 2) {
+                    faceCameraSelect.value = videoDevices[1].deviceId;
+                    await startCamera('faceVideo', videoDevices[1].deviceId, 'user', { ideal: 640 }, { ideal: 480 });
+                } else {
+                    faceCameraSelect.value = videoDevices[0].deviceId;
+                    faceStream = licensePlateStream;
+                    document.getElementById('faceVideo').srcObject = faceStream;
+                    showMessage('Chỉ tìm thấy 1 camera, sử dụng chung cho biển số và gương mặt', 'warning');
+                }
+                if (videoDevices.length >= 3) {
+                    qrCameraSelect.value = videoDevices[2].deviceId;
+                    await startCamera('qrVideo', videoDevices[2].deviceId, 'environment', { ideal: 640 }, { ideal: 480 });
+                } else {
+                    qrCameraSelect.value = videoDevices[0].deviceId;
+                    qrStream = licensePlateStream;
+                    document.getElementById('qrVideo').srcObject = qrStream;
+                }
+                if (videoDevices.length >= 4) {
+                    cardQrCameraSelect.value = videoDevices[3].deviceId;
+                    await startCamera('cardQrVideo', videoDevices[3].deviceId, 'environment', { ideal: 640 }, { ideal: 480 });
+                } else {
+                    cardQrCameraSelect.value = videoDevices[0].deviceId;
+                    cardQrStream = licensePlateStream;
+                    document.getElementById('cardQrVideo').srcObject = cardQrStream;
+                }
+                if (videoDevices.length >= 5) {
+                    cardFaceCameraSelect.value = videoDevices[4].deviceId;
+                    await startCamera('cardFaceVideo', videoDevices[4].deviceId, 'user', { ideal: 640 }, { ideal: 480 });
+                } else {
+                    cardFaceCameraSelect.value = videoDevices[1] ? videoDevices[1].deviceId : videoDevices[0].deviceId;
+                    cardFaceStream = faceStream || licensePlateStream;
+                    document.getElementById('cardFaceVideo').srcObject = cardFaceStream;
+                }
+            } catch (error) {
+                console.error('Lỗi khi liệt kê camera:', error);
+                showMessage('Lỗi khi liệt kê camera: ' + error.message, 'danger');
+            }
+        }
+
+        async function startCamera(videoElementId, deviceId, facingMode, width, height) {
+            const videoElement = document.getElementById(videoElementId);
+            const streamKey = videoElementId === 'licensePlateVideo' ? 'licensePlateStream' :
+                             videoElementId === 'faceVideo' ? 'faceStream' :
+                             videoElementId === 'qrVideo' ? 'qrStream' :
+                             videoElementId === 'cardQrVideo' ? 'cardQrStream' : 'cardFaceStream';
+
+            if (window[streamKey] && window[streamKey].active) {
+                window[streamKey].getTracks().forEach(track => track.stop());
+            }
+
+            try {
+                window[streamKey] = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        deviceId: deviceId ? { exact: deviceId } : undefined,
+                        facingMode,
+                        width,
+                        height
+                    }
+                });
+                videoElement.srcObject = window[streamKey];
+            } catch (error) {
+                console.error(`Lỗi khi khởi tạo camera cho ${videoElementId}:`, error);
+                showMessage(`Không thể khởi động camera ${videoElementId}: ${error.message}`, 'danger');
+            }
+        }
+
+        async function initCameras() {
+            await populateCameraDropdowns();
+
+            document.getElementById('licensePlateCameraSelect').addEventListener('change', async function() {
+                if (this.value) {
+                    await startCamera('licensePlateVideo', this.value, 'environment', { ideal: 1280 }, { ideal: 720 });
+                } else {
+                    if (licensePlateStream) {
+                        licensePlateStream.getTracks().forEach(track => track.stop());
+                        document.getElementById('licensePlateVideo').srcObject = null;
+                    }
+                }
+            });
+
+            document.getElementById('faceCameraSelect').addEventListener('change', async function() {
+                if (this.value) {
+                    await startCamera('faceVideo', this.value, 'user', { ideal: 640 }, { ideal: 480 });
+                } else {
+                    if (faceStream && faceStream !== licensePlateStream) {
+                        faceStream.getTracks().forEach(track => track.stop());
+                        document.getElementById('faceVideo').srcObject = null;
+                    }
+                }
+            });
+
+            document.getElementById('qrCameraSelect').addEventListener('change', async function() {
+                if (this.value) {
+                    await startCamera('qrVideo', this.value, 'environment', { ideal: 640 }, { ideal: 480 });
+                } else {
+                    if (qrStream && qrStream !== licensePlateStream) {
+                        qrStream.getTracks().forEach(track => track.stop());
+                        document.getElementById('qrVideo').srcObject = null;
+                    }
+                }
+            });
+
+            document.getElementById('cardQrCameraSelect').addEventListener('change', async function() {
+                if (this.value) {
+                    await startCamera('cardQrVideo', this.value, 'environment', { ideal: 640 }, { ideal: 480 });
+                } else {
+                    if (cardQrStream && cardQrStream !== licensePlateStream) {
+                        cardQrStream.getTracks().forEach(track => track.stop());
+                        document.getElementById('cardQrVideo').srcObject = null;
+                    }
+                }
+            });
+
+            document.getElementById('cardFaceCameraSelect').addEventListener('change', async function() {
+                if (this.value) {
+                    await startCamera('cardFaceVideo', this.value, 'user', { ideal: 640 }, { ideal: 480 });
+                } else {
+                    if (cardFaceStream && cardFaceStream !== faceStream && cardFaceStream !== licensePlateStream) {
+                        cardFaceStream.getTracks().forEach(track => track.stop());
+                        document.getElementById('cardFaceVideo').srcObject = null;
+                    }
+                }
+            });
+        }
+
+        function showDetectedPlates(plates, plateImageData, faceImageData) {
+            const existingSelection = document.getElementById('plateSelectionArea');
+            existingSelection.innerHTML = '';
+
+            if (plates.length === 0) {
+                showMessage('Không phát hiện biển số nào trong ảnh', 'warning');
+                return;
+            }
+
+            const plateSelection = document.createElement('div');
+            plateSelection.className = 'card mt-3';
+            plateSelection.innerHTML = `
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> Chọn biển số chính xác</h5>
+                    <small class="text-muted">Phát hiện ${plates.length} biển số, vui lòng chọn biển số chính xác</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        ${plates.map((plate, index) => `
+                            <div class="col-md-4 mb-3">
+                                <div class="card plate-card ${index === 0 ? 'border-primary' : ''}" data-index="${index}">
+                                    <div class="card-body text-center">
+                                        <h4 class="plate-text">${plate.license_plate}</h4>
+                                        <div class="mb-2">
+                                            <span class="badge bg-info">${plate.plate_color}</span>
+                                            <span class="badge bg-secondary">${plate.plate_type}</span>
+                                            <span class="badge bg-warning">${Math.round(plate.confidence * 100)}%</span>
+                                        </div>
+                                        ${plate.cropped_image_path ?
+                                            `<img src="/${plate.cropped_image_path}" class="img-thumbnail mb-2" style="max-height: 80px;">` : ''}
+                                        <button class="btn btn-sm btn-outline-primary select-plate-btn">Chọn</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="btn btn-secondary mt-3" id="cancelPlateSelection">Hủy</button>
+                </div>
+            `;
+
+            document.getElementById('plateSelectionArea').appendChild(plateSelection);
+
+            plateSelection.querySelectorAll('.select-plate-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const card = this.closest('.plate-card');
+                    const index = parseInt(card.getAttribute('data-index'));
+                    const selectedPlate = plates[index];
+
+                    selectPlate(selectedPlate, plateImageData, faceImageData);
+                    plateSelection.remove();
+                });
+            });
+
+            document.getElementById('cancelPlateSelection').addEventListener('click', function() {
+                plateSelection.remove();
+                showMessage('Đã hủy chọn biển số', 'info');
+            });
+        }
+
+        function captureFromVideo(videoElement, canvasElement) {
+            const canvas = document.getElementById(canvasElement);
+            const video = document.getElementById(videoElement);
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            return canvas.toDataURL('image/jpeg');
+        }
+
+        async function captureCardFace() {
+            if (isCapturing) return;
+
+            isCapturing = true;
+            try {
+                cardFaceImage = captureFromVideo('cardFaceVideo', 'cardFaceCanvas');
+                document.getElementById('currentCardFaceImg').src = cardFaceImage;
+                document.getElementById('cardFacePreview').innerHTML =
+                    `<img src="${cardFaceImage}" class="img-thumbnail" width="200">`;
+                document.getElementById('cardFaceComparison').style.display = 'block';
+
+                showMessage('Đã chụp gương mặt thẻ thành công!', 'success');
+                return cardFaceImage;
+            } catch (error) {
+                console.error('Lỗi khi chụp gương mặt thẻ:', error);
+                showMessage('Lỗi khi chụp gương mặt thẻ: ' + error.message, 'danger');
+                return null;
+            } finally {
+                isCapturing = false;
+            }
+        }
+
+        async function captureBothImages() {
+            if (isCapturing) return;
+
+            isCapturing = true;
+            document.getElementById('captureProcessing').style.display = 'block';
+            document.getElementById('captureBtn').disabled = true;
+
+            try {
+                const plateImageData = captureFromVideo('licensePlateVideo', 'licensePlateCanvas');
+                const faceImageData = captureFromVideo('faceVideo', 'faceCanvas');
+
+                document.getElementById('currentFaceImg').src = faceImageData;
+                document.getElementById('currentPlateImg').src = plateImageData;
+                document.getElementById('platePreview').innerHTML =
+                    `<img src="${plateImageData}" class="img-thumbnail" width="200">`;
+                document.getElementById('facePreview').innerHTML =
+                    `<img src="${faceImageData}" class="img-thumbnail" width="200">`;
+
+                const blob = await fetch(plateImageData).then(res => res.blob());
+                const formData = new FormData();
+                formData.append('image', blob, 'license_plate.jpg');
+
+                const response = await fetch('/recognize_plate', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.plates.length === 1) {
+                        selectPlate(result.plates[0], plateImageData, faceImageData);
+                    } else {
+                        showDetectedPlates(result.plates, plateImageData, faceImageData);
+                    }
+                } else {
+                    showMessage(result.error || 'Không thể nhận diện biển số', 'danger');
+                }
+            } catch (error) {
+                console.error('Lỗi khi chụp và nhận diện:', error);
+                showMessage('Lỗi khi chụp và nhận diện: ' + error.message, 'danger');
+            } finally {
+                isCapturing = false;
+                document.getElementById('captureProcessing').style.display = 'none';
+                document.getElementById('captureBtn').disabled = false;
+            }
+        }
+
+        // ==================== HÀM selectPlate ====================
+        function selectPlate(selectedPlate, plateImageData, faceImageData) {
+            detectedLicensePlate = selectedPlate.license_plate;
+            plateColor = selectedPlate.plate_color;
+            plateType = selectedPlate.plate_type;
+            confidence = selectedPlate.confidence || 0;
+
+            document.getElementById('currentLicensePlate').textContent = `Biển số: ${detectedLicensePlate}`;
+            document.getElementById('currentLicensePlate').className = 'badge bg-success ms-2';
+
+            document.getElementById('plateColorBadge').style.display = 'inline-block';
+            document.getElementById('plateColorBadge').textContent = `Màu: ${plateColor}`;
+
+            document.getElementById('plateTypeBadge').style.display = 'inline-block';
+            document.getElementById('plateTypeBadge').textContent = `Loại: ${plateType}`;
+
+            document.getElementById('confidenceBadge').style.display = 'inline-block';
+            document.getElementById('confidenceBadge').textContent = `Độ chính xác: ${Math.round(confidence * 100)}%`;
+
+            licensePlateImage = plateImageData;
+            faceImage = faceImageData;
+
+            // ✅ PARSE QR để lấy license_plate
+            const parsed = parseQRData(qrData);
+            const qrLicensePlate = parsed.licensePlate || qrData;
+
+            // ✅ SO SÁNH CHỈ PHẦN LICENSE_PLATE
+            if (qrData && qrLicensePlate === detectedLicensePlate) {
+                document.getElementById('paymentMethodSection').style.display = 'block';
+
+                let message = `Chụp ảnh thành công! Biển số khớp với QR: ${detectedLicensePlate}.`;
+                if (parsed.vehicleId) {
+                    message += ` (ID: ${parsed.vehicleId})`;
+                }
+                message += ` Vui lòng chọn phương thức thanh toán.`;
+
+                showMessage(message, 'success');
+            } else if (qrData && qrLicensePlate !== detectedLicensePlate) {
+                showError(
+                    'BIỂN SỐ KHÔNG KHỚP!',
+                    `QR: ${qrLicensePlate}<br>Nhận diện: ${detectedLicensePlate}`,
+                    qrLicensePlate,
+                    detectedLicensePlate
+                );
+            } else {
+                showMessage('Vui lòng quét mã QR xe trước khi xử lý ra bãi!', 'warning');
+            }
+        }
+        function parseQRData(qrData) {
+            /**
+             * Parse QR code để lấy license_plate và vehicle_id
+             * Format: "51F31118|246" → {licensePlate: "51F31118", vehicleId: "246"}
+             * Hoặc: "51F31118" → {licensePlate: "51F31118", vehicleId: null}
+             */
+            if (!qrData) {
+                return { licensePlate: null, vehicleId: null };
+            }
+
+            if (qrData.includes('|')) {
+                const parts = qrData.split('|');
+                return {
+                    licensePlate: parts[0],
+                    vehicleId: parts[1]
+                };
+            } else {
+                // Legacy format - chỉ có biển số
+                return {
+                    licensePlate: qrData,
+                    vehicleId: null
+                };
+            }
+        }
+        function startQRScanner() {
+            const qrVideo = document.getElementById('qrVideo');
+            const selectedDeviceId = document.getElementById('qrCameraSelect').value;
+            navigator.mediaDevices.getUserMedia({
+                video: {
+                    deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+                    facingMode: 'environment',
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                }
+            })
+            .then(function(stream) {
+                qrStream = stream;
+                qrVideo.srcObject = stream;
+                qrVideo.play();
+                qrScanning = true;
+
+                document.getElementById('startScannerBtn').style.display = 'none';
+                document.getElementById('stopScannerBtn').style.display = 'inline-block';
+
+                scanQRCode(qrVideo, 'vehicle');
+            })
+            .catch(function(err) {
+                console.error("Lỗi khi truy cập camera QR xe:", err);
+                showMessage('Lỗi khi truy cập camera QR xe: ' + err.message, 'danger');
+            });
+        }
+
+        function startCardQRScanner() {
+            const cardQrVideo = document.getElementById('cardQrVideo');
+            const selectedDeviceId = document.getElementById('cardQrCameraSelect').value;
+            navigator.mediaDevices.getUserMedia({
+                video: {
+                    deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+                    facingMode: 'environment',
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                }
+            })
+            .then(function(stream) {
+                cardQrStream = stream;
+                cardQrVideo.srcObject = stream;
+                cardQrVideo.play();
+                cardQrScanning = true;
+
+                document.getElementById('startCardScannerBtn').style.display = 'none';
+                document.getElementById('stopCardScannerBtn').style.display = 'inline-block';
+
+                scanQRCode(cardQrVideo, 'card');
+            })
+            .catch(function(err) {
+                console.error("Lỗi khi truy cập camera QR thẻ:", err);
+                showMessage('Lỗi khi truy cập camera QR thẻ: ' + err.message, 'danger');
+            });
+        }
+
+        function stopQRScanner() {
+            qrScanning = false;
+            if (qrStream) {
+                qrStream.getTracks().forEach(track => track.stop());
+            }
+            document.getElementById('startScannerBtn').style.display = 'inline-block';
+            document.getElementById('stopScannerBtn').style.display = 'none';
+        }
+
+        function stopCardQRScanner() {
+            cardQrScanning = false;
+            if (cardQrStream) {
+                cardQrStream.getTracks().forEach(track => track.stop());
+            }
+            document.getElementById('startCardScannerBtn').style.display = 'inline-block';
+            document.getElementById('stopCardScannerBtn').style.display = 'none';
+        }
+
+        async function scanQRCode(videoElement, type) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+
+            async function tick() {
+                if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA && (type === 'vehicle' ? qrScanning : cardQrScanning)) {
+                    canvas.width = videoElement.videoWidth;
+                    canvas.height = videoElement.videoHeight;
+                    context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                        inversionAttempts: "dontInvert",
+                    });
+
+                    if (code) {
+                        if (type === 'vehicle') {
+                            stopQRScanner();
+                            qrData = code.data; // ✅ Lưu TOÀN BỘ QR data (51F31118|246)
+
+                            // ✅ PARSE để lấy license_plate
+                            const parsed = parseQRData(qrData);
+                            const displayPlate = parsed.licensePlate || qrData;
+
+                            document.getElementById('qrContent').innerHTML = `
+                                <div class="alert alert-success mb-0">
+                                    Đã quét thành công: <strong>${displayPlate}</strong>
+                                    ${parsed.vehicleId ? `<br><small class="text-muted">ID: ${parsed.vehicleId}</small>` : ''}
+                                </div>
+                            `;
+
+                            // ✅ GỬI TOÀN BỘ QR DATA để backend xử lý
+                            showComparisonSection(qrData);
+                            showMessage(`Đã quét mã QR xe thành công: ${displayPlate}`, 'success');
+
+                        } else {
+                            stopCardQRScanner();
+                            cardId = code.data;
+                            document.getElementById('cardQrContent').innerHTML = `
+                                <div class="alert alert-success mb-0">
+                                    Đã quét thành công thẻ: <strong>${code.data}</strong>
+                                </div>
+                            `;
+
+                            cardFaceImage = await captureCardFace();
+                            if (!cardFaceImage) {
+                                showMessage('Không thể chụp gương mặt thẻ, vui lòng thử lại!', 'danger');
+                                return;
+                            }
+
+                            fetchCardInfo(code.data);
+                            showMessage(`Đã quét mã QR thẻ và chụp gương mặt thành công: ${code.data}`, 'success');
+                        }
+                    }
+                }
+
+                if (type === 'vehicle' ? qrScanning : cardQrScanning) {
+                    requestAnimationFrame(() => tick());
+                }
+            }
+
+            tick();
+        }
+
+        function fetchCardInfo(cardId) {
+            fetch(`/card/info?card_id=${cardId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('cardName').textContent = data.name;
+                        document.getElementById('cardPhone').textContent = data.phone;
+                        document.getElementById('cardBalance').textContent = data.balance.toLocaleString();
+                        document.getElementById('cardInfo').style.display = 'block';
+                        document.getElementById('topupCardId').textContent = data.card_id;
+                        document.getElementById('topupCardBalance').textContent = data.balance.toLocaleString();
+
+                        if (qrData && detectedLicensePlate && cardFaceImage && qrData === detectedLicensePlate) {
+                            document.getElementById('processBtn').disabled = false;
+                        }
+                    } else {
+                        showMessage(data.message, 'danger');
+                    }
+                });
+        }
+
+        // ==================== HÀM showComparisonSection ====================
+        function showComparisonSection(qrFullData) {
+            // ✅ PARSE QR để lấy license_plate
+            const parsed = parseQRData(qrFullData);
+            const licensePlate = parsed.licensePlate || qrFullData;
+
+            // ✅ GỬI TOÀN BỘ QR DATA đến backend
+            fetch(`/get_vehicle_info?license_plate=${encodeURIComponent(qrFullData)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.currentVehicleId = data.vehicle_id;
+
+                        // ✅ Hiển thị thông tin xe
+                        document.getElementById('comparisonSection').style.display = 'block';
+                        document.getElementById('originalFaceImg').src = '/' + data.face_image_path;
+                        document.getElementById('originalPlateImg').src = '/' + data.plate_image_path;
+
+                        // ✅ Kiểm tra trạng thái thanh toán mobile
+                        checkMobilePaymentStatus(data.vehicle_id, licensePlate, data);
+                    } else {
+                        showMessage(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching vehicle info:', error);
+                    showMessage('Lỗi khi tải thông tin xe: ' + error.message, 'danger');
+                });
+        }
+
+        // ==================== HÀM checkMobilePaymentStatus ====================
+        async function checkMobilePaymentStatus(vehicleId, licensePlate, vehicleData) {
+            try {
+                if (!vehicleId || vehicleId === 'undefined') {
+                    console.error('Invalid vehicle_id:', vehicleId);
+                    displayVehicleInfoOnly(licensePlate, vehicleData);
+                    return;
+                }
+
+                const response = await fetch(`/api/mobile/check_payment_status/${vehicleId}`);
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        console.log('API endpoint not found, using fallback mode');
+                        displayVehicleInfoOnly(licensePlate, vehicleData);
+                        return;
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const vehicle = result.vehicle;
+                    const mobilePaymentStatus = vehicle.payment_status;
+                    const mobilePaymentExpiry = vehicle.payment_expiry;
+
+                    // ✅ THÊM KIỂM TRA KIOSK PAYMENT
+                    const kioskPaymentStatus = vehicle.kiosk_payment_status;
+                    const kioskPaymentExpiry = vehicle.kiosk_payment_expiry;
+
+                    document.getElementById('comparisonSection').style.display = 'block';
+                    document.getElementById('originalFaceImg').src = '/' + vehicleData.face_image_path;
+                    document.getElementById('originalPlateImg').src = '/' + vehicleData.plate_image_path;
+
+                    // ✅ KIỂM TRA MOBILE PAYMENT
+                    if (mobilePaymentStatus === 'paid') {
+                        const expiryTime = new Date(mobilePaymentExpiry);
+                        const currentTime = new Date();
+
+                        if (isNaN(expiryTime.getTime())) {
+                            console.error('❌ Invalid mobile expiry time format:', mobilePaymentExpiry);
+                            displayVehicleInfoOnly(licensePlate, vehicleData);
+                            return;
+                        }
+
+                        if (currentTime <= expiryTime) {
+                            const timeRemaining = Math.ceil((expiryTime - currentTime) / 1000 / 60);
+
+                            showMessage(
+                                `✅ Xe ${licensePlate} đã thanh toán qua MOBILE!\n` +
+                                `⏰ Còn ${timeRemaining} phút để ra bãi.\n` +
+                                `Nhấn "Xử lý ra bãi" để hoàn tất.`,
+                                'success'
+                            );
+
+                            const currentPlateElement = document.getElementById('currentLicensePlate');
+                            const existingBadge = currentPlateElement.querySelector('.mobile-paid-badge');
+                            if (!existingBadge) {
+                                const badge = document.createElement('span');
+                                badge.className = 'badge bg-success ms-2 mobile-paid-badge';
+                                badge.innerHTML = `<i class="fas fa-mobile-alt"></i> Đã thanh toán Mobile (còn ${timeRemaining}')`;
+                                currentPlateElement.appendChild(badge);
+                            }
+
+                            document.getElementById('processBtn').disabled = false;
+                            document.getElementById('processBtn').setAttribute('data-mode', 'mobile_paid');
+                            return;
+                        }
+                    }
+
+                    // ✅ KIỂM TRA KIOSK PAYMENT
+                    if (kioskPaymentStatus === 'paid') {
+                        const expiryTime = new Date(kioskPaymentExpiry);
+                        const currentTime = new Date();
+
+                        if (isNaN(expiryTime.getTime())) {
+                            console.error('❌ Invalid kiosk expiry time format:', kioskPaymentExpiry);
+                            displayVehicleInfoOnly(licensePlate, vehicleData);
+                            return;
+                        }
+
+                        if (currentTime <= expiryTime) {
+                            const timeRemaining = Math.ceil((expiryTime - currentTime) / 1000 / 60);
+
+                            showMessage(
+                                `✅ Xe ${licensePlate} đã thanh toán qua KIOSK!\n` +
+                                `⏰ Còn ${timeRemaining} phút để ra bãi.\n` +
+                                `Nhấn "Xử lý ra bãi" để hoàn tất.`,
+                                'success'
+                            );
+
+                            const currentPlateElement = document.getElementById('currentLicensePlate');
+                            const existingBadge = currentPlateElement.querySelector('.kiosk-paid-badge');
+                            if (!existingBadge) {
+                                const badge = document.createElement('span');
+                                badge.className = 'badge bg-success ms-2 kiosk-paid-badge';
+                                badge.innerHTML = `<i class="fas fa-desktop"></i> Đã thanh toán Kiosk (còn ${timeRemaining}')`;
+                                currentPlateElement.appendChild(badge);
+                            }
+
+                            document.getElementById('processBtn').disabled = false;
+                            document.getElementById('processBtn').setAttribute('data-mode', 'kiosk_paid');
+                            return;
+                        }
+                    }
+
+                    // Không có payment hợp lệ
+                    showMessage(`Tìm thấy thông tin xe ${licensePlate}. Vui lòng chọn phương thức thanh toán.`, 'info');
+                    document.getElementById('paymentMethodSection').style.display = 'block';
+
+                } else {
+                    showMessage(result.message, 'danger');
+                }
+            } catch (error) {
+                console.error('Error checking payment status:', error);
+                displayVehicleInfoOnly(licensePlate, vehicleData);
+            }
+        }
+
+        // ==================== HÀM displayVehicleInfoOnly ====================
+        function displayVehicleInfoOnly(licensePlate, vehicleData) {
+            document.getElementById('comparisonSection').style.display = 'block';
+            document.getElementById('originalFaceImg').src = '/' + vehicleData.face_image_path;
+            document.getElementById('originalPlateImg').src = '/' + vehicleData.plate_image_path;
+
+            showMessage(`Tìm thấy thông tin xe ${licensePlate}. Vui lòng chọn phương thức thanh toán.`, 'info');
+            document.getElementById('paymentMethodSection').style.display = 'block';
+        }
+
+        async function processAutoExit(vehicleId, licensePlate) {
+            try {
+                if (!vehicleId || vehicleId === 'undefined') {
+                    showMessage('Lỗi: Không tìm thấy thông tin xe', 'danger');
+                    return;
+                }
+
+                showMessage('Đang xử lý ra bãi cho xe đã thanh toán...', 'info');
+
+                const plateImageData = captureFromVideo('licensePlateVideo', 'licensePlateCanvas');
+                const faceImageData = captureFromVideo('faceVideo', 'faceCanvas');
+
+                const plateBlob = await fetch(plateImageData).then(res => res.blob());
+                const faceBlob = await fetch(faceImageData).then(res => res.blob());
+
+                let formData = new FormData();
+                formData.append('action', 'process_mobile_paid');
+                formData.append('vehicle_id', vehicleId);
+                formData.append('license_plate', licensePlate);
+                formData.append('plate_image', plateBlob, 'plate.jpg');
+                formData.append('face_image', faceBlob, 'face.jpg');
+                formData.append('qr_data', qrData);
+
+                const response = await fetch('/parking/exit', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('exitMessage').innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> ${result.message}
+                            <br><small class="mt-2">
+                                <i class="fas fa-mobile-alt"></i> Đã thanh toán trước đó qua ứng dụng di động
+                            </small>
+                        </div>
+                    `;
+
+                    document.getElementById('entryTime').textContent = result.entry_time;
+                    document.getElementById('exitTime').textContent = result.exit_time;
+                    document.getElementById('parkingDuration').textContent = result.duration;
+                    document.getElementById('totalFee').textContent = result.parking_fee.toLocaleString();
+
+                    if (result.new_balance) {
+                        document.getElementById('newBalanceRow').style.display = 'block';
+                        document.getElementById('newBalance').textContent = result.new_balance.toLocaleString();
+                    } else {
+                        document.getElementById('newBalanceRow').style.display = 'none';
+                    }
+
+                    document.getElementById('paymentInfo').style.display = 'block';
+
+                    if (result.original_face && result.exit_face) {
+                        document.getElementById('exitOriginalFace').src = '/' + result.original_face;
+                        document.getElementById('exitOriginalPlate').src = '/' + result.original_plate;
+                        document.getElementById('exitCurrentFace').src = '/' + result.exit_face;
+                        document.getElementById('exitCurrentPlate').src = '/' + result.exit_plate;
+                        document.getElementById('exitComparison').style.display = 'block';
+                    }
+
+                    document.getElementById('exitResult').style.display = 'block';
+                    showMessage('✅ Ra bãi thành công! Xe đã được thanh toán trước đó qua mobile.', 'success');
+
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 5000);
+                } else {
+                    showMessage(result.message, 'danger');
+                }
+            } catch (error) {
+                console.error('Error processing auto exit:', error);
+                showMessage('Lỗi khi xử lý ra bãi: ' + error.message, 'danger');
+            }
+        }
+
+        function showError(title, content = '', qrPlate = '', detectedPlate = '') {
+            const errorDiv = document.getElementById('errorDetails');
+            document.getElementById('errorContent').innerHTML = `<strong>${title}</strong><br>${content}`;
+
+            if (qrPlate) {
+                document.getElementById('qrPlate').textContent = qrPlate;
+                document.getElementById('detectedPlate').textContent = detectedPlate;
+            }
+
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 8000);
+        }
+
+        function showMessage(message, type) {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.style.display = 'block';
+            messageArea.textContent = message;
+            messageArea.className = `alert alert-${type}`;
+
+            setTimeout(() => {
+                messageArea.style.display = 'none';
+            }, 5000);
+        }
+
+        function initStripeElements() {
+            elements = stripe.elements();
+            const card = elements.create('card', {
+                style: {
+                    base: {
+                        fontSize: '16px',
+                        color: '#32325d',
+                    }
+                }
+            });
+            card.mount('#cardElement');
+            return card;
+        }
+
+        document.getElementById('captureBtn').addEventListener('click', captureBothImages);
+
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' || event.keyCode === 32) {
+                event.preventDefault();
+                captureBothImages();
+            }
+            if (event.code === 'KeyZ' || event.keyCode === 90) {
+                event.preventDefault();
+                const processBtn = document.getElementById('processBtn');
+                if (!processBtn.disabled) {
+                    processBtn.click();
+                }
+            }
+        });
+
+        document.getElementById('startScannerBtn').addEventListener('click', startQRScanner);
+        document.getElementById('stopScannerBtn').addEventListener('click', stopQRScanner);
+
+        document.getElementById('startCardScannerBtn').addEventListener('click', startCardQRScanner);
+        document.getElementById('stopCardScannerBtn').addEventListener('click', stopCardQRScanner);
+
+        document.getElementById('captureCardFaceBtn').addEventListener('click', captureCardFace);
+
+        const cardElement = initStripeElements();
+
+        document.getElementById('topupPaymentMethod').addEventListener('change', async function() {
+            const method = this.value;
+            if (method === 'card') {
+                document.getElementById('cardPaymentForm').style.display = 'block';
+                document.getElementById('momoTopupLink').style.display = 'none';
+            } else if (method === 'momo') {
+                document.getElementById('cardPaymentForm').style.display = 'none';
+                document.getElementById('momoTopupLink').style.display = 'block';
+
+                const amount = parseInt(document.getElementById('topupAmount').value);
+                if (!amount || amount < 1000) {
+                    showMessage('Vui lòng nhập số tiền hợp lệ (tối thiểu 1000 VND)', 'warning');
+                    return;
+                }
+
+                if (!cardId) {
+                    showMessage('Vui lòng quét mã QR thẻ trước khi nạp tiền!', 'warning');
+                    return;
+                }
+
+                try {
+                    const formData = new FormData();
+                    formData.append('action', 'topup');
+                    formData.append('card_id', cardId);
+                    formData.append('amount', amount);
+                    formData.append('payment_method', 'momo');
+
+                    const response = await fetch('/parking/exit', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success && result.pay_url) {
+                        document.getElementById('momoTopupUrl').href = result.pay_url;
+                        showMessage('Link thanh toán MoMo đã được tạo. Vui lòng nhấn để nạp tiền.', 'success');
+                    } else {
+                        showMessage(result.message || 'Không thể tạo link thanh toán MoMo.', 'danger');
+                        document.getElementById('momoTopupLink').style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi tạo link thanh toán MoMo:', error);
+                    showMessage('Lỗi khi tạo link thanh toán MoMo: ' + error.message, 'danger');
+                    document.getElementById('momoTopupLink').style.display = 'none';
+                }
+            }
+        });
+
+        function showPaymentSuccess(result) {
+            document.getElementById('exitMessage').innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> ${result.message || 'Thanh toán thành công!'}
+                </div>
+            `;
+
+            if (result.entry_time) document.getElementById('entryTime').textContent = result.entry_time;
+            if (result.exit_time) document.getElementById('exitTime').textContent = result.exit_time;
+            if (result.duration) document.getElementById('parkingDuration').textContent = result.duration;
+            if (result.parking_fee) document.getElementById('totalFee').textContent = result.parking_fee.toLocaleString();
+
+            document.getElementById('momoPaymentSection').style.display = 'none';
+
+            const vnpaySection = document.getElementById('vnpayPaymentSection');
+            if (vnpaySection) {
+                vnpaySection.style.display = 'none';
+            }
+
+            document.getElementById('paymentInfo').style.display = 'block';
+
+            if (!result.new_balance) {
+                const newBalanceRow = document.getElementById('newBalanceRow');
+                if (newBalanceRow) {
+                    newBalanceRow.style.display = 'none';
+                }
+            }
+
+            if (result.original_face && result.exit_face) {
+                const exitOriginalFace = document.getElementById('exitOriginalFace');
+                const exitOriginalPlate = document.getElementById('exitOriginalPlate');
+                const exitCurrentFace = document.getElementById('exitCurrentFace');
+                const exitCurrentPlate = document.getElementById('exitCurrentPlate');
+                const exitComparison = document.getElementById('exitComparison');
+
+                if (exitOriginalFace) exitOriginalFace.src = '/' + result.original_face;
+                if (exitOriginalPlate) exitOriginalPlate.src = '/' + result.original_plate;
+                if (exitCurrentFace) exitCurrentFace.src = '/' + result.exit_face;
+                if (exitCurrentPlate) exitCurrentPlate.src = '/' + result.exit_plate;
+                if (exitComparison) exitComparison.style.display = 'block';
+            }
+
+            document.getElementById('exitResult').style.display = 'block';
+
+            showMessage('Thanh toán thành công! Xe đã ra bãi.', 'success');
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 5000);
+        }
+
+        document.getElementById('momoTopupUrl').addEventListener('click', function(e) {
+            e.preventDefault();
+            const payUrl = this.href;
+
+            if (!payUrl || payUrl === '#') {
+                showMessage('Link thanh toán MoMo chưa được tạo. Vui lòng chọn lại phương thức thanh toán.', 'warning');
+                return;
+            }
+
+            const win = window.open(payUrl, '_blank');
+            if (win) {
+                const checkPaymentInterval = setInterval(async () => {
+                    try {
+                        const response = await fetch('/parking/topup/result', {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                            clearInterval(checkPaymentInterval);
+                            win.close();
+                            showPaymentSuccessNotification(result.message, result.card_id, result.amount);
+                            document.getElementById('cardBalance').textContent = result.new_balance.toLocaleString();
+                            document.getElementById('topupCardBalance').textContent = result.new_balance.toLocaleString();
+                            document.getElementById('topupSection').style.display = 'none';
+                        } else if (!win.closed) {
+                            // Continue polling
+                        } else {
+                            clearInterval(checkPaymentInterval);
+                            showMessage('Thanh toán bị hủy hoặc thất bại. Vui lòng thử lại!', 'danger');
+                        }
+                    } catch (error) {
+                        console.error('Lỗi khi kiểm tra thanh toán:', error);
+                        clearInterval(checkPaymentInterval);
+                        showMessage('Lỗi khi kiểm tra thanh toán: ' + error.message, 'danger');
+                    }
+                }, 5000);
+            } else {
+                showMessage('Vui lòng cho phép mở popup để thanh toán qua MoMo!', 'warning');
+            }
+        });
+
+        document.getElementById('topupBtn').addEventListener('click', async function() {
+            const amount = parseInt(document.getElementById('topupAmount').value);
+            if (!amount || amount < 1000) {
+                showMessage('Vui lòng nhập số tiền hợp lệ (tối thiểu 1000 VND)', 'warning');
+                return;
+            }
+
+            if (!cardId) {
+                showMessage('Vui lòng quét mã QR thẻ trước khi nạp tiền!', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('topupBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+
+            try {
+                const formData = new FormData();
+                formData.append('action', 'topup');
+                formData.append('card_id', cardId);
+                formData.append('amount', amount);
+                formData.append('payment_method', 'card');
+
+                const response = await fetch('/parking/exit', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const { error, paymentIntent } = await stripe.confirmCardPayment(result.client_secret, {
+                        payment_method: {
+                            card: cardElement
+                        }
+                    });
+
+                    if (error) {
+                        showMessage(error.message, 'danger');
+                    } else if (paymentIntent.status === 'succeeded') {
+                        const confirmFormData = new FormData();
+                        confirmFormData.append('action', 'confirm_topup');
+                        confirmFormData.append('card_id', cardId);
+                        confirmFormData.append('payment_intent_id', paymentIntent.id);
+                        confirmFormData.append('amount', amount);
+
+                        const confirmResponse = await fetch('/parking/exit', {
+                            method: 'POST',
+                            body: confirmFormData
+                        });
+
+                        const confirmResult = await confirmResponse.json();
+                        if (confirmResult.success) {
+                            document.getElementById('cardBalance').textContent = confirmResult.new_balance.toLocaleString();
+                            document.getElementById('topupCardBalance').textContent = confirmResult.new_balance.toLocaleString();
+                            document.getElementById('topupSection').style.display = 'none';
+                            showMessage(confirmResult.message, 'success');
+                        } else {
+                            showMessage(confirmResult.message, 'danger');
+                        }
+                    }
+                } else {
+                    showMessage(result.message, 'danger');
+                }
+            } catch (error) {
+                console.error('Lỗi khi nạp tiền:', error);
+                showMessage('Lỗi khi nạp tiền: ' + error.message, 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-credit-card"></i> Nạp tiền qua thẻ';
+            }
+        });
+
+        document.getElementById('processBtn').addEventListener('click', async function() {
+            const btn = document.getElementById('processBtn');
+            const mode = btn.getAttribute('data-mode');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+
+            if (!qrData) {
+                showError('Vui lòng quét mã QR xe trước!');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Xử lý ra bãi';
+                return;
+            }
+            const parsed = parseQRData(qrData);
+            const qrLicensePlate = parsed.licensePlate || qrData;
+
+
+            if (!detectedLicensePlate || qrLicensePlate !== detectedLicensePlate) {
+                showError(
+                    'BIỂN SỐ KHÔNG KHỚP!',
+                    `QR: ${qrLicensePlate}<br>Nhận diện: ${detectedLicensePlate}`,
+                    qrLicensePlate,
+                    detectedLicensePlate
+                );
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Xử lý ra bãi';
+                return;
+            }
+
+            if (mode === 'mobile_paid' && window.currentVehicleId) {
+                await processAutoExit(window.currentVehicleId, qrLicensePlate); // ✅ Truyền license_plate thôi
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Xử lý ra bãi';
+                return;
+            }
+             if (mode === 'kiosk_paid' && window.currentVehicleId) {
+                await processKioskPaidExit(window.currentVehicleId, qrLicensePlate);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Xử lý ra bãi';
+                return;
+            }
+
+            if (!paymentMethod) {
+                showError('Vui lòng chọn phương thức thanh toán!');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Xử lý ra bãi';
+                return;
+            }
+
+            if (paymentMethod === 'card' && (!cardId || !cardFaceImage)) {
+                showError('Vui lòng quét mã QR thẻ và chụp gương mặt thẻ!');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Xử lý ra bãi';
+                return;
+            }
+
+            try {
+                const plateBlob = await fetch(licensePlateImage).then(res => res.blob());
+                const faceBlob = await fetch(faceImage).then(res => res.blob());
+                let formData = new FormData();
+                formData.append('action', 'process');
+                formData.append('license_plate', detectedLicensePlate);
+                formData.append('plate_image', plateBlob, 'plate.jpg');
+                formData.append('face_image', faceBlob, 'face.jpg');
+                formData.append('qr_data', qrData);
+                formData.append('payment_method', paymentMethod);
+
+                if (paymentMethod === 'card') {
+                    const cardFaceBlob = await fetch(cardFaceImage).then(res => res.blob());
+                    formData.append('card_face_image', cardFaceBlob, 'card_face.jpg');
+                    formData.append('card_id', cardId);
+                }
+
+                const response = await fetch('/parking/exit', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (paymentMethod === 'momo' && result.pay_url) {
+                        document.getElementById('momoPaymentSection').style.display = 'block';
+                        document.getElementById('momoLicensePlate').textContent = result.license_plate;
+                        document.getElementById('momoParkingFee').textContent = result.parking_fee.toLocaleString();
+                        document.getElementById('momoPayUrl').href = result.pay_url;
+                        showMessage('Vui lòng thanh toán qua MoMo để hoàn tất ra bãi.', 'info');
+                    }
+                    else if (paymentMethod === 'stripe' && result.client_secret) {
+                        stripeClientSecret = result.client_secret;
+                        stripePaymentIntentId = result.payment_intent_id;
+                        stripeVehicleId = result.vehicle_id;
+
+                        if (!stripeCardElement) {
+                            initStripePaymentElements();
+                        }
+
+                        document.getElementById('stripePaymentSection').style.display = 'block';
+                        document.getElementById('stripeLicensePlate').textContent = result.license_plate;
+                        document.getElementById('stripeParkingFee').textContent = result.parking_fee.toLocaleString();
+                        document.getElementById('stripePaymentAmount').textContent = result.parking_fee.toLocaleString();
+
+                        showMessage('Vui lòng nhập thông tin thẻ để thanh toán qua Stripe.', 'info');
+                    }
+                    else if (paymentMethod === 'vnpay' && result.pay_url) {
+                        document.getElementById('vnpayPaymentSection').style.display = 'block';
+                        document.getElementById('vnpayLicensePlate').textContent = result.license_plate;
+                        document.getElementById('vnpayParkingFee').textContent = result.parking_fee.toLocaleString();
+                        document.getElementById('vnpayPayUrl').href = result.pay_url;
+                        showMessage('Vui lòng thanh toán qua VNPay để hoàn tất ra bãi.', 'info');
+                    }
+                    else {
+                        document.getElementById('exitMessage').innerHTML = `
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i> ${result.message}
+                            </div>
+                        `;
+                        document.getElementById('entryTime').textContent = result.entry_time;
+                        document.getElementById('exitTime').textContent = result.exit_time;
+                        document.getElementById('parkingDuration').textContent = result.duration;
+                        document.getElementById('totalFee').textContent = result.parking_fee.toLocaleString();
+                        document.getElementById('newBalance').textContent = result.new_balance ? result.new_balance.toLocaleString() : 'N/A';
+                        document.getElementById('newBalanceRow').style.display = 'block';
+                        document.getElementById('paymentInfo').style.display = 'block';
+
+                        if (result.original_face && result.exit_face) {
+                            document.getElementById('exitOriginalFace').src = '/' + result.original_face;
+                            document.getElementById('exitOriginalPlate').src = '/' + result.original_plate;
+                            document.getElementById('exitCurrentFace').src = '/' + result.exit_face;
+                            document.getElementById('exitCurrentPlate').src = '/' + result.exit_plate;
+                            document.getElementById('exitComparison').style.display = 'block';
+                        }
+
+                        document.getElementById('exitResult').style.display = 'block';
+
+                        const exitMessage = document.getElementById('exitMessage').innerHTML;
+                        const paymentInfo = document.getElementById('paymentInfo').style.display;
+                        if (exitMessage.includes('RA BÃI THÀNH CÔNG!') && paymentInfo === 'block' &&
+                            document.getElementById('entryTime').textContent &&
+                            document.getElementById('exitTime').textContent &&
+                            document.getElementById('parkingDuration').textContent &&
+                            document.getElementById('newBalance').textContent &&
+                            document.getElementById('totalFee').textContent) {
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 5000);
+                        }
+                    }
+                } else {
+                    document.getElementById('exitMessage').innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-times-circle"></i> ${result.message}
+                        </div>
+                    `;
+
+                    if (result.message.includes('Thẻ không có thông tin gương mặt')) {
+                        showMessage('Thẻ không được phép sử dụng vì thiếu thông tin gương mặt. Vui lòng cập nhật thẻ!', 'danger');
+                    } else if (result.message.includes('GƯƠNG MẶT KHÔNG KHỚP')) {
+                        showMessage(`Gương mặt không khớp với thẻ! Vui lòng thử lại hoặc sử dụng thẻ của chính bạn.`, 'danger');
+                    } else if (result.requires_topup) {
+                        document.getElementById('topupSection').style.display = 'block';
+                        document.getElementById('requiredFee').textContent = result.parking_fee.toLocaleString();
+                        document.getElementById('topupAmount').value = result.parking_fee - result.current_balance;
+                    }
+
+                    if (result.original_face && result.exit_face) {
+                        document.getElementById('exitOriginalFace').src = '/' + result.original_face;
+                        document.getElementById('exitOriginalPlate').src = '/' + result.original_plate;
+                        document.getElementById('exitCurrentFace').src = '/' + result.exit_face;
+                        document.getElementById('exitCurrentPlate').src = '/' + result.exit_plate;
+                        document.getElementById('exitComparison').style.display = 'block';
+                    }
+
+                    document.getElementById('exitResult').style.display = 'block';
+                }
+
+                showMessage(result.message, result.success ? 'success' : 'danger');
+
+            } catch (error) {
+                console.error('Lỗi khi xử lý:', error);
+                showMessage('Lỗi khi xử lý: ' + error.message, 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Xử lý ra bãi';
+            }
+        });
+        async function processKioskPaidExit(vehicleId, licensePlate) {
+            try {
+                if (!vehicleId || vehicleId === 'undefined') {
+                    showMessage('Lỗi: Không tìm thấy thông tin xe', 'danger');
+                    return;
+                }
+
+                showMessage('Đang xử lý ra bãi cho xe đã thanh toán qua Kiosk...', 'info');
+
+                const plateImageData = captureFromVideo('licensePlateVideo', 'licensePlateCanvas');
+                const faceImageData = captureFromVideo('faceVideo', 'faceCanvas');
+
+                const plateBlob = await fetch(plateImageData).then(res => res.blob());
+                const faceBlob = await fetch(faceImageData).then(res => res.blob());
+
+                let formData = new FormData();
+                formData.append('action', 'process_kiosk_paid');
+                formData.append('vehicle_id', vehicleId);
+                formData.append('license_plate', licensePlate);
+                formData.append('plate_image', plateBlob, 'plate.jpg');
+                formData.append('face_image', faceBlob, 'face.jpg');
+                formData.append('qr_data', qrData);
+
+                const response = await fetch('/parking/exit', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('exitMessage').innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> ${result.message}
+                            <br><small class="mt-2">
+                                <i class="fas fa-desktop"></i> Đã thanh toán trước qua Kiosk
+                            </small>
+                        </div>
+                    `;
+
+                    document.getElementById('entryTime').textContent = result.entry_time;
+                    document.getElementById('exitTime').textContent = result.exit_time;
+                    document.getElementById('parkingDuration').textContent = result.duration;
+                    document.getElementById('totalFee').textContent = result.parking_fee.toLocaleString();
+
+                    if (result.new_balance) {
+                        document.getElementById('newBalanceRow').style.display = 'block';
+                        document.getElementById('newBalance').textContent = result.new_balance.toLocaleString();
+                    } else {
+                        document.getElementById('newBalanceRow').style.display = 'none';
+                    }
+
+                    document.getElementById('paymentInfo').style.display = 'block';
+
+                    if (result.original_face && result.exit_face) {
+                        document.getElementById('exitOriginalFace').src = '/' + result.original_face;
+                        document.getElementById('exitOriginalPlate').src = '/' + result.original_plate;
+                        document.getElementById('exitCurrentFace').src = '/' + result.exit_face;
+                        document.getElementById('exitCurrentPlate').src = '/' + result.exit_plate;
+                        document.getElementById('exitComparison').style.display = 'block';
+                    }
+
+                    document.getElementById('exitResult').style.display = 'block';
+                    showMessage('✅ Ra bãi thành công! Xe đã được thanh toán trước qua Kiosk.', 'success');
+
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 5000);
+                } else {
+                    showMessage(result.message, 'danger');
+                }
+            } catch (error) {
+                console.error('Error processing kiosk exit:', error);
+                showMessage('Lỗi khi xử lý ra bãi: ' + error.message, 'danger');
+            }
+        }
+        document.getElementById('vnpayPayUrl').addEventListener('click', function(e) {
+            e.preventDefault();
+            const payUrl = this.href;
+
+            if (!payUrl || payUrl === '#') {
+                showMessage('Link thanh toán VNPay chưa được tạo. Vui lòng chọn lại phương thức thanh toán.', 'warning');
+                return;
+            }
+
+            const transactionData = {
+                qrData: qrData,
+                detectedLicensePlate: detectedLicensePlate,
+                paymentMethod: 'vnpay',
+                timestamp: Date.now()
+            };
+            sessionStorage.setItem('vnpayTransaction', JSON.stringify(transactionData));
+
+            const win = window.open(payUrl, '_blank', 'width=600,height=700');
+            if (win) {
+                showMessage('Đang chờ thanh toán VNPay. Vui lòng hoàn tất thanh toán trên tab mới.', 'info');
+                document.getElementById('processBtn').disabled = true;
+                document.getElementById('captureBtn').disabled = true;
+                document.getElementById('vnpayPaymentStatus').style.display = 'block';
+
+                const checkPaymentInterval = setInterval(async () => {
+                    try {
+                        if (win.closed) {
+                            clearInterval(checkPaymentInterval);
+
+                            const response = await fetch(`/check_vnpay_payment_status?qr_data=${encodeURIComponent(qrData)}&timestamp=${transactionData.timestamp}`, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success && result.payment_completed) {
+                                showPaymentSuccess(result);
+                                clearTransactionData();
+                            } else {
+                                showMessage('Thanh toán bị hủy hoặc chưa hoàn tất. Vui lòng thử lại!', 'warning');
+                                resetPaymentForm();
+                            }
+                        }
+
+                        const updatedTransaction = JSON.parse(sessionStorage.getItem('vnpayTransaction') || '{}');
+                        if (updatedTransaction.completed) {
+                            clearInterval(checkPaymentInterval);
+                            win.close();
+
+                            if (updatedTransaction.success) {
+                                showPaymentSuccess(updatedTransaction.result);
+                            } else {
+                                showMessage(updatedTransaction.message || 'Thanh toán thất bại', 'danger');
+                            }
+                            clearTransactionData();
+                        }
+
+                    } catch (error) {
+                        console.error('Lỗi khi kiểm tra thanh toán:', error);
+                        clearInterval(checkPaymentInterval);
+                        showMessage('Lỗi khi kiểm tra thanh toán: ' + error.message, 'danger');
+                        resetPaymentForm();
+                    }
+                }, 2000);
+
+                setTimeout(() => {
+                    if (!win.closed) {
+                        clearInterval(checkPaymentInterval);
+                        showMessage('Thời gian chờ thanh toán đã hết. Vui lòng thử lại!', 'warning');
+                        resetPaymentForm();
+                    }
+                }, 300000);
+
+            } else {
+                showMessage('Vui lòng cho phép mở popup để thanh toán qua VNPay!', 'warning');
+            }
+        });
+
+        function resetPaymentForm() {
+            document.getElementById('processBtn').disabled = false;
+            document.getElementById('captureBtn').disabled = false;
+            document.getElementById('momoPaymentSection').style.display = 'none';
+            document.getElementById('vnpayPaymentSection').style.display = 'none';
+        }
+
+        function clearTransactionData() {
+            sessionStorage.removeItem('momoTransaction');
+            sessionStorage.removeItem('vnpayTransaction');
+            document.getElementById('processBtn').disabled = false;
+            document.getElementById('captureBtn').disabled = false;
+        }
+
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'payment_result') {
+                const transactionData = JSON.parse(sessionStorage.getItem('momoTransaction') || sessionStorage.getItem('vnpayTransaction') || '{}');
+                transactionData.completed = true;
+                transactionData.success = event.data.success;
+                transactionData.result = event.data.result;
+                transactionData.message = event.data.message;
+
+                if (transactionData.paymentMethod === 'momo') {
+                    sessionStorage.setItem('momoTransaction', JSON.stringify(transactionData));
+                } else if (transactionData.paymentMethod === 'vnpay') {
+                    sessionStorage.setItem('vnpayTransaction', JSON.stringify(transactionData));
+                }
+            }
+        });
+
+        document.getElementById('momoPayUrl').addEventListener('click', function(e) {
+            e.preventDefault();
+            const payUrl = this.href;
+
+            if (!payUrl || payUrl === '#') {
+                showMessage('Link thanh toán MoMo chưa được tạo. Vui lòng chọn lại phương thức thanh toán.', 'warning');
+                return;
+            }
+
+            const transactionData = {
+                qrData: qrData,
+                detectedLicensePlate: detectedLicensePlate,
+                paymentMethod: 'momo',
+                timestamp: Date.now()
+            };
+            sessionStorage.setItem('momoTransaction', JSON.stringify(transactionData));
+
+            const win = window.open(payUrl, '_blank', 'width=600,height=700');
+            if (win) {
+                showMessage('Đang chờ thanh toán MoMo. Vui lòng hoàn tất thanh toán trên tab mới.', 'info');
+
+                document.getElementById('processBtn').disabled = true;
+                document.getElementById('captureBtn').disabled = true;
+
+                const checkPaymentInterval = setInterval(async () => {
+                    try {
+                        if (win.closed) {
+                            clearInterval(checkPaymentInterval);
+
+                            const response = await fetch(`/check_momo_payment_status?qr_data=${encodeURIComponent(qrData)}&timestamp=${transactionData.timestamp}`, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success && result.payment_completed) {
+                                showPaymentSuccess(result);
+                                clearTransactionData();
+                            } else {
+                                showMessage('Thanh toán bị hủy hoặc chưa hoàn tất. Vui lòng thử lại!', 'warning');
+                                resetPaymentForm();
+                            }
+                        }
+
+                        const updatedTransaction = JSON.parse(sessionStorage.getItem('momoTransaction') || '{}');
+                        if (updatedTransaction.completed) {
+                            clearInterval(checkPaymentInterval);
+                            win.close();
+
+                            if (updatedTransaction.success) {
+                                showPaymentSuccess(updatedTransaction.result);
+                            } else {
+                                showMessage(updatedTransaction.message || 'Thanh toán thất bại', 'danger');
+                            }
+                            clearTransactionData();
+                        }
+
+                    } catch (error) {
+                        console.error('Lỗi khi kiểm tra thanh toán:', error);
+                        clearInterval(checkPaymentInterval);
+                        showMessage('Lỗi khi kiểm tra thanh toán: ' + error.message, 'danger');
+                        resetPaymentForm();
+                    }
+                }, 2000);
+
+                setTimeout(() => {
+                    if (!win.closed) {
+                        clearInterval(checkPaymentInterval);
+                        showMessage('Thời gian chờ thanh toán đã hết. Vui lòng thử lại!', 'warning');
+                        resetPaymentForm();
+                    }
+                }, 300000);
+
+            } else {
+                showMessage('Vui lòng cho phép mở popup để thanh toán qua MoMo!', 'warning');
+            }
+        });
+
+        function showPaymentSuccessNotification(message, licensePlate, amount) {
+            const formattedMessage = message.replace('{amount}', parseInt(amount).toLocaleString()).replace('{license_plate}', licensePlate);
+            const notification = document.createElement('div');
+            notification.className = 'notification alert alert-success';
+            notification.textContent = formattedMessage;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+                window.location.reload();
+            }, 5000);
+        }
+
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const success = urlParams.get('success');
+            const message = urlParams.get('message');
+            const licensePlate = urlParams.get('license_plate');
+            const amount = urlParams.get('amount');
+
+            if (success === 'true' && message) {
+                if (window.opener && !window.opener.closed) {
+                    window.opener.postMessage({
+                        type: 'payment_result',
+                        success: true,
+                        result: {
+                            message: message,
+                            license_plate: licensePlate,
+                            parking_fee: amount,
+                            entry_time: urlParams.get('entry_time'),
+                            exit_time: urlParams.get('exit_time'),
+                            duration: urlParams.get('duration')
+                        }
+                    }, '*');
+
+                    setTimeout(() => {
+                        window.close();
+                    }, 2000);
+                } else {
+                    showPaymentSuccess({
+                        message: message,
+                        license_plate: licensePlate,
+                        parking_fee: parseInt(amount),
+                        entry_time: urlParams.get('entry_time'),
+                        exit_time: urlParams.get('exit_time'),
+                        duration: urlParams.get('duration')
+                    });
+                }
+            } else if (success === 'false' && message) {
+                if (window.opener && !window.opener.closed) {
+                    window.opener.postMessage({
+                        type: 'payment_result',
+                        success: false,
+                        message: message
+                    }, '*');
+
+                    setTimeout(() => {
+                        window.close();
+                    }, 2000);
+                } else {
+                    showMessage(message, 'danger');
+                }
+            }
+
+            if (urlParams.has('success') || urlParams.has('message')) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
+
+        initCameras();
+
+        window.addEventListener('beforeunload', () => {
+            if (licensePlateStream) {
+                licensePlateStream.getTracks().forEach(track => track.stop());
+            }
+            if (faceStream && faceStream !== licensePlateStream) {
+                faceStream.getTracks().forEach(track => track.stop());
+            }
+            if (qrStream && qrStream !== licensePlateStream) {
+                qrStream.getTracks().forEach(track => track.stop());
+            }
+            if (cardQrStream && cardQrStream !== qrStream && cardQrStream !== licensePlateStream) {
+                cardQrStream.getTracks().forEach(track => track.stop());
+            }
+            if (cardFaceStream && cardFaceStream !== faceStream && cardFaceStream !== licensePlateStream) {
+                cardFaceStream.getTracks().forEach(track => track.stop());
+            }
+        });
+    });
+</script>
+
+<style>
+/* ==================== MODERN UI STYLES ==================== */
+
+/* Page Hero */
+.page-hero {
+    background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+    border-radius: 24px;
+    padding: 40px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+    color: white;
+}
+
+.page-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+}
+
+.hero-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.hero-badge i {
+    margin-right: 8px;
+}
+
+.hero-title {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.hero-subtitle {
+    font-size: 18px;
+    opacity: 0.95;
+    margin-bottom: 24px;
+}
+
+.hero-stats-mini {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.stat-mini {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 12px 24px;
+    border-radius: 50px;
+}
+
+.stat-mini i {
+    font-size: 20px;
+}
+
+.stat-mini span {
+    font-weight: 600;
+}
+
+/* Modern Cards */
+.modern-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.modern-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.card-gradient-primary {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-color: #e5e7eb;
+}
+
+.card-secondary {
+    background: white;
+}
+
+.card-info {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+}
+
+.card-payment {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+}
+
+.card-stripe {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+}
+
+.card-vnpay {
+    border-color: #ef4444;
+    background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+}
+
+.card-momo {
+    border-color: #ec4899;
+    background: linear-gradient(135deg, #ffffff 0%, #fdf2f8 100%);
+}
+
+.card-topup {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+}
+
+.card-instructions {
+    border-color: #f59e0b;
+    background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+}
+
+.card-success {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+}
+
+/* Card Headers */
+.card-header-modern {
+    padding: 24px;
+    background: transparent;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header-modern.border-bottom {
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+}
+
+.icon-primary {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.icon-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.icon-info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.icon-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.icon-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.icon-purple {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.icon-momo {
+    background: linear-gradient(135deg, #ec4899, #db2777);
+}
+
+.card-title-modern {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.card-subtitle-modern {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+}
+
+.status-badge {
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.badge-active {
+    background: #ecfdf5;
+    color: #10b981;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.1);
+    }
+}
+
+/* Card Body */
+.card-body-modern {
+    padding: 24px;
+}
+
+/* Camera Sections */
+.camera-section {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.camera-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.camera-header i {
+    font-size: 18px;
+    color: #3b82f6;
+}
+
+/* Video Container */
+.video-container {
+    position: relative;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    aspect-ratio: 4/3;
+}
+
+.video-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.scan-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #10b981, transparent);
+    animation: scan 2s linear infinite;
+}
+
+@keyframes scan {
+    0% {
+        top: 0;
+    }
+    100% {
+        top: 100%;
+    }
+}
+
+.scan-frame {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    border: 3px solid #10b981;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+}
+
+.preview-overlay {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+}
+
+.preview-overlay img {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Form Elements */
+.form-select-modern,
+.form-control-modern {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-select-modern:focus,
+.form-control-modern:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-label-modern {
+    display: block;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-group-modern {
+    margin-bottom: 20px;
+}
+
+/* Buttons */
+.btn-modern {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-modern:active {
+    transform: translateY(0);
+}
+
+.btn-modern:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+.btn-momo {
+    background: linear-gradient(135deg, #ec4899, #db2777);
+    color: white;
+}
+
+.btn-large {
+    padding: 16px 32px;
+    font-size: 16px;
+    width: 100%;
+}
+
+.btn-capture {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+    padding: 16px 32px;
+    font-size: 16px;
+    position: relative;
+}
+
+.capture-hint {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #f59e0b;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.btn-process {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    padding: 14px 32px;
+    font-size: 16px;
+}
+
+/* Action Buttons Group */
+.action-buttons-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* Payment Methods Grid */
+.payment-methods-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+}
+
+.payment-method-btn {
+    background: white;
+    border: 3px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.payment-method-btn:hover {
+    border-color: #3b82f6;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.payment-method-btn.active {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+}
+
+.payment-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f8fafc, #e5e7eb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #64748b;
+    transition: all 0.3s ease;
+}
+
+.payment-method-btn:hover .payment-icon {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+.payment-method-btn.active .payment-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.payment-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.payment-check {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #10b981;
+    color: white;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.payment-method-btn.active .payment-check {
+    display: flex;
+}
+
+/* Result Section */
+.result-section {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.result-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.result-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.result-content {
+    flex: 1;
+}
+
+.result-label {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0 0 4px 0;
+    font-weight: 500;
+}
+
+.result-text {
+    font-size: 16px;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+/* Info Grid */
+.info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-value {
+    font-size: 15px;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.info-value.highlight {
+    color: #10b981;
+    font-size: 17px;
+}
+
+.payment-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+}
+
+/* Comparison Sections */
+.comparison-section {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-title i {
+    color: #3b82f6;
+}
+
+.image-box {
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+}
+
+.image-label {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.img-comparison,
+.img-preview {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.img-comparison:hover,
+.img-preview:hover {
+    transform: scale(1.05);
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.comparison-box {
+    text-align: center;
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+}
+
+.comparison-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 12px;
+}
+
+/* Total Fee Box */
+.total-fee-box {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    color: white;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.fee-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.9;
+}
+
+.fee-label {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 8px;
+}
+
+.fee-amount {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Stripe Card Element */
+.stripe-card-element {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s ease;
+}
+
+.stripe-card-element:focus-within {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Error Message */
+.error-message {
+    color: #ef4444;
+    font-size: 14px;
+    margin-top: 12px;
+    min-height: 20px;
+}
+
+/* Processing Overlay */
+.processing-overlay {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+}
+
+.spinner-modern {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e5e7eb;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.processing-overlay p {
+    color: #64748b;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Payment Link Section */
+.payment-link-section {
+    text-align: center;
+}
+
+.link-instruction {
+    font-size: 15px;
+    color: #64748b;
+    margin-bottom: 20px;
+}
+
+/* Status Box */
+.status-box {
+    background: #eff6ff;
+    border: 2px solid #3b82f6;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.status-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.status-icon {
+    font-size: 20px;
+    color: #3b82f6;
+}
+
+.status-content span {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.spinner-small {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e5e7eb;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+.status-note {
+    display: block;
+    text-align: center;
+    font-size: 13px;
+    color: #64748b;
+}
+
+/* Alert Modern */
+.alert-modern {
+    border-radius: 16px;
+    padding: 20px;
+    display: none;
+    margin-bottom: 20px;
+}
+
+.alert-modern.alert-danger {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    border: 2px solid #ef4444;
+}
+
+.alert-modern.alert-info {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border: 2px solid #3b82f6;
+}
+
+.alert-modern.alert-success {
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    border: 2px solid #10b981;
+}
+
+.alert-modern.alert-warning {
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    border: 2px solid #f59e0b;
+}
+
+.alert-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.alert-danger .alert-icon {
+    background: #ef4444;
+    color: white;
+}
+
+.alert-content {
+    flex: 1;
+}
+
+.alert-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 12px;
+}
+
+.error-comparison {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.error-item {
+    flex: 1;
+    min-width: 200px;
+}
+
+.error-label {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+/* Badge Modern */
+.badge-modern {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.badge-exit {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.badge-plate {
+    background: #f8fafc;
+    color: #1e293b;
+    border: 2px solid #e5e7eb;
+}
+
+.badge-color {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.badge-type {
+    background: #f0fdf4;
+    color: #10b981;
+}
+
+.badge-confidence {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.badge-info {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.badge-warning {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+/* Status Bar Modern */
+.status-bar-modern {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.status-info {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Instructions Grid */
+.instructions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.instruction-step {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    border: 2px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.instruction-step:hover {
+    border-color: #f59e0b;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    margin: 0 auto 12px;
+}
+
+.instruction-step p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Capture Section */
+.capture-section {
+    text-align: center;
+}
+
+/* KBD Modern */
+.kbd-modern {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #1e293b;
+    color: white;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Message Box */
+.message-box {
+    padding: 16px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 2px solid #e5e7eb;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .hero-title {
+        font-size: 28px;
+    }
+
+    .hero-subtitle {
+        font-size: 16px;
+    }
+
+    .hero-stats-mini {
+        gap: 16px;
+    }
+
+    .card-header-modern {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .status-bar-modern {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .status-info {
+        justify-content: center;
+    }
+
+    .btn-process {
+        width: 100%;
+    }
+
+    .payment-methods-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .instructions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .page-hero {
+        padding: 24px;
+    }
+
+    .hero-title {
+        font-size: 24px;
+    }
+
+    .hero-subtitle {
+        font-size: 14px;
+    }
+
+    .stat-mini {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+
+    .card-body-modern {
+        padding: 16px;
+    }
+
+    .card-header-modern {
+        padding: 16px;
+    }
+
+    .icon-wrapper {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+
+    .card-title-modern {
+        font-size: 16px;
+    }
+
+    .action-buttons-group {
+        flex-direction: column;
+    }
+
+    .btn-modern {
+        width: 100%;
+    }
+
+    .payment-methods-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .instructions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .error-comparison {
+        flex-direction: column;
+    }
+
+    .fee-amount {
+        font-size: 24px;
+    }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modern-card {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* Mobile Paid Badge */
+.mobile-paid-badge,
+.kiosk-paid-badge {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Hover Effects */
+.modern-card:hover {
+    border-color: currentColor;
+}
+
+.card-info:hover {
+    border-color: #3b82f6;
+}
+
+.card-payment:hover {
+    border-color: #10b981;
+}
+
+.card-stripe:hover {
+    border-color: #10b981;
+}
+
+.card-vnpay:hover {
+    border-color: #ef4444;
+}
+
+.card-momo:hover {
+    border-color: #ec4899;
+}
+
+.card-topup:hover {
+    border-color: #3b82f6;
+}
+
+.card-instructions:hover {
+    border-color: #f59e0b;
+}
+
+.card-success:hover {
+    border-color: #10b981;
+}
+
+/* Payment Expired Warning */
+.payment-expired-warning {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border-left: 4px solid #f59e0b;
+    padding: 20px;
+    border-radius: 12px;
+    margin: 16px 0;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.warning-icon {
+    font-size: 32px;
+    color: #f59e0b;
+}
+
+/* Notification */
+.notification {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 20px 32px;
+    border-radius: 12px;
+    z-index: 10000;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    max-width: 90%;
+    width: 500px;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* Payment Success Animation */
+.payment-success {
+    animation: slideInUp 0.5s ease-out;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+</style>
+{% endblock %}

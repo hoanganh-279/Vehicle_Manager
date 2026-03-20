@@ -1,0 +1,1821 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="kiosk-container">
+    <!-- Background Pattern -->
+    <div class="bg-pattern"></div>
+
+    <!-- Header -->
+    <div class="kiosk-header">
+        <h1 class="main-title">Thanh toán tự động</h1>
+        <p class="subtitle">Hệ thống thanh toán thông minh - Nhanh chóng & An toàn</p>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="progress-steps">
+        <div class="step-item active" data-step="search">
+            <div class="step-circle">
+                <i class="fas fa-qrcode"></i>
+            </div>
+            <span>Tìm kiếm</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item" data-step="vehicle">
+            <div class="step-circle">
+                <i class="fas fa-car"></i>
+            </div>
+            <span>Thông tin</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item" data-step="payment">
+            <div class="step-circle">
+                <i class="fas fa-credit-card"></i>
+            </div>
+            <span>Thanh toán</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item" data-step="result">
+            <div class="step-circle">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <span>Hoàn tất</span>
+        </div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="main-card">
+        <div class="card-decorator decorator-1"></div>
+        <div class="card-decorator decorator-2"></div>
+
+        <!-- SECTION 1: SEARCH -->
+        <div id="searchSection" class="section-content active">
+            <div class="section-header">
+                <div class="section-icon bg-blue">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+                <h2>Tìm kiếm phương tiện</h2>
+            </div>
+
+            <!-- Search Mode Toggle -->
+            <div class="mode-toggle">
+                <button class="mode-btn active" id="plateMode">
+                    <i class="fas fa-car"></i> Nhập biển số
+                </button>
+                <button class="mode-btn" id="qrMode">
+                    <i class="fas fa-qrcode"></i> Quét QR Code
+                </button>
+            </div>
+
+            <!-- Plate Search Form -->
+            <div id="plateSearchForm">
+                <div class="plate-input-group">
+                    <input type="text" id="licensePlateInput" placeholder="VD: 51A-12345" class="plate-input">
+                    <i class="fas fa-car input-icon"></i>
+                </div>
+                <button class="btn-primary btn-search" id="searchPlateBtn">
+                    <i class="fas fa-bolt"></i> Tìm kiếm nhanh
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- QR Search Form -->
+            <div id="qrSearchForm" style="display: none;">
+                <div class="qr-scanner-box">
+                    <select class="camera-select" id="qrCameraSelect">
+                        <option value="">Chọn camera</option>
+                    </select>
+                    <div class="scanner-wrapper">
+                        <video id="qrVideo" autoplay playsinline></video>
+                        <div class="scanner-overlay">
+                            <div class="scanner-frame"></div>
+                        </div>
+                    </div>
+                    <div class="scanner-status">
+                        <i class="fas fa-camera"></i>
+                        <span>Đặt mã QR vào khung hình</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="searchMessage" class="message-box"></div>
+        </div>
+
+        <!-- SECTION 2: VEHICLE INFO -->
+        <div id="vehicleInfoSection" class="section-content">
+            <div class="section-header">
+                <div class="section-icon bg-green">
+                    <i class="fas fa-car"></i>
+                </div>
+                <h2>Thông tin phương tiện</h2>
+            </div>
+
+            <div class="vehicle-info-grid">
+                <!-- Left: Details -->
+                <div class="vehicle-details-card">
+                    <div class="vehicle-plate-display">
+                        <div class="plate-icon">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <div>
+                            <p class="label">Biển số xe</p>
+                            <h3 id="displayLicensePlate" class="plate-number">51A-12345</h3>
+                        </div>
+                    </div>
+
+                    <div class="info-rows">
+                        <div class="info-row">
+                            <span><i class="fas fa-car"></i> Loại xe</span>
+                            <strong id="displayVehicleType">Ô tô</strong>
+                        </div>
+                        <div class="info-row">
+                            <span><i class="fas fa-clock"></i> Giờ vào</span>
+                            <strong id="displayEntryTime">08:30 - 03/12/2024</strong>
+                        </div>
+                        <div class="info-row">
+                            <span><i class="fas fa-wifi"></i> Thời gian đỗ</span>
+                            <strong id="displayDuration">3 giờ 45 phút</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Fee Display -->
+                <div class="fee-display-card">
+                    <i class="fas fa-money-bill-wave fee-icon"></i>
+                    <p class="fee-label">Phí đỗ xe</p>
+                    <h2 id="displayParkingFee" class="fee-amount">75,000</h2>
+                    <p class="fee-currency">VNĐ</p>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-secondary" id="backToSearchBtn">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </button>
+                <button class="btn-primary flex-1" id="proceedPaymentBtn">
+                    Tiếp tục thanh toán
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- SECTION 3: PAYMENT METHOD -->
+        <div id="paymentMethodSection" class="section-content">
+            <div class="section-header">
+                <div class="section-icon bg-purple">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <h2>Chọn phương thức thanh toán</h2>
+            </div>
+
+            <div class="payment-methods-grid">
+                <button class="payment-method-card" data-method="card">
+                    <div class="payment-icon bg-gradient-blue">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <p class="payment-name">Thẻ thành viên</p>
+                </button>
+                <button class="payment-method-card" data-method="stripe">
+                    <div class="payment-icon bg-gradient-purple">
+                        <i class="fab fa-cc-stripe"></i>
+                    </div>
+                    <p class="payment-name">Stripe</p>
+                </button>
+                <button class="payment-method-card" data-method="momo">
+                    <div class="payment-icon bg-gradient-pink">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <p class="payment-name">MoMo</p>
+                </button>
+                <button class="payment-method-card" data-method="vnpay">
+                    <div class="payment-icon bg-gradient-orange">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <p class="payment-name">VNPay</p>
+                </button>
+            </div>
+
+            <!-- Card Payment Form -->
+            <div id="cardPaymentForm" style="display: none;">
+                <div class="payment-form-card">
+                    <h5 class="form-title">
+                        <i class="fas fa-credit-card"></i> Thanh toán bằng thẻ thành viên
+                    </h5>
+                    <div class="qr-scanner-box">
+                        <select class="camera-select" id="cardQRCameraSelect">
+                            <option value="">Chọn camera</option>
+                        </select>
+                        <div class="scanner-wrapper small">
+                            <video id="cardQRVideo" autoplay playsinline></video>
+                            <div class="scanner-overlay">
+                                <div class="scanner-frame"></div>
+                            </div>
+                        </div>
+                        <div class="scanner-status">
+                            <i class="fas fa-qrcode"></i>
+                            <span>Quét mã QR của thẻ</span>
+                        </div>
+                    </div>
+                    <div id="cardQRResult" class="message-box"></div>
+                </div>
+            </div>
+
+            <!-- Stripe Payment Form -->
+            <div id="stripePaymentForm" style="display: none;">
+                <div class="payment-form-card">
+                    <h5 class="form-title">
+                        <i class="fab fa-cc-stripe"></i> Thanh toán qua Stripe
+                    </h5>
+                    <div id="stripeCardElement" class="stripe-element"></div>
+                    <div id="stripeCardErrors" class="text-danger mb-3"></div>
+                    <button class="btn-primary w-100" id="stripePayBtn">
+                        <i class="fas fa-lock"></i> Thanh toán an toàn
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn-secondary w-100" id="backToVehicleBtn">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </button>
+        </div>
+
+        <!-- SECTION 4: RESULT -->
+        <div id="resultSection" class="section-content">
+            <div class="result-container">
+                <div id="resultIcon" class="result-icon"></div>
+                <h3 id="resultMessage" class="result-message"></h3>
+                <div id="resultDetails" class="result-details"></div>
+                <button class="btn-primary btn-large" id="newTransactionBtn">
+                    <i class="fas fa-redo"></i> Giao dịch mới
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+let currentVehicle = null;
+let selectedPaymentMethod = null;
+let qrStream = null;
+let cardQRStream = null;
+let qrAnimationFrame = null;
+let cardQRAnimationFrame = null;
+let isProcessingQR = false;
+let isProcessingCardQR = false;
+let paymentWindowHandle = null;
+
+const stripe = Stripe('{{ stripe_publishable_key }}');
+let stripeCardElement = null;
+
+// ========== NAVIGATION ==========
+function showSection(sectionId) {
+    document.querySelectorAll('.section-content').forEach(el => {
+        el.classList.remove('active');
+    });
+    document.getElementById(sectionId).classList.add('active');
+
+    const stepMap = {
+        'searchSection': 'search',
+        'vehicleInfoSection': 'vehicle',
+        'paymentMethodSection': 'payment',
+        'resultSection': 'result'
+    };
+
+    document.querySelectorAll('.step-item').forEach(el => {
+        el.classList.remove('active', 'completed');
+    });
+
+    const currentStep = stepMap[sectionId];
+    let foundCurrent = false;
+
+    document.querySelectorAll('.step-item').forEach(el => {
+        const step = el.getAttribute('data-step');
+        if (step === currentStep) {
+            el.classList.add('active');
+            foundCurrent = true;
+        } else if (!foundCurrent) {
+            el.classList.add('completed');
+        }
+    });
+
+    if (sectionId === 'searchSection' && document.getElementById('qrSearchForm').style.display !== 'none') {
+        setTimeout(() => startVehicleQRScanner(), 500);
+    } else {
+        stopVehicleQRScanner();
+    }
+
+    if (sectionId === 'paymentMethodSection' && selectedPaymentMethod === 'card') {
+        setTimeout(() => startCardQRScanner(), 500);
+    } else {
+        stopCardQRScanner();
+    }
+}
+
+// ========== SEARCH MODE TOGGLE ==========
+document.getElementById('plateMode').addEventListener('click', function() {
+    document.getElementById('plateSearchForm').style.display = 'block';
+    document.getElementById('qrSearchForm').style.display = 'none';
+    this.classList.add('active');
+    document.getElementById('qrMode').classList.remove('active');
+    stopVehicleQRScanner();
+});
+
+document.getElementById('qrMode').addEventListener('click', function() {
+    document.getElementById('plateSearchForm').style.display = 'none';
+    document.getElementById('qrSearchForm').style.display = 'block';
+    this.classList.add('active');
+    document.getElementById('plateMode').classList.remove('active');
+    setTimeout(() => startVehicleQRScanner(), 300);
+});
+
+// ========== CAMERA SETUP ==========
+async function setupCameras() {
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+        const qrSelect = document.getElementById('qrCameraSelect');
+        const cardSelect = document.getElementById('cardQRCameraSelect');
+
+        [qrSelect, cardSelect].forEach(select => {
+            select.innerHTML = '';
+            videoDevices.forEach((device, index) => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.text = device.label || `Camera ${index + 1}`;
+                if (index === 0) option.selected = true;
+                select.appendChild(option);
+            });
+        });
+
+        return videoDevices.length > 0;
+    } catch (error) {
+        console.error('Camera error:', error);
+        return false;
+    }
+}
+
+// ========== VEHICLE QR SCANNER ==========
+async function startVehicleQRScanner() {
+    if (qrStream) return;
+
+    try {
+        const video = document.getElementById('qrVideo');
+        const cameraSelect = document.getElementById('qrCameraSelect');
+        const deviceId = cameraSelect.value;
+
+        if (!deviceId) return;
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        qrStream = await navigator.mediaDevices.getUserMedia({
+            video: { deviceId: { exact: deviceId }, width: { ideal: 640 }, height: { ideal: 480 } }
+        });
+
+        video.srcObject = qrStream;
+        await video.play();
+
+        isProcessingQR = false;
+
+        function tick() {
+            if (!qrStream) return;
+
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                if (code && !isProcessingQR) {
+                    isProcessingQR = true;
+                    searchVehicle('qr_code', code.data);
+                }
+            }
+            qrAnimationFrame = requestAnimationFrame(tick);
+        }
+
+        tick();
+    } catch (error) {
+        console.error('QR scanner error:', error);
+        showMessage('Lỗi khởi động camera: ' + error.message, 'danger', 'searchMessage');
+    }
+}
+
+function stopVehicleQRScanner() {
+    if (qrStream) {
+        qrStream.getTracks().forEach(track => track.stop());
+        qrStream = null;
+    }
+    if (qrAnimationFrame) {
+        cancelAnimationFrame(qrAnimationFrame);
+        qrAnimationFrame = null;
+    }
+    const video = document.getElementById('qrVideo');
+    if (video) video.srcObject = null;
+    isProcessingQR = false;
+}
+
+// ========== CARD QR SCANNER ==========
+async function startCardQRScanner() {
+    if (cardQRStream) return;
+
+    try {
+        const video = document.getElementById('cardQRVideo');
+        const cameraSelect = document.getElementById('cardQRCameraSelect');
+        const deviceId = cameraSelect.value;
+
+        if (!deviceId) return;
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        cardQRStream = await navigator.mediaDevices.getUserMedia({
+            video: { deviceId: { exact: deviceId }, width: { ideal: 640 }, height: { ideal: 480 } }
+        });
+
+        video.srcObject = cardQRStream;
+        await video.play();
+
+        isProcessingCardQR = false;
+
+        function tick() {
+            if (!cardQRStream) return;
+
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                if (code && !isProcessingCardQR) {
+                    isProcessingCardQR = true;
+                    processCardPayment(code.data);
+                    return;
+                }
+            }
+            cardQRAnimationFrame = requestAnimationFrame(tick);
+        }
+
+        tick();
+    } catch (error) {
+        console.error('Card QR error:', error);
+        showMessage('Lỗi khởi động camera thẻ: ' + error.message, 'danger', 'cardQRResult');
+    }
+}
+
+function stopCardQRScanner() {
+    if (cardQRStream) {
+        cardQRStream.getTracks().forEach(track => track.stop());
+        cardQRStream = null;
+    }
+    if (cardQRAnimationFrame) {
+        cancelAnimationFrame(cardQRAnimationFrame);
+        cardQRAnimationFrame = null;
+    }
+    const video = document.getElementById('cardQRVideo');
+    if (video) video.srcObject = null;
+    isProcessingCardQR = false;
+}
+
+// ========== CAMERA CHANGE HANDLERS ==========
+document.getElementById('qrCameraSelect').addEventListener('change', () => {
+    if (qrStream) {
+        stopVehicleQRScanner();
+        setTimeout(() => startVehicleQRScanner(), 300);
+    }
+});
+
+document.getElementById('cardQRCameraSelect').addEventListener('change', () => {
+    if (cardQRStream) {
+        stopCardQRScanner();
+        setTimeout(() => startCardQRScanner(), 300);
+    }
+});
+
+// ========== SEARCH VEHICLE ==========
+document.getElementById('searchPlateBtn').addEventListener('click', async () => {
+    const licensePlate = document.getElementById('licensePlateInput').value.trim();
+    if (!licensePlate) {
+        showMessage('Vui lòng nhập biển số xe!', 'warning', 'searchMessage');
+        return;
+    }
+    await searchVehicle('license_plate', licensePlate);
+});
+
+document.getElementById('licensePlateInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        document.getElementById('searchPlateBtn').click();
+    }
+});
+
+async function searchVehicle(searchType, searchValue) {
+    try {
+        showMessage('<i class="fas fa-spinner fa-spin"></i> Đang tìm kiếm...', 'info', 'searchMessage');
+
+        const formData = new FormData();
+        formData.append('action', 'search_vehicle');
+        formData.append('search_type', searchType);
+        formData.append('search_value', searchValue);
+
+        const response = await fetch('/kiosk/payment', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            currentVehicle = result.vehicle;
+            displayVehicleInfo(result.vehicle);
+            stopVehicleQRScanner();
+            showSection('vehicleInfoSection');
+        } else {
+            showMessage(result.message, 'danger', 'searchMessage');
+            setTimeout(() => {
+                isProcessingQR = false;
+                showMessage('', 'info', 'searchMessage');
+            }, 2000);
+        }
+    } catch (error) {
+        showMessage('Lỗi kết nối: ' + error.message, 'danger', 'searchMessage');
+        setTimeout(() => {
+            isProcessingQR = false;
+            showMessage('', 'info', 'searchMessage');
+        }, 2000);
+    }
+}
+
+function displayVehicleInfo(vehicle) {
+    document.getElementById('displayLicensePlate').textContent = vehicle.license_plate;
+    document.getElementById('displayVehicleType').textContent = vehicle.vehicle_type;
+    document.getElementById('displayEntryTime').textContent = vehicle.entry_time;
+    document.getElementById('displayDuration').textContent = vehicle.duration;
+    document.getElementById('displayParkingFee').textContent = vehicle.parking_fee.toLocaleString('vi-VN');
+
+    // ✅ KIỂM TRA TRẠNG THÁI THANH TOÁN
+    const proceedBtn = document.getElementById('proceedPaymentBtn');
+    const feeCard = document.querySelector('.fee-display-card');
+
+    if (vehicle.is_paid || vehicle.mobile_payment_status === 'paid' || vehicle.kiosk_payment_status === 'paid') {
+        // Xe đã thanh toán
+        proceedBtn.disabled = true;
+        proceedBtn.innerHTML = '<i class="fas fa-check-circle"></i> Đã thanh toán';
+        proceedBtn.style.background = '#10b981';
+        proceedBtn.style.cursor = 'not-allowed';
+
+        // Thêm badge "Đã thanh toán" vào fee card
+        feeCard.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+
+        const paidBadge = document.createElement('div');
+        paidBadge.className = 'fee-badge';
+        paidBadge.innerHTML = '<i class="fas fa-check-circle"></i> Đã thanh toán - Xe có thể ra bãi';
+        paidBadge.style.marginTop = '16px';
+
+        // Xóa badge cũ nếu có
+        const oldBadge = feeCard.querySelector('.fee-badge');
+        if (oldBadge) oldBadge.remove();
+
+        feeCard.appendChild(paidBadge);
+
+        // Hiển thị thông tin thanh toán
+        let paymentInfo = '';
+        if (vehicle.mobile_payment_status === 'paid') {
+            paymentInfo = '<p style="color: white; margin-top: 8px; font-size: 14px;"><i class="fas fa-mobile-alt"></i> Thanh toán qua Mobile App</p>';
+        } else if (vehicle.kiosk_payment_status === 'paid') {
+            paymentInfo = '<p style="color: white; margin-top: 8px; font-size: 14px;"><i class="fas fa-desktop"></i> Thanh toán qua Kiosk</p>';
+        }
+
+        if (paymentInfo) {
+            paidBadge.innerHTML += paymentInfo;
+        }
+    } else {
+        // Xe chưa thanh toán - reset về trạng thái bình thường
+        proceedBtn.disabled = false;
+        proceedBtn.innerHTML = 'Tiếp tục thanh toán <i class="fas fa-arrow-right"></i>';
+        proceedBtn.style.background = 'linear-gradient(135deg, #2563eb, #1d4ed8)';
+        proceedBtn.style.cursor = 'pointer';
+
+        feeCard.style.background = 'linear-gradient(135deg, #16a34a, #15803d)';
+
+        // Xóa badge "Đã thanh toán" nếu có
+        const oldBadge = feeCard.querySelector('.fee-badge');
+        if (oldBadge) oldBadge.remove();
+    }
+}
+
+// ========== PAYMENT FLOW ==========
+document.getElementById('proceedPaymentBtn').addEventListener('click', () => {
+    if (currentVehicle.mobile_payment_status === 'paid' || currentVehicle.kiosk_payment_status === 'paid') {
+        showMessage('Xe này đã được thanh toán rồi!', 'warning', 'searchMessage');
+        return;
+    }
+    showSection('paymentMethodSection');
+});
+
+// ========== PAYMENT METHOD SELECTION ==========
+document.querySelectorAll('.payment-method-card').forEach(btn => {
+    btn.addEventListener('click', function() {
+        selectedPaymentMethod = this.getAttribute('data-method');
+
+        document.querySelectorAll('.payment-method-card').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        ['cardPaymentForm', 'stripePaymentForm'].forEach(id => {
+            document.getElementById(id).style.display = 'none';
+        });
+
+        if (selectedPaymentMethod === 'card') {
+            document.getElementById('cardPaymentForm').style.display = 'block';
+            setTimeout(() => startCardQRScanner(), 500);
+        } else if (selectedPaymentMethod === 'stripe') {
+            document.getElementById('stripePaymentForm').style.display = 'block';
+            initStripeElements();
+        } else if (selectedPaymentMethod === 'momo' || selectedPaymentMethod === 'vnpay') {
+            processPaymentWithAutoClose(selectedPaymentMethod);
+        }
+    });
+});
+
+// ========== PROCESS CARD PAYMENT ==========
+async function processCardPayment(cardId) {
+    try {
+        showMessage('<i class="fas fa-spinner fa-spin"></i> Đang kiểm tra thẻ...', 'info', 'cardQRResult');
+
+        const response = await fetch(`/card/info?card_id=${cardId}`);
+        const result = await response.json();
+
+        if (!result.success) {
+            showMessage('❌ Thẻ không tồn tại!', 'danger', 'cardQRResult');
+            isProcessingCardQR = false;
+            return;
+        }
+
+        document.getElementById('cardQRResult').innerHTML = `
+            <div class="alert alert-success">
+                <h5>✅ Đã quét thẻ thành công</h5>
+                <p><strong>Tên:</strong> ${result.name}</p>
+                <p><strong>SĐT:</strong> ${result.phone}</p>
+                <p><strong>Số dư:</strong> ${result.balance.toLocaleString('vi-VN')} VND</p>
+            </div>
+            <button class="btn-primary w-100" id="confirmCardPayBtn">
+                <i class="fas fa-check"></i> Xác nhận thanh toán ${currentVehicle.parking_fee.toLocaleString('vi-VN')} VND
+            </button>
+        `;
+
+        document.getElementById('confirmCardPayBtn').addEventListener('click', () => {
+            stopCardQRScanner();
+            processPaymentWithAutoClose('card', cardId);
+        });
+
+    } catch (error) {
+        showMessage('Lỗi: ' + error.message, 'danger', 'cardQRResult');
+        isProcessingCardQR = false;
+    }
+}
+
+// ========== PROCESS PAYMENT WITH AUTO CLOSE ==========
+async function processPaymentWithAutoClose(method, cardId = null) {
+    try {
+        showMessage('<i class="fas fa-spinner fa-spin"></i> Đang xử lý thanh toán...', 'info', 'searchMessage');
+
+        const formData = new FormData();
+        formData.append('action', 'process_payment');
+        formData.append('vehicle_id', currentVehicle.id);
+        formData.append('payment_method', method);
+
+        if (cardId) {
+            formData.append('card_id', cardId);
+        }
+
+        const response = await fetch('/kiosk/payment', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            if (result.pay_url) {
+                showResult(true, 'Đang chuyển hướng thanh toán...',
+                    `<div class="result-info">
+                        <h5><i class="fas fa-info-circle"></i> Vui lòng hoàn tất thanh toán</h5>
+                        <p><strong>Biển số:</strong> ${currentVehicle.license_plate}</p>
+                        <p><strong>Số tiền:</strong> ${currentVehicle.parking_fee.toLocaleString('vi-VN')} VND</p>
+                        <p><strong>Phương thức:</strong> ${method === 'momo' ? 'MoMo' : 'VNPay'}</p>
+                        <p class="result-note" style="margin-top: 16px;">
+                            <i class="fas fa-arrow-right"></i>
+                            Tab thanh toán sẽ tự động đóng sau khi hoàn tất
+                        </p>
+                        <p style="color: #16a34a; margin-top: 12px;">
+                            <i class="fas fa-check-circle"></i>
+                            Sau khi thanh toán xong, xe có thể ra bãi trong vòng 60 phút
+                        </p>
+                    </div>`);
+
+                setTimeout(() => {
+                    paymentWindowHandle = window.open(result.pay_url, '_blank');
+                    monitorPaymentStatusAndCloseTab(method, currentVehicle.id, paymentWindowHandle);
+                }, 1500);
+
+            } else if (result.client_secret) {
+                // Stripe handled separately
+            } else {
+                showResult(true, result.message,
+                    `<div class="result-info">
+                        <p><strong>Biển số:</strong> ${currentVehicle.license_plate}</p>
+                        <p><strong>Số tiền:</strong> ${currentVehicle.parking_fee.toLocaleString('vi-VN')} VND</p>
+                        <p class="success-note">✅ Xe có thể ra bãi trong vòng 60 phút</p>
+                    </div>`);
+            }
+        } else {
+            showMessage(result.message, 'danger', 'searchMessage');
+        }
+    } catch (error) {
+        showMessage('Lỗi: ' + error.message, 'danger', 'searchMessage');
+    }
+}
+
+// ========== MONITOR PAYMENT STATUS AND CLOSE TAB ==========
+function monitorPaymentStatusAndCloseTab(method, vehicleId, paymentWindow) {
+    let checkCount = 0;
+    const maxChecks = 30;
+
+    const checkInterval = setInterval(async () => {
+        checkCount++;
+
+        try {
+            let response;
+            if (method === 'momo') {
+                response = await fetch(`/check_momo_payment_status?qr_data=${currentVehicle.license_plate}`);
+            } else if (method === 'vnpay') {
+                response = await fetch(`/check_vnpay_payment_status?qr_data=${currentVehicle.license_plate}`);
+            }
+
+            if (response) {
+                const result = await response.json();
+
+                if (result.payment_completed) {
+                    clearInterval(checkInterval);
+
+                    // ✅ ĐÓNG TAB THANH TOÁN
+                    if (paymentWindow && !paymentWindow.closed) {
+                        paymentWindow.close();
+                        console.log('🔒 Thanh toán xong! Đã đóng tab thanh toán.');
+                    }
+
+                    showResult(true, '✅ Thanh toán thành công!',
+                        `<div class="result-info">
+                            <h5>Xe ${currentVehicle.license_plate} đã được phép ra bãi</h5>
+                            <p><strong>Số tiền:</strong> ${currentVehicle.parking_fee.toLocaleString('vi-VN')} VND</p>
+                            <p style="color: #16a34a; margin-top: 12px;">
+                                <i class="fas fa-info-circle"></i>
+                                Vui lòng ra bãi trong vòng 60 phút
+                            </p>
+                        </div>`);
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error('Payment check error:', error);
+        }
+
+        // Dừng kiểm tra sau 5 phút
+        if (checkCount >= maxChecks) {
+            clearInterval(checkInterval);
+
+            // ✅ TRY CLOSE TAB NGAY CẢ KHI HẾT THỜI GIAN
+            if (paymentWindow && !paymentWindow.closed) {
+                paymentWindow.close();
+                console.log('🔒 Hết thời gian kiểm tra. Đã đóng tab thanh toán.');
+            }
+
+            showResult(true, 'Thanh toán đã được xử lý',
+                `<p class="result-note">Vui lòng đợi xác nhận. Nếu thanh toán thành công, xe có thể ra bãi ngay.</p>`);
+        }
+    }, 10000);
+}
+
+// ========== STRIPE PAYMENT ==========
+function initStripeElements() {
+    if (!stripeCardElement) {
+        const elements = stripe.elements();
+        stripeCardElement = elements.create('card', {
+            style: {
+                base: {
+                    fontSize: '16px',
+                    color: '#32325d',
+                    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                    '::placeholder': { color: '#aab7c4' }
+                },
+                invalid: { color: '#fa755a', iconColor: '#fa755a' }
+            }
+        });
+        stripeCardElement.mount('#stripeCardElement');
+
+        stripeCardElement.on('change', (event) => {
+            const displayError = document.getElementById('stripeCardErrors');
+            displayError.textContent = event.error ? event.error.message : '';
+        });
+    }
+}
+
+document.getElementById('stripePayBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('stripePayBtn');
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+
+    try {
+        const formData = new FormData();
+        formData.append('action', 'process_payment');
+        formData.append('vehicle_id', currentVehicle.id);
+        formData.append('payment_method', 'stripe');
+
+        const response = await fetch('/kiosk/payment', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (!result.success || !result.client_secret) {
+            throw new Error(result.message || 'Không thể tạo thanh toán');
+        }
+
+        const {error, paymentIntent} = await stripe.confirmCardPayment(result.client_secret, {
+            payment_method: { card: stripeCardElement }
+        });
+
+        if (error) {
+            throw new Error(error.message);
+        }
+
+        if (paymentIntent.status === 'succeeded') {
+            const confirmData = new FormData();
+            confirmData.append('action', 'confirm_stripe_kiosk');
+            confirmData.append('payment_intent_id', paymentIntent.id);
+            confirmData.append('vehicle_id', currentVehicle.id);
+
+            const confirmResponse = await fetch('/kiosk/payment', {
+                method: 'POST',
+                body: confirmData
+            });
+
+            const confirmResult = await confirmResponse.json();
+
+            if (confirmResult.success) {
+                showResult(true, 'Thanh toán Stripe thành công!', `
+                    <div class="result-info">
+                        <h5><i class="fas fa-check-circle"></i> Thanh toán hoàn tất</h5>
+                        <p>Biển số: <strong>${currentVehicle.license_plate}</strong></p>
+                        <p>Số tiền: <strong>${currentVehicle.parking_fee.toLocaleString('vi-VN')} VND</strong></p>
+                        <p class="success-note">✅ Xe có thể ra bãi trong vòng 60 phút</p>
+                    </div>
+                `);
+            } else {
+                throw new Error(confirmResult.message);
+            }
+        }
+    } catch (error) {
+        showMessage(`Lỗi thanh toán: ${error.message}`, 'danger', 'searchMessage');
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+});
+
+// ========== BACK BUTTONS ==========
+document.getElementById('backToSearchBtn').addEventListener('click', () => {
+    currentVehicle = null;
+    showSection('searchSection');
+});
+
+document.getElementById('backToVehicleBtn').addEventListener('click', () => {
+    stopCardQRScanner();
+    showSection('vehicleInfoSection');
+});
+
+document.getElementById('newTransactionBtn').addEventListener('click', () => {
+    window.location.reload();
+});
+
+// ========== UTILITY FUNCTIONS ==========
+function showMessage(message, type, elementId) {
+    const element = document.getElementById(elementId);
+    const alertClass = type === 'info' ? 'alert-info' : type === 'warning' ? 'alert-warning' : type === 'danger' ? 'alert-danger' : 'alert-success';
+    element.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+
+    if (type !== 'info') {
+        setTimeout(() => element.innerHTML = '', 5000);
+    }
+}
+
+function showResult(success, message, details = '') {
+    showSection('resultSection');
+
+    const icon = success ?
+        '<i class="fas fa-check-circle success-icon"></i>' :
+        '<i class="fas fa-times-circle error-icon"></i>';
+
+    document.getElementById('resultIcon').innerHTML = icon;
+    document.getElementById('resultMessage').textContent = message;
+    document.getElementById('resultDetails').innerHTML = details;
+}
+
+// ========== INIT ON PAGE LOAD ==========
+window.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 Initializing Kiosk Payment System...');
+
+    const hasCamera = await setupCameras();
+    if (hasCamera) {
+        console.log('✅ Cameras ready');
+    }
+});
+
+// ========== CLEANUP ==========
+window.addEventListener('beforeunload', () => {
+    stopVehicleQRScanner();
+    stopCardQRScanner();
+});
+</script>
+
+<style>
+/* ========== GLOBAL STYLES ========== */
+.kiosk-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+    padding: 40px 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.bg-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232563eb' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+    z-index: 0;
+}
+
+/* ========== HEADER ========== */
+.kiosk-header {
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 1;
+    animation: fadeInDown 0.6s ease;
+}
+
+.badge-ai {
+    display: inline-block;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.badge-ai i {
+    margin-right: 8px;
+}
+
+.main-title {
+    font-size: 48px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 12px;
+}
+
+.subtitle {
+    font-size: 18px;
+    color: #64748b;
+}
+
+/* ========== PROGRESS STEPS ========== */
+.progress-steps {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+}
+
+.step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    opacity: 0.5;
+}
+
+.step-item.active {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.step-item.completed {
+    opacity: 0.7;
+}
+
+.step-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: white;
+    color: #94a3b8;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.step-item.active .step-circle {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    border-color: #2563eb;
+    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+}
+
+.step-item.completed .step-circle {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+}
+
+.step-item span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.step-line {
+    width: 60px;
+    height: 2px;
+    background: #e2e8f0;
+    transition: all 0.5s ease;
+}
+
+.step-item.completed ~ .step-line,
+.step-item.active ~ .step-line {
+    background: linear-gradient(90deg, #2563eb, #1d4ed8);
+}
+
+/* ========== MAIN CARD ========== */
+.main-card {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 32px;
+    padding: 48px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.card-decorator {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.3;
+    z-index: 0;
+}
+
+.decorator-1 {
+    top: -100px;
+    right: -100px;
+    width: 300px;
+    height: 300px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+}
+
+.decorator-2 {
+    bottom: -100px;
+    left: -100px;
+    width: 250px;
+    height: 250px;
+    background: linear-gradient(135deg, #ec4899, #f59e0b);
+}
+
+/* ========== SECTION CONTENT ========== */
+.section-content {
+    display: none;
+    position: relative;
+    z-index: 1;
+}
+
+.section-content.active {
+    display: block;
+    animation: slideUp 0.5s ease;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.section-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: white;
+}
+
+.section-icon.bg-blue {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.section-icon.bg-green {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+}
+
+.section-icon.bg-purple {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.section-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+/* ========== MODE TOGGLE ========== */
+.mode-toggle {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 16px 24px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mode-btn:hover {
+    border-color: #2563eb;
+    background: #f0f9ff;
+}
+
+.mode-btn.active {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    border-color: #2563eb;
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+}
+
+.mode-btn i {
+    margin-right: 8px;
+}
+
+/* ========== PLATE INPUT ========== */
+.plate-input-group {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.plate-input {
+    width: 100%;
+    padding: 20px 60px 20px 20px;
+    font-size: 32px;
+    font-weight: 700;
+    border: 3px solid #e2e8f0;
+    border-radius: 16px;
+    outline: none;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.plate-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.input-icon {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 32px;
+    color: #cbd5e1;
+}
+
+/* ========== BUTTONS ========== */
+.btn-primary {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    border: none;
+    padding: 18px 32px;
+    border-radius: 16px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    padding: 18px 32px;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+.btn-search {
+    width: 100%;
+}
+
+.btn-large {
+    padding: 20px 40px;
+    font-size: 20px;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+/* ========== QR SCANNER ========== */
+.qr-scanner-box {
+    background: linear-gradient(135deg, #f8fafc, #e0f2fe);
+    border: 2px dashed #3b82f6;
+    border-radius: 24px;
+    padding: 32px;
+    text-align: center;
+}
+
+.camera-select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    outline: none;
+}
+
+.scanner-wrapper {
+    position: relative;
+    display: inline-block;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    margin-bottom: 16px;
+}
+
+.scanner-wrapper video {
+    display: block;
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    border-radius: 20px;
+}
+
+.scanner-wrapper.small video {
+    max-width: 350px;
+}
+
+.scanner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.scanner-frame {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    border: 3px solid #3b82f6;
+    border-radius: 16px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.scanner-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #475569;
+    font-weight: 600;
+}
+
+.scanner-status i {
+    font-size: 20px;
+    color: #3b82f6;
+}
+
+/* ========== VEHICLE INFO ========== */
+.vehicle-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.vehicle-details-card {
+    background: linear-gradient(135deg, #f8fafc, #e0f2fe);
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 24px;
+}
+
+.vehicle-plate-display {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.plate-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 32px;
+}
+
+.label {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0 0 4px 0;
+}
+
+.plate-number {
+    font-size: 36px;
+    font-weight: 700;
+    color: #2563eb;
+    margin: 0;
+}
+
+.info-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-row span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.info-row strong {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+/* ========== FEE DISPLAY ========== */
+.fee-display-card {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    border-radius: 24px;
+    padding: 40px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 12px 24px rgba(22, 163, 74, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.fee-display-card:hover {
+    transform: scale(1.05);
+}
+
+.fee-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.9;
+}
+
+.fee-label {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    opacity: 0.9;
+}
+
+.fee-amount {
+    font-size: 56px;
+    font-weight: 700;
+    margin: 8px 0;
+}
+
+.fee-currency {
+    font-size: 24px;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.fee-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 12px 20px;
+    border-radius: 12px;
+    margin-top: 24px;
+    font-size: 14px;
+}
+
+.fee-badge i {
+    margin-right: 6px;
+}
+
+/* ========== ACTION BUTTONS ========== */
+.action-buttons {
+    display: flex;
+    gap: 16px;
+}
+
+/* ========== PAYMENT METHODS ========== */
+.payment-methods-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.payment-method-card {
+    background: white;
+    border: 3px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 32px 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.payment-method-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    border-color: #3b82f6;
+}
+
+.payment-method-card.active {
+    border-color: #2563eb;
+    background: #f0f9ff;
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.2);
+}
+
+.payment-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 40px;
+    color: white;
+}
+
+.bg-gradient-blue {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.bg-gradient-purple {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.bg-gradient-pink {
+    background: linear-gradient(135deg, #ec4899, #db2777);
+}
+
+.bg-gradient-orange {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.payment-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+/* ========== PAYMENT FORM ========== */
+.payment-form-card {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.form-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stripe-element {
+    background: white;
+    padding: 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+/* ========== RESULT ========== */
+.result-container {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.result-icon {
+    margin-bottom: 24px;
+}
+
+.success-icon {
+    font-size: 96px;
+    color: #16a34a;
+    animation: bounceIn 0.8s ease;
+}
+
+.error-icon {
+    font-size: 96px;
+    color: #ef4444;
+    animation: shake 0.5s ease;
+}
+
+.result-message {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 16px;
+}
+
+.result-details {
+    margin-bottom: 32px;
+}
+
+.result-info {
+    background: #f0fdf4;
+    border: 2px solid #86efac;
+    border-radius: 16px;
+    padding: 24px;
+    margin: 0 auto;
+    max-width: 500px;
+}
+
+.result-info h5 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #16a34a;
+    margin-bottom: 16px;
+}
+
+.result-info p {
+    font-size: 16px;
+    color: #475569;
+    margin: 8px 0;
+}
+
+.result-note {
+    color: #0284c7;
+    font-weight: 600;
+    margin-top: 16px;
+}
+
+.success-note {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+/* ========== MESSAGE BOX ========== */
+.message-box {
+    margin-top: 16px;
+}
+
+.alert {
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.alert-info {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #93c5fd;
+}
+
+.alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+}
+
+.alert-warning {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+.alert-danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3), 0 0 20px #3b82f6;
+    }
+    50% {
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3), 0 0 40px #3b82f6;
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-10px);
+    }
+    75% {
+        transform: translateX(10px);
+    }
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .main-title {
+        font-size: 32px;
+    }
+
+    .main-card {
+        padding: 24px;
+        border-radius: 24px;
+    }
+
+    .section-header h2 {
+        font-size: 22px;
+    }
+
+    .plate-input {
+        font-size: 24px;
+        padding: 16px 50px 16px 16px;
+    }
+
+    .input-icon {
+        font-size: 24px;
+        right: 16px;
+    }
+
+    .vehicle-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-methods-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .progress-steps {
+        gap: 8px;
+    }
+
+    .step-circle {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+
+    .step-item span {
+        display: none;
+    }
+
+    .step-line {
+        width: 30px;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,1379 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Doanh thu - Quản lý bãi đỗ xe{% endblock %}
+{% block page_title %}Doanh Thu Bãi Đỗ Xe{% endblock %}
+{% block page_subtitle %}Tổng hợp doanh thu từ thanh toán thẻ thành viên, MoMo, Stripe và VNPay{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --vnpay-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+        --secondary-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        --card-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+        --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+        --shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    body {
+        background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+    }
+
+    /* Filter Card - Modern Glass Morphism */
+    .filter-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        margin-bottom: 30px;
+    }
+
+    .filter-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .filter-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .filter-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: white;
+        background: var(--primary-gradient);
+    }
+
+    .filter-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .export-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-export {
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.875rem;
+    }
+
+    .btn-export.excel {
+        background: linear-gradient(135deg, #1e7e34 0%, #28a745 100%);
+        color: white;
+    }
+
+    .btn-export.pdf {
+        background: linear-gradient(135deg, #c82333 0%, #dc3545 100%);
+        color: white;
+    }
+
+    .btn-export:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+        font-size: 0.875rem;
+    }
+
+    .btn-modern {
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-modern.primary {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .btn-modern.secondary {
+        background: #e2e8f0;
+        color: #475569;
+    }
+
+    .btn-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .alert-modern {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        border: 2px solid rgba(102, 126, 234, 0.2);
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-top: 15px;
+    }
+
+    /* Revenue Stats Cards */
+    .revenue-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .revenue-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        transition: height 0.3s ease;
+    }
+
+    .revenue-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .revenue-card:hover::before {
+        height: 100%;
+        opacity: 0.1;
+    }
+
+    .revenue-card.total::before { background: var(--primary-gradient); }
+    .revenue-card.card-payment::before { background: var(--success-gradient); }
+    .revenue-card.momo::before { background: var(--info-gradient); }
+    .revenue-card.stripe::before { background: var(--warning-gradient); }
+    .revenue-card.vnpay::before { background: var(--vnpay-gradient); }
+    .revenue-card.daily::before { background: var(--danger-gradient); }
+    .revenue-card.weekly::before { background: var(--secondary-gradient); }
+
+    .revenue-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        margin-bottom: 15px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .revenue-icon.total { background: var(--primary-gradient); }
+    .revenue-icon.card-payment { background: var(--success-gradient); }
+    .revenue-icon.momo { background: var(--info-gradient); }
+    .revenue-icon.stripe { background: var(--warning-gradient); }
+    .revenue-icon.vnpay { background: var(--vnpay-gradient); }
+    .revenue-icon.daily { background: var(--danger-gradient); }
+    .revenue-icon.weekly { background: var(--secondary-gradient); }
+    .revenue-icon.motorbike { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    .revenue-icon.car { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+
+    .revenue-label {
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .revenue-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 5px 0;
+        line-height: 1;
+    }
+
+    .revenue-subtext {
+        color: #94a3b8;
+        font-size: 0.75rem;
+        margin-top: 5px;
+    }
+
+    .transaction-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: 8px;
+    }
+
+    .transaction-badge.success {
+        background: rgba(17, 153, 142, 0.1);
+        color: #11998e;
+    }
+
+    .transaction-badge.info {
+        background: rgba(79, 172, 254, 0.1);
+        color: #4facfe;
+    }
+
+    .transaction-badge.warning {
+        background: rgba(245, 87, 108, 0.1);
+        color: #f5576c;
+    }
+
+    .transaction-badge.danger {
+        background: rgba(255, 107, 107, 0.1);
+        color: #ff6b6b;
+    }
+
+    .transaction-badge.primary {
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+    }
+
+    /* Section Headers */
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin: 40px 0 25px 0;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .section-header h4 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-header i {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: var(--primary-gradient);
+        color: white;
+        font-size: 18px;
+    }
+
+    /* Chart Cards */
+    .chart-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+        height: 100%;
+    }
+
+    .chart-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .chart-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: white;
+        background: var(--primary-gradient);
+    }
+
+    .chart-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+
+    /* Payment Method Details */
+    .payment-detail-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .payment-detail-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .payment-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .payment-header.card-payment { border-bottom-color: rgba(17, 153, 142, 0.2); }
+    .payment-header.momo { border-bottom-color: rgba(79, 172, 254, 0.2); }
+    .payment-header.stripe { border-bottom-color: rgba(240, 147, 251, 0.2); }
+    .payment-header.vnpay { border-bottom-color: rgba(255, 107, 107, 0.2); }
+
+    .payment-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+    }
+
+    .payment-icon.card-payment { background: var(--success-gradient); }
+    .payment-icon.momo { background: var(--info-gradient); }
+    .payment-icon.stripe { background: var(--warning-gradient); }
+    .payment-icon.vnpay { background: var(--vnpay-gradient); }
+
+    .payment-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .payment-metric {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .payment-metric:last-child {
+        border-bottom: none;
+        padding-top: 15px;
+        margin-top: 15px;
+        border-top: 2px solid #f1f5f9;
+    }
+
+    .payment-metric-label {
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .payment-metric-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .payment-metric-value.highlight {
+        font-size: 1.5rem;
+    }
+
+    .payment-metric-value.success { color: #11998e; }
+    .payment-metric-value.info { color: #4facfe; }
+    .payment-metric-value.warning { color: #f093fb; }
+    .payment-metric-value.danger { color: #ff6b6b; }
+
+    /* Table Styling */
+    .modern-table-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+    }
+
+    .table-modern {
+        margin: 0;
+    }
+
+    .table-modern thead th {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        color: #475569;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        padding: 15px;
+        border: none;
+    }
+
+    .table-modern tbody td {
+        padding: 15px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #475569;
+    }
+
+    .table-modern tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table-modern tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .table-modern tfoot td {
+        padding: 15px;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        font-weight: 700;
+        color: #1e293b;
+        border: none;
+    }
+
+    .text-success-modern { color: #11998e !important; }
+    .text-info-modern { color: #4facfe !important; }
+    .text-warning-modern { color: #f5576c !important; }
+    .text-danger-modern { color: #ff6b6b !important; }
+
+    /* Animations */
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-in {
+        animation: slideInUp 0.5s ease forwards;
+    }
+
+    .row > div {
+        animation: slideInUp 0.5s ease forwards;
+    }
+
+    .row > div:nth-child(1) { animation-delay: 0.1s; }
+    .row > div:nth-child(2) { animation-delay: 0.2s; }
+    .row > div:nth-child(3) { animation-delay: 0.3s; }
+    .row > div:nth-child(4) { animation-delay: 0.4s; }
+    .row > div:nth-child(5) { animation-delay: 0.5s; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .revenue-value {
+            font-size: 1.5rem;
+        }
+
+        .section-header h4 {
+            font-size: 1.25rem;
+        }
+
+        .chart-container {
+            height: 250px;
+        }
+
+        .export-buttons {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .btn-export {
+            width: 100%;
+        }
+
+        .filter-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .export-buttons {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Filter Section -->
+    <div class="filter-card animate-in">
+        <div class="filter-header">
+            <div class="filter-header-left">
+                <div class="filter-icon">
+                    <i class="fas fa-filter"></i>
+                </div>
+                <h6 class="filter-title">Bộ Lọc Doanh Thu</h6>
+            </div>
+            <div class="export-buttons">
+                <button onclick="exportToExcel()" class="btn-export excel">
+                    <i class="fas fa-file-excel"></i> Xuất Excel
+                </button>
+                <button onclick="exportToPDF()" class="btn-export pdf">
+                    <i class="fas fa-file-pdf"></i> Xuất PDF
+                </button>
+            </div>
+        </div>
+
+        <form id="revenueFilterForm" method="GET" action="/admin/revenue">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="dateRange" class="form-label">
+                        <i class="fas fa-calendar-alt"></i> Khoảng thời gian
+                    </label>
+                    <select class="form-select" id="dateRange" name="date_range">
+                        <option value="today" {% if date_range == 'today' %}selected{% endif %}>Hôm nay</option>
+                        <option value="week" {% if date_range == 'week' or not date_range %}selected{% endif %}>Tuần này (7 ngày)</option>
+                        <option value="month" {% if date_range == 'month' %}selected{% endif %}>Tháng này (30 ngày)</option>
+                        <option value="custom" {% if date_range == 'custom' %}selected{% endif %}>Tùy chọn</option>
+                         <option value="all" {% if date_range == 'all' %}selected{% endif %}>Tất cả giao dịch</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 mb-3 custom-date-range" {% if date_range != 'custom' %}style="display: none;"{% endif %}>
+                    <label for="startDate" class="form-label">
+                        <i class="fas fa-calendar-check"></i> Từ ngày
+                    </label>
+                    <input type="date" class="form-control" id="startDate" name="start_date" value="{{ start_date }}">
+                </div>
+
+                <div class="col-md-3 mb-3 custom-date-range" {% if date_range != 'custom' %}style="display: none;"{% endif %}>
+                    <label for="endDate" class="form-label">
+                        <i class="fas fa-calendar-check"></i> Đến ngày
+                    </label>
+                    <input type="date" class="form-control" id="endDate" name="end_date" value="{{ end_date }}">
+                </div>
+
+                <div class="col-md-3 mb-3 d-flex align-items-end">
+                    <div class="w-100 d-flex gap-2">
+                        <button type="submit" class="btn-modern primary flex-fill">
+                            <i class="fas fa-search"></i> Xem
+                        </button>
+                        <button type="button" id="resetFilter" class="btn-modern secondary flex-fill">
+                            <i class="fas fa-redo"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert-modern">
+                <i class="fas fa-info-circle"></i>
+                <strong>Đang xem:</strong>
+                {% if date_range == 'today' %}
+                    Doanh thu hôm nay ({{ start_date }})
+                {% elif date_range == 'week' %}
+                    Doanh thu 7 ngày gần nhất ({{ start_date }} - {{ end_date }})
+                {% elif date_range == 'month' %}
+                    Doanh thu 30 ngày gần nhất ({{ start_date }} - {{ end_date }})
+                {% elif date_range == 'all' %}
+                    Tất cả giao dịch ({{ start_date }} - {{ end_date }})
+                {% elif date_range == 'custom' %}
+                    Doanh thu tùy chỉnh ({{ start_date }} - {{ end_date }})
+                {% else %}
+                    Doanh thu 7 ngày gần nhất
+                {% endif %}
+                <span style="margin-left: 20px;">
+                    <strong>Tổng giao dịch:</strong> {{ total_transactions | default(0) }}
+                </span>
+            </div>
+        </form>
+    </div>
+
+    <!-- Revenue Overview - Row 1 (5 cards including VNPay) -->
+    <div class="section-header animate-in">
+        <h4><i class="fas fa-chart-line"></i> Tổng quan doanh thu</h4>
+    </div>
+
+    <div class="row">
+        <div class="col-xl col-lg-4 col-md-6 mb-4">
+            <div class="revenue-card total">
+                <div class="revenue-icon total">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="revenue-label">Tổng Doanh Thu</div>
+                <div class="revenue-value">{{ total_revenue | int | format_currency }}</div>
+                <div class="revenue-subtext">VND</div>
+                <div class="transaction-badge primary">{{ total_transactions | default(0) }} giao dịch</div>
+            </div>
+        </div>
+
+        <div class="col-xl col-lg-4 col-md-6 mb-4">
+            <div class="revenue-card card-payment">
+                <div class="revenue-icon card-payment">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="revenue-label">Thẻ Thành Viên</div>
+                <div class="revenue-value">{{ card_revenue | int | format_currency }}</div>
+                <div class="revenue-subtext">VND</div>
+                <div class="transaction-badge success">{{ card_transaction_count | default(0) }} GD</div>
+            </div>
+        </div>
+
+        <div class="col-xl col-lg-4 col-md-6 mb-4">
+            <div class="revenue-card momo">
+                <div class="revenue-icon momo">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <div class="revenue-label">MoMo</div>
+                <div class="revenue-value">{{ momo_revenue | int | format_currency }}</div>
+                <div class="revenue-subtext">VND</div>
+                <div class="transaction-badge info">{{ momo_transaction_count | default(0) }} GD</div>
+            </div>
+        </div>
+
+        <div class="col-xl col-lg-4 col-md-6 mb-4">
+            <div class="revenue-card stripe">
+                <div class="revenue-icon stripe">
+                    <i class="fab fa-cc-stripe"></i>
+                </div>
+                <div class="revenue-label">Stripe</div>
+                <div class="revenue-value">{{ stripe_revenue | int | format_currency }}</div>
+                <div class="revenue-subtext">VND</div>
+                <div class="transaction-badge warning">{{ stripe_transaction_count | default(0) }} GD</div>
+            </div>
+        </div>
+
+        <div class="col-xl col-lg-4 col-md-6 mb-4">
+            <div class="revenue-card vnpay">
+                <div class="revenue-icon vnpay">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="revenue-label">VNPay</div>
+                <div class="revenue-value">{{ vnpay_revenue | default(0) | int | format_currency }}</div>
+                <div class="revenue-subtext">VND</div>
+                <div class="transaction-badge danger">{{ vnpay_transaction_count | default(0) }} GD</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Overview - Row 2 -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="revenue-card daily">
+                <div class="revenue-icon daily">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="revenue-label">Hôm Nay</div>
+                <div class="revenue-value">{{ total_daily_revenue | int | format_currency }}</div>
+                <div class="revenue-subtext">VND</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="revenue-card weekly">
+                <div class="revenue-icon weekly">
+                    <i class="fas fa-calendar-week"></i>
+                </div>
+                <div class="revenue-label">Tuần Này</div>
+                <div class="revenue-value">{{ total_weekly_revenue | int | format_currency }}</div>
+                <div class="revenue-subtext">VND</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="revenue-card total">
+                <div class="revenue-icon motorbike">
+                    <i class="fas fa-motorcycle"></i>
+                </div>
+                <div class="revenue-label">Xe Máy</div>
+                <div class="revenue-value">{{ total_motorbike_revenue | int | format_currency }}</div>
+                <div class="revenue-subtext">VND</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="revenue-card momo">
+                <div class="revenue-icon car">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div class="revenue-label">Xe Hơi</div>
+                <div class="revenue-value">{{ total_car_revenue | int | format_currency }}</div>
+                <div class="revenue-subtext">VND</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="section-header animate-in">
+        <h4><i class="fas fa-chart-bar"></i> Phân tích doanh thu</h4>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h6 class="chart-title">Xu Hướng Doanh Thu Theo Ngày</h6>
+                </div>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h6 class="chart-title">Phương Thức Thanh Toán</h6>
+                </div>
+                <div class="chart-container">
+                    <canvas id="paymentMethodChart"></canvas>
+                </div>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #f1f5f9;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span style="font-size: 0.875rem; color: #64748b;">
+                            <i class="fas fa-circle" style="color: #11998e;"></i> Thẻ TV
+                        </span>
+                        <strong style="color: #11998e;">{{ card_revenue | int | format_currency }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span style="font-size: 0.875rem; color: #64748b;">
+                            <i class="fas fa-circle" style="color: #4facfe;"></i> MoMo
+                        </span>
+                        <strong style="color: #4facfe;">{{ momo_revenue | int | format_currency }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span style="font-size: 0.875rem; color: #64748b;">
+                            <i class="fas fa-circle" style="color: #f5576c;"></i> Stripe
+                        </span>
+                        <strong style="color: #f5576c;">{{ stripe_revenue | int | format_currency }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span style="font-size: 0.875rem; color: #64748b;">
+                            <i class="fas fa-circle" style="color: #ff6b6b;"></i> VNPay
+                        </span>
+                        <strong style="color: #ff6b6b;">{{ vnpay_revenue | default(0) | int | format_currency }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h6 class="chart-title">Doanh Thu Theo Loại Xe</h6>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="vehicleTypeChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-center">
+                        <div class="w-100" style="padding: 20px;">
+                            <div class="d-flex justify-content-between align-items-center mb-3 p-3" style="background: linear-gradient(135deg, rgba(245, 159, 0, 0.1), rgba(253, 126, 20, 0.1)); border-radius: 12px;">
+                                <span style="font-size: 1rem; color: #475569; font-weight: 600;">
+                                    <i class="fas fa-motorcycle" style="color: #f59f00; font-size: 1.25rem;"></i> Xe Máy
+                                </span>
+                                <strong style="color: #f59f00; font-size: 1.5rem;">{{ total_motorbike_revenue | int | format_currency }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center p-3" style="background: linear-gradient(135deg, rgba(95, 61, 196, 0.1), rgba(112, 72, 232, 0.1)); border-radius: 12px;">
+                                <span style="font-size: 1rem; color: #475569; font-weight: 600;">
+                                    <i class="fas fa-car" style="color: #5f3dc4; font-size: 1.25rem;"></i> Xe Hơi
+                                </span>
+                                <strong style="color: #5f3dc4; font-size: 1.5rem;">{{ total_car_revenue | int | format_currency }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Method Details (Updated with 4 cards including VNPay) -->
+    <div class="section-header animate-in">
+        <h4><i class="fas fa-credit-card"></i> Chi tiết theo phương thức</h4>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <div class="payment-detail-card">
+                <div class="payment-header card-payment">
+                    <div class="payment-icon card-payment">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <h6 class="payment-title">Thẻ Thành Viên</h6>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Số giao dịch:</span>
+                    <span class="payment-metric-value">{{ card_transaction_count | default(0) }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Trung bình/GD:</span>
+                    <span class="payment-metric-value">{{ avg_card_value | default(0) | int | format_currency }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Hôm nay:</span>
+                    <span class="payment-metric-value">{{ card_daily_revenue | int | format_currency }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Tuần này:</span>
+                    <span class="payment-metric-value">{{ card_weekly_revenue | int | format_currency }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Tổng cộng:</span>
+                    <span class="payment-metric-value highlight success">{{ card_revenue | int | format_currency }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 mb-4">
+            <div class="payment-detail-card">
+                <div class="payment-header momo">
+                    <div class="payment-icon momo">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h6 class="payment-title">MoMo</h6>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Số giao dịch:</span>
+                    <span class="payment-metric-value">{{ momo_transaction_count | default(0) }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Trung bình/GD:</span>
+                    <span class="payment-metric-value">{{ avg_momo_value | default(0) | int | format_currency }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Hôm nay:</span>
+                    <span class="payment-metric-value">{{ momo_daily_revenue | int | format_currency }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Tuần này:</span>
+                    <span class="payment-metric-value">{{ momo_weekly_revenue | int | format_currency }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Tổng cộng:</span>
+                    <span class="payment-metric-value highlight info">{{ momo_revenue | int | format_currency }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 mb-4">
+            <div class="payment-detail-card">
+                <div class="payment-header stripe">
+                    <div class="payment-icon stripe">
+                        <i class="fab fa-cc-stripe"></i>
+                    </div>
+                    <h6 class="payment-title">Stripe</h6>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Số giao dịch:</span>
+                    <span class="payment-metric-value">{{ stripe_transaction_count | default(0) }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Trung bình/GD:</span>
+                    <span class="payment-metric-value">{{ avg_stripe_value | default(0) | int | format_currency }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Hôm nay:</span>
+                    <span class="payment-metric-value">{{ stripe_daily_revenue | int | format_currency }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Tuần này:</span>
+                    <span class="payment-metric-value">{{ stripe_weekly_revenue | int | format_currency }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Tổng cộng:</span>
+                    <span class="payment-metric-value highlight warning">{{ stripe_revenue | int | format_currency }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 mb-4">
+            <div class="payment-detail-card">
+                <div class="payment-header vnpay">
+                    <div class="payment-icon vnpay">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h6 class="payment-title">VNPay</h6>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Số giao dịch:</span>
+                    <span class="payment-metric-value">{{ vnpay_transaction_count | default(0) }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Trung bình/GD:</span>
+                    <span class="payment-metric-value">{{ avg_vnpay_value | default(0) | int | format_currency }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Hôm nay:</span>
+                    <span class="payment-metric-value">{{ vnpay_daily_revenue | default(0) | int | format_currency }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Tuần này:</span>
+                    <span class="payment-metric-value">{{ vnpay_weekly_revenue | default(0) | int | format_currency }}</span>
+                </div>
+                <div class="payment-metric">
+                    <span class="payment-metric-label">Tổng cộng:</span>
+                    <span class="payment-metric-value highlight danger">{{ vnpay_revenue | default(0) | int | format_currency }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Revenue Table (Updated with VNPay column) -->
+    <div class="section-header animate-in">
+        <h4><i class="fas fa-table"></i> Phân tích hàng ngày</h4>
+    </div>
+
+    <div class="modern-table-card">
+        <div class="table-responsive">
+            <table class="table table-modern" id="revenueTable">
+                <thead>
+                    <tr>
+                        <th>Ngày</th>
+                        <th>Thẻ TV</th>
+                        <th>MoMo</th>
+                        <th>Stripe</th>
+                        <th>VNPay</th>
+                        <th>Tổng Cộng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day in daily_revenue %}
+                    <tr>
+                        <td style="font-weight: 600;">{{ day.date }}</td>
+                        <td class="text-success-modern">{{ day.card_revenue | int | format_currency }}</td>
+                        <td class="text-info-modern">{{ day.momo_revenue | int | format_currency }}</td>
+                        <td class="text-warning-modern">{{ day.stripe_revenue | int | format_currency }}</td>
+                        <td class="text-danger-modern">{{ day.vnpay_revenue | default(0) | int | format_currency }}</td>
+                        <td style="font-weight: 700;">{{ day.total | int | format_currency }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td>Tổng cộng</td>
+                        <td class="text-success-modern">{{ card_revenue | int | format_currency }}</td>
+                        <td class="text-info-modern">{{ momo_revenue | int | format_currency }}</td>
+                        <td class="text-warning-modern">{{ stripe_revenue | int | format_currency }}</td>
+                        <td class="text-danger-modern">{{ vnpay_revenue | default(0) | int | format_currency }}</td>
+                        <td>{{ total_revenue | int | format_currency }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ============================================
+    // DATE RANGE FILTER
+    // ============================================
+    document.getElementById('dateRange').addEventListener('change', function() {
+        const customDateElements = document.querySelectorAll('.custom-date-range');
+        if (this.value === 'custom') {
+            customDateElements.forEach(el => el.style.display = 'block');
+        } else {
+            customDateElements.forEach(el => el.style.display = 'none');
+        }
+    });
+
+    // Reset Filter
+    document.getElementById('resetFilter').addEventListener('click', function() {
+        window.location.href = '/admin/revenue';
+    });
+
+    // ============================================
+    // EXPORT TO EXCEL - GỌI BACKEND
+    // ============================================
+    window.exportToExcel = function() {
+        const params = new URLSearchParams(window.location.search);
+        window.location.href = '/admin/export_revenue_excel?' + params.toString();
+    };
+
+    // ============================================
+    // EXPORT TO PDF - GỌI BACKEND
+    // ============================================
+    window.exportToPDF = function() {
+        const params = new URLSearchParams(window.location.search);
+        window.location.href = '/admin/export_revenue_pdf?' + params.toString();
+    };
+
+    // ============================================
+    // REVENUE TREND CHART (Updated with VNPay)
+    // ============================================
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const revenueChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [{% for day in daily_revenue %}'{{ day.date }}',{% endfor %}],
+            datasets: [
+                {
+                    label: 'Thẻ Thành Viên',
+                    data: [{% for day in daily_revenue %}{{ day.card_revenue | int }},{% endfor %}],
+                    borderColor: '#11998e',
+                    backgroundColor: 'rgba(17, 153, 142, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#11998e',
+                    pointBorderColor: 'white',
+                    pointBorderWidth: 2
+                },
+                {
+                    label: 'MoMo',
+                    data: [{% for day in daily_revenue %}{{ day.momo_revenue | int }},{% endfor %}],
+                    borderColor: '#4facfe',
+                    backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#4facfe',
+                    pointBorderColor: 'white',
+                    pointBorderWidth: 2
+                },
+                {
+                    label: 'Stripe',
+                    data: [{% for day in daily_revenue %}{{ day.stripe_revenue | int }},{% endfor %}],
+                    borderColor: '#f5576c',
+                    backgroundColor: 'rgba(245, 87, 108, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#f5576c',
+                    pointBorderColor: 'white',
+                    pointBorderWidth: 2
+                },
+                {
+                    label: 'VNPay',
+                    data: [{% for day in daily_revenue %}{{ day.vnpay_revenue | default(0) | int }},{% endfor %}],
+                    borderColor: '#ff6b6b',
+                    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#ff6b6b',
+                    pointBorderColor: 'white',
+                    pointBorderWidth: 2
+                },
+                {
+                    label: 'Tổng Doanh Thu',
+                    data: [{% for day in daily_revenue %}{{ day.total | int }},{% endfor %}],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 4,
+                    borderDash: [8, 4],
+                    pointRadius: 6,
+                    pointHoverRadius: 9,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: 'white',
+                    pointBorderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    align: 'end',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            size: 12,
+                            weight: '600'
+                        },
+                        boxWidth: 8,
+                        boxHeight: 8
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    cornerRadius: 8,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' VND';
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        font: {
+                            size: 11
+                        },
+                        color: '#64748b',
+                        callback: function(value) {
+                            return new Intl.NumberFormat('vi-VN').format(value);
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    },
+                    border: {
+                        display: false
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 11
+                        },
+                        color: '#64748b'
+                    },
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    border: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // ============================================
+    // PAYMENT METHOD CHART (Updated with VNPay)
+    // ============================================
+    const paymentCtx = document.getElementById('paymentMethodChart').getContext('2d');
+    const paymentMethodChart = new Chart(paymentCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Thẻ Thành Viên', 'MoMo', 'Stripe', 'VNPay'],
+            datasets: [{
+                data: [
+                    {{ card_revenue | int }},
+                    {{ momo_revenue | int }},
+                    {{ stripe_revenue | int }},
+                    {{ vnpay_revenue | default(0) | int }}
+                ],
+                backgroundColor: [
+                    'rgba(17, 153, 142, 0.9)',
+                    'rgba(79, 172, 254, 0.9)',
+                    'rgba(245, 87, 108, 0.9)',
+                    'rgba(255, 107, 107, 0.9)'
+                ],
+                borderColor: 'white',
+                borderWidth: 3,
+                hoverOffset: 15
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    cornerRadius: 8,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += new Intl.NumberFormat('vi-VN').format(context.parsed) + ' VND';
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            label += ` (${percentage}%)`;
+                            return label;
+                        }
+                    }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // ============================================
+    // VEHICLE TYPE CHART
+    // ============================================
+    const vehicleCtx = document.getElementById('vehicleTypeChart').getContext('2d');
+    const vehicleTypeChart = new Chart(vehicleCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Xe Máy', 'Xe Hơi'],
+            datasets: [{
+                data: [{{ total_motorbike_revenue | int }}, {{ total_car_revenue | int }}],
+                backgroundColor: [
+                    'rgba(245, 159, 0, 0.9)',
+                    'rgba(95, 61, 196, 0.9)'
+                ],
+                borderColor: 'white',
+                borderWidth: 3,
+                hoverOffset: 15
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    cornerRadius: 8,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += new Intl.NumberFormat('vi-VN').format(context.parsed) + ' VND';
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            label += ` (${percentage}%)`;
+                            return label;
+                        }
+                    }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // ============================================
+    // ANIMATIONS
+    // ============================================
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '0';
+                entry.target.style.transform = 'translateY(30px)';
+                setTimeout(() => {
+                    entry.target.style.transition = 'all 0.5s ease';
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, 100);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.revenue-card, .chart-card, .payment-detail-card').forEach(card => {
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}

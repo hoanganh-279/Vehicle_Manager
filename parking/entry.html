@@ -1,0 +1,1373 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --card-bg: rgba(255, 255, 255, 0.05);
+        --card-border: rgba(255, 255, 255, 0.1);
+        --shadow-glow: 0 8px 32px rgba(102, 126, 234, 0.2);
+        --text-glow: 0 0 20px rgba(102, 126, 234, 0.5);
+    }
+
+    /* Animated Background */
+    .ai-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        opacity: 0.15;
+        z-index: 0;
+    }
+
+    .ai-background::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background:
+            radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.3) 0%, transparent 50%);
+        animation: gradientPulse 8s ease-in-out infinite;
+    }
+
+    @keyframes gradientPulse {
+        0%, 100% { opacity: 0.5; transform: scale(1); }
+        50% { opacity: 0.8; transform: scale(1.1); }
+    }
+
+    /* Header Section */
+    .smart-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 30px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        box-shadow: var(--shadow-glow);
+        animation: fadeInDown 0.8s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .smart-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+        animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    .smart-header h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .smart-header .subtitle {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        margin-top: 10px;
+    }
+
+    /* Parking Zone Cards */
+    .parking-zones {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-bottom: 40px;
+        animation: fadeInUp 0.8s ease 0.2s backwards;
+    }
+
+    .zone-card {
+        background: var(--card-bg);
+        border: 2px solid var(--card-border);
+        border-radius: 20px;
+        padding: 30px;
+        backdrop-filter: blur(10px);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .zone-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+
+    .zone-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: var(--shadow-glow), 0 20px 60px rgba(0, 0, 0, 0.3);
+        border-color: rgba(102, 126, 234, 0.5);
+    }
+
+    .zone-card:hover::before {
+        opacity: 0.1;
+    }
+
+    .zone-card.motorbike-zone {
+        border-color: rgba(245, 87, 108, 0.3);
+    }
+
+    .zone-card.car-zone {
+        border-color: rgba(79, 172, 254, 0.3);
+    }
+
+    .zone-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .zone-icon {
+        width: 60px;
+        height: 60px;
+        background: var(--primary-gradient);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 20px;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        animation: iconFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes iconFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .zone-icon i {
+        font-size: 28px;
+        color: white;
+    }
+
+    .zone-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .zone-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-box {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .stat-box:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: scale(1.05);
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        display: block;
+        background: var(--success-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-value.warning {
+        background: var(--warning-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-value.danger {
+        background: var(--danger-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Progress Bar */
+    .smart-progress {
+        height: 30px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+        margin-bottom: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .smart-progress-bar {
+        height: 100%;
+        background: var(--success-gradient);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .smart-progress-bar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: progressShine 2s infinite;
+    }
+
+    @keyframes progressShine {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+
+    /* Alert Messages */
+    .smart-alert {
+        padding: 20px;
+        border-radius: 15px;
+        margin-top: 20px;
+        backdrop-filter: blur(10px);
+        border: 1px solid;
+        animation: slideInRight 0.5s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .smart-alert::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background: currentColor;
+    }
+
+    .smart-alert.alert-danger {
+        background: rgba(250, 112, 154, 0.1);
+        border-color: rgba(250, 112, 154, 0.3);
+        color: #fa709a;
+    }
+
+    .smart-alert.alert-warning {
+        background: rgba(240, 147, 251, 0.1);
+        border-color: rgba(240, 147, 251, 0.3);
+        color: #f093fb;
+    }
+
+    /* Camera Section */
+    .camera-panel {
+        background: var(--card-bg);
+        border: 2px solid var(--card-border);
+        border-radius: 20px;
+        padding: 30px;
+        backdrop-filter: blur(10px);
+        box-shadow: var(--shadow-glow);
+        margin-bottom: 30px;
+        animation: fadeInUp 0.8s ease 0.4s backwards;
+    }
+
+    .camera-panel-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid var(--card-border);
+    }
+
+    .camera-panel-header h4 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .camera-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+
+    .camera-box {
+        background: rgba(255, 255, 255, 0.03);
+        border: 2px solid var(--card-border);
+        border-radius: 15px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .camera-box:hover {
+        border-color: rgba(102, 126, 234, 0.5);
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.2);
+    }
+
+    .camera-box h5 {
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+
+    .camera-box h5 i {
+        color: #667eea;
+    }
+
+    .camera-select {
+        width: 100%;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        color: var(--text-primary);
+        margin-bottom: 15px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    .camera-select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .camera-video {
+    width: 100%;
+    aspect-ratio: 16 / 9;   /* hoặc 4/3 nếu webcam của bạn vậy */
+    border-radius: 12px;
+    border: 2px solid var(--card-border);
+    background: #000;
+    object-fit: cover;
+    display: block;
+}
+
+    @media (max-width: 768px) {
+        .camera-video {
+            height: 250px;
+        }
+    }
+
+    .camera-preview {
+    margin-top: 15px;
+    border-radius: 12px;
+    overflow: hidden;
+    width: 100%;
+    aspect-ratio: 16 / 9;   /* giống trên cho đều nhau */
+    display: block;
+}
+
+   .camera-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;      /* thay vì contain */
+    border-radius: 0;       /* vì khung ngoài đã bo góc */
+    border: none;
+    box-shadow: none;
+}
+
+    @media (max-width: 768px) {
+        .camera-preview {
+            min-height: 250px;
+            max-height: 250px;
+        }
+
+        .camera-preview img {
+            max-height: 250px;
+        }
+    }
+
+    /* Capture Button */
+    .capture-section {
+        text-align: center;
+        padding: 30px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 15px;
+        border: 1px solid var(--card-border);
+        margin-bottom: 30px;
+    }
+
+    .smart-btn {
+        padding: 18px 40px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        border: none;
+        border-radius: 15px;
+        background: var(--primary-gradient);
+        color: white;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .smart-btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .smart-btn:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    .smart-btn:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+    }
+
+    .smart-btn:active {
+        transform: translateY(-1px) scale(1.02);
+    }
+
+    .smart-btn:disabled {
+        background: linear-gradient(135deg, #666 0%, #999 100%);
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    .smart-btn i {
+        margin-right: 10px;
+    }
+
+    /* Processing Indicator */
+    .processing-indicator {
+        display: none;
+        text-align: center;
+        padding: 30px;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .processing-indicator.active {
+        display: block;
+    }
+
+    .spinner {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 20px;
+        border: 4px solid rgba(102, 126, 234, 0.2);
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Plates Selection */
+    .plates-selection-area {
+        display: none;
+        animation: fadeInUp 0.6s ease;
+        margin-top: 30px;
+    }
+
+    .plates-selection-area.active {
+        display: block;
+    }
+
+    .plates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+        margin: 25px 0;
+    }
+
+    .plate-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 2px solid var(--card-border);
+        border-radius: 15px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .plate-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .plate-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(102, 126, 234, 0.5);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .plate-card.selected {
+        border-color: #11998e;
+        background: rgba(17, 153, 142, 0.1);
+    }
+
+    .plate-card.selected::before {
+        opacity: 0.1;
+    }
+
+    .plate-image-preview {
+        width: 100%;
+        height: 120px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+        overflow: hidden;
+        border: 1px solid var(--card-border);
+    }
+
+    .plate-image-preview img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .plate-info {
+        position: relative;
+        z-index: 1;
+    }
+
+    .plate-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 15px 0;
+        background: var(--success-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .plate-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+
+    .plate-badge {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .plate-selection-input {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        margin-top: 15px;
+    }
+
+    .plate-selection-input input[type="radio"] {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+        accent-color: #11998e;
+    }
+
+    /* QR Result */
+    .qr-result {
+        display: none;
+        text-align: center;
+        padding: 40px;
+        background: rgba(17, 153, 142, 0.1);
+        border: 2px solid rgba(17, 153, 142, 0.3);
+        border-radius: 20px;
+        animation: fadeInUp 0.6s ease;
+        margin-top: 30px;
+    }
+
+    .qr-result.active {
+        display: block;
+    }
+
+    .qr-result h5 {
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+        background: var(--success-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .qr-code-display {
+        margin: 30px 0;
+    }
+
+    .qr-code-display img {
+        border-radius: 15px;
+        border: 3px solid #11998e;
+        padding: 15px;
+        background: white;
+        box-shadow: 0 10px 40px rgba(17, 153, 142, 0.3);
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .smart-header h2 {
+            font-size: 2rem;
+        }
+
+        .parking-zones {
+            grid-template-columns: 1fr;
+        }
+
+        .camera-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .zone-stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .plates-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .smart-btn {
+            padding: 15px 30px;
+            font-size: 1rem;
+        }
+    }
+</style>
+
+<div class="ai-background"></div>
+
+<div class="container">
+    <!-- Smart Header -->
+    <div class="smart-header">
+        <h2><i class="fas fa-brain"></i> Hệ Thống Vào Bãi Thủ Công</h2>
+        <p class="subtitle">
+            <i class="fas fa-robot"></i> Hệ thống nhận diện thông minh với AI
+        </p>
+    </div>
+
+    <!-- Parking Zones -->
+    <div class="parking-zones">
+        <!-- Motorbike Zone -->
+        <div class="zone-card motorbike-zone">
+            <div class="zone-header">
+                <div class="zone-icon">
+                    <i class="fas fa-motorcycle"></i>
+                </div>
+                <h3 class="zone-title">KHU XE MÁY</h3>
+            </div>
+
+            <div class="zone-stats-grid">
+                <div class="stat-box">
+                    <span class="stat-label">Tổng chỗ</span>
+                    <span class="stat-value">{{ motorbike_capacity }}</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Đang đỗ</span>
+                    <span class="stat-value warning">{{ motorbike_count }}</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Còn trống</span>
+                    <span class="stat-value {% if motorbike_remaining <= 0 %}danger{% elif motorbike_remaining <= 5 %}warning{% endif %}">
+                        {{ motorbike_remaining }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="smart-progress">
+                <div class="smart-progress-bar" style="width: {{ (motorbike_count / motorbike_capacity * 100) if motorbike_capacity > 0 else 0 }}%">
+                    {{ "%.0f"|format(motorbike_count / motorbike_capacity * 100) if motorbike_capacity > 0 else 0 }}%
+                </div>
+            </div>
+
+            {% if motorbike_remaining <= 0 %}
+            <div class="smart-alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> <strong>Khu xe máy đã đầy!</strong>
+            </div>
+            {% elif motorbike_remaining <= 5 %}
+            <div class="smart-alert alert-warning">
+                <i class="fas fa-exclamation-circle"></i> Sắp đầy! Chỉ còn {{ motorbike_remaining }} chỗ
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Car Zone -->
+        <div class="zone-card car-zone">
+            <div class="zone-header">
+                <div class="zone-icon">
+                    <i class="fas fa-car"></i>
+                </div>
+                <h3 class="zone-title">KHU XE HƠI</h3>
+            </div>
+
+            <div class="zone-stats-grid">
+                <div class="stat-box">
+                    <span class="stat-label">Tổng chỗ</span>
+                    <span class="stat-value">{{ car_capacity }}</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Đang đỗ</span>
+                    <span class="stat-value warning">{{ car_count }}</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Còn trống</span>
+                    <span class="stat-value {% if car_remaining <= 0 %}danger{% elif car_remaining <= 5 %}warning{% endif %}">
+                        {{ car_remaining }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="smart-progress">
+                <div class="smart-progress-bar" style="width: {{ (car_count / car_capacity * 100) if car_capacity > 0 else 0 }}%">
+                    {{ "%.0f"|format(car_count / car_capacity * 100) if car_capacity > 0 else 0 }}%
+                </div>
+            </div>
+
+            {% if car_remaining <= 0 %}
+            <div class="smart-alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> <strong>Khu xe hơi đã đầy!</strong>
+            </div>
+            {% elif car_remaining <= 5 %}
+            <div class="smart-alert alert-warning">
+                <i class="fas fa-exclamation-circle"></i> Sắp đầy! Chỉ còn {{ car_remaining }} chỗ
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Camera Panel -->
+    <div class="camera-panel">
+        <div class="camera-panel-header">
+            <h4><i class="fas fa-camera-retro"></i> Camera Nhận Diện</h4>
+        </div>
+
+        {% if is_full %}
+        <div class="smart-alert alert-danger">
+            <h5><i class="fas fa-ban"></i> TẤT CẢ BÃI ĐÃ ĐẦY!</h5>
+            <p>Cả 2 khu đỗ xe đã đầy. Không thể nhận thêm xe vào bãi.</p>
+        </div>
+        {% endif %}
+
+        <div class="camera-grid">
+            <!-- License Plate Camera -->
+            <div class="camera-box">
+                <h5><i class="fas fa-id-card"></i> Camera Biển Số</h5>
+                <select id="licensePlateCameraSelect" class="camera-select">
+                    <option value="">Chọn camera cho biển số</option>
+                </select>
+                <video id="licensePlateVideo" class="camera-video" autoplay playsinline></video>
+                <canvas id="licensePlateCanvas" style="display:none;"></canvas>
+                <div id="platePreview" class="camera-preview"></div>
+            </div>
+
+            <!-- Face Camera -->
+            <div class="camera-box">
+                <h5><i class="fas fa-user"></i> Camera Gương Mặt</h5>
+                <select id="faceCameraSelect" class="camera-select">
+                    <option value="">Chọn camera cho gương mặt</option>
+                </select>
+                <video id="faceVideo" class="camera-video" autoplay playsinline></video>
+                <canvas id="faceCanvas" style="display:none;"></canvas>
+                <div id="facePreview" class="camera-preview"></div>
+            </div>
+        </div>
+
+        <!-- Capture Section -->
+        <div class="capture-section">
+            <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                Nhấn nút để làm thủ tục vào bãi
+            </p>
+            <button id="captureBtn" class="smart-btn" {% if is_full %}disabled{% endif %}>
+                <i class="fas fa-camera"></i>
+                {% if is_full %}TẤT CẢ BÃI ĐÃ ĐẦY{% else %}Làm Thủ Tục Vào Bãi{% endif %}
+            </button>
+        </div>
+
+        <!-- Processing Indicator -->
+        <div id="captureProcessing" class="processing-indicator">
+            <div class="spinner"></div>
+            <p style="font-size: 1.2rem; color: var(--text-secondary);">
+                <i class="fas fa-brain"></i> AI đang nhận diện và xử lý...
+            </p>
+        </div>
+
+        <!-- Multiple Plates Area -->
+        <div id="multiplePlatesArea" class="plates-selection-area">
+            <div class="smart-alert" style="background: rgba(17, 153, 142, 0.1); border-color: rgba(17, 153, 142, 0.3); color: #11998e;">
+                <h5><i class="fas fa-check-circle"></i> Đã nhận diện được <span id="totalPlatesCount">0</span> biển số!</h5>
+                <p>Chọn biển số bạn muốn đưa vào bãi:</p>
+            </div>
+            <div id="platesSelection" class="plates-grid"></div>
+            <div style="text-align: center; margin-top: 25px;">
+                <button id="processSelectedBtn" class="smart-btn" disabled>
+                    <i class="fas fa-car"></i> Đưa Xe Vào Bãi
+                </button>
+            </div>
+        </div>
+
+        <!-- Status Area -->
+        <div id="statusArea" class="plates-selection-area">
+            <div class="smart-alert" style="background: rgba(79, 172, 254, 0.1); border-color: rgba(79, 172, 254, 0.3); color: #4facfe;">
+                <h5><i class="fas fa-info-circle"></i> Trạng thái Xử Lý</h5>
+                <div id="statusInfo" style="margin-top: 15px;">
+                    <span id="currentLicensePlate" class="plate-badge" style="font-size: 1rem;">Biển số: Đang chờ...</span>
+                    <span id="plateColorBadge" class="plate-badge" style="display:none;">Màu: N/A</span>
+                    <span id="plateTypeBadge" class="plate-badge" style="display:none;">Loại: N/A</span>
+                    <span id="vehicleTypeBadge" class="plate-badge" style="display:none;">Phân loại: N/A</span>
+                    <span id="confidenceBadge" class="plate-badge" style="display:none;">Độ chính xác: 0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Area -->
+        <div id="messageArea" class="smart-alert" style="display: none;"></div>
+
+        <!-- QR Result -->
+        <div id="qrResult" class="qr-result">
+            <h5><i class="fas fa-check-circle"></i> Xe Đã Vào Bãi Thành Công!</h5>
+            <div id="capacityUpdate"></div>
+            <p style="margin: 20px 0; color: var(--text-secondary);">Mã QR để ra bãi:</p>
+            <div id="qrCodeDisplay" class="qr-code-display"></div>
+            <p style="margin-top: 20px; color: var(--text-secondary);">
+                <i class="fas fa-save"></i> Vui lòng lưu lại mã QR này để sử dụng khi ra bãi
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let licensePlateImage = null;
+        let faceImage = null;
+        let licensePlateStream = null;
+        let faceStream = null;
+        let detectedPlates = [];
+        let selectedPlate = null;
+        let isCapturing = false;
+        let videoDevices = [];
+
+        const isFull = {{ 'true' if is_full else 'false' }};
+        const remainingSpots = {{ remaining_spots }};
+        const motorbikeRemaining = {{ motorbike_remaining }};
+        const carRemaining = {{ car_remaining }};
+
+        async function populateCameraDropdowns() {
+            try {
+                videoDevices = (await navigator.mediaDevices.enumerateDevices())
+                    .filter(device => device.kind === 'videoinput');
+
+                if (videoDevices.length === 0) {
+                    showMessage('Không tìm thấy camera nào', 'danger');
+                    return;
+                }
+
+                const licensePlateSelect = document.getElementById('licensePlateCameraSelect');
+                const faceCameraSelect = document.getElementById('faceCameraSelect');
+
+                licensePlateSelect.innerHTML = '<option value="">Chọn camera cho biển số</option>';
+                faceCameraSelect.innerHTML = '<option value="">Chọn camera cho gương mặt</option>';
+
+                videoDevices.forEach((device, index) => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || `Camera ${index + 1}`;
+                    licensePlateSelect.appendChild(option.cloneNode(true));
+                    faceCameraSelect.appendChild(option);
+                });
+
+                if (videoDevices.length >= 1) {
+                    licensePlateSelect.value = videoDevices[0].deviceId;
+                    await startCamera('licensePlateVideo', videoDevices[0].deviceId, 'environment');
+                }
+                if (videoDevices.length >= 2) {
+                    faceCameraSelect.value = videoDevices[1].deviceId;
+                    await startCamera('faceVideo', videoDevices[1].deviceId, 'user');
+                } else if (videoDevices.length === 1) {
+                    faceCameraSelect.value = videoDevices[0].deviceId;
+                    await startCamera('faceVideo', videoDevices[0].deviceId, 'user');
+                    showMessage('Chỉ tìm thấy 1 camera, sử dụng chung cho cả biển số và gương mặt', 'warning');
+                }
+            } catch (error) {
+                console.error('Lỗi khi liệt kê camera:', error);
+                showMessage('Lỗi khi liệt kê camera: ' + error.message, 'danger');
+            }
+        }
+
+        async function startCamera(videoElementId, deviceId, facingMode) {
+            const videoElement = document.getElementById(videoElementId);
+            const streamKey = videoElementId === 'licensePlateVideo' ? 'licensePlateStream' : 'faceStream';
+            const width = videoElementId === 'licensePlateVideo' ? { ideal: 1280 } : { ideal: 640 };
+            const height = videoElementId === 'licensePlateVideo' ? { ideal: 720 } : { ideal: 480 };
+
+            if (window[streamKey]) {
+                window[streamKey].getTracks().forEach(track => track.stop());
+            }
+
+            try {
+                window[streamKey] = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        deviceId: deviceId ? { exact: deviceId } : undefined,
+                        facingMode,
+                        width,
+                        height
+                    }
+                });
+                videoElement.srcObject = window[streamKey];
+            } catch (error) {
+                console.error(`Lỗi khi khởi tạo camera cho ${videoElementId}:`, error);
+                showMessage(`Lỗi khi khởi tạo camera: ${error.message}`, 'danger');
+            }
+        }
+
+        async function initCameras() {
+            if (isFull) {
+                showMessage('Tất cả bãi đã đầy, không thể sử dụng camera vào bãi', 'warning');
+                return;
+            }
+            await populateCameraDropdowns();
+        }
+
+        document.getElementById('licensePlateCameraSelect').addEventListener('change', async function() {
+            if (this.value) {
+                await startCamera('licensePlateVideo', this.value, 'environment');
+            } else {
+                if (licensePlateStream) {
+                    licensePlateStream.getTracks().forEach(track => track.stop());
+                    document.getElementById('licensePlateVideo').srcObject = null;
+                }
+            }
+        });
+
+        document.getElementById('faceCameraSelect').addEventListener('change', async function() {
+            if (this.value) {
+                await startCamera('faceVideo', this.value, 'user');
+            } else {
+                if (faceStream && faceStream !== licensePlateStream) {
+                    faceStream.getTracks().forEach(track => track.stop());
+                    document.getElementById('faceVideo').srcObject = null;
+                }
+            }
+        });
+
+        function captureFromVideo(videoElement, canvasElement) {
+            const canvas = document.getElementById(canvasElement);
+            const video = document.getElementById(videoElement);
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            return canvas.toDataURL('image/jpeg');
+        }
+
+        async function captureBothImages() {
+            if (isCapturing || isFull) return;
+
+            isCapturing = true;
+            document.getElementById('captureProcessing').classList.add('active');
+            document.getElementById('captureBtn').disabled = true;
+
+            detectedPlates = [];
+            selectedPlate = null;
+            document.getElementById('multiplePlatesArea').classList.remove('active');
+            document.getElementById('statusArea').classList.remove('active');
+
+            try {
+                const plateImageData = captureFromVideo('licensePlateVideo', 'licensePlateCanvas');
+                const faceImageData = captureFromVideo('faceVideo', 'faceCanvas');
+
+                document.getElementById('platePreview').innerHTML =
+                    `<img src="${plateImageData}" alt="License Plate">`;
+                document.getElementById('facePreview').innerHTML =
+                    `<img src="${faceImageData}" alt="Face">`;
+
+                const blob = await fetch(plateImageData).then(res => res.blob());
+                const formData = new FormData();
+                formData.append('image', blob, 'license_plate.jpg');
+
+                const response = await fetch('/recognize_plate', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.plates) {
+                    detectedPlates = result.plates;
+                    licensePlateImage = plateImageData;
+                    faceImage = faceImageData;
+
+                    if (detectedPlates.length === 1) {
+                        const plate = detectedPlates[0];
+                        selectedPlate = plate;
+
+                        document.getElementById('statusArea').classList.add('active');
+                        document.getElementById('currentLicensePlate').textContent = `Biển số: ${plate.license_plate}`;
+                        document.getElementById('plateColorBadge').style.display = 'inline-block';
+                        document.getElementById('plateColorBadge').textContent = `Màu: ${plate.plate_color}`;
+                        document.getElementById('plateTypeBadge').style.display = 'inline-block';
+                        document.getElementById('plateTypeBadge').textContent = `Loại: ${plate.plate_type}`;
+                        document.getElementById('vehicleTypeBadge').style.display = 'inline-block';
+                        document.getElementById('vehicleTypeBadge').textContent = `Phân loại: ${plate.vehicle_type}`;
+                        document.getElementById('confidenceBadge').style.display = 'inline-block';
+                        document.getElementById('confidenceBadge').textContent = `Độ chính xác: ${Math.round(plate.confidence * 100)}%`;
+
+                        showMessage(`Đã nhận diện biển số: ${plate.license_plate}. Đang xử lý vào bãi...`, 'info');
+                        await processEntry(plate);
+                    } else {
+                        displayMultiplePlates(detectedPlates);
+                        document.getElementById('multiplePlatesArea').classList.add('active');
+                        showMessage(`Đã nhận diện ${detectedPlates.length} biển số. Vui lòng chọn biển số cần đưa vào bãi.`, 'success');
+                    }
+                } else {
+                    showMessage(result.error || 'Không thể nhận diện biển số', 'danger');
+                }
+            } catch (error) {
+                console.error('Lỗi khi chụp và nhận diện:', error);
+                showMessage('Lỗi khi chụp và nhận diện: ' + error.message, 'danger');
+            } finally {
+                isCapturing = false;
+                document.getElementById('captureProcessing').classList.remove('active');
+                document.getElementById('captureBtn').disabled = isFull;
+            }
+        }
+
+        function displayMultiplePlates(plates) {
+            const container = document.getElementById('platesSelection');
+            const totalCount = document.getElementById('totalPlatesCount');
+
+            totalCount.textContent = plates.length;
+            container.innerHTML = '';
+
+            plates.forEach((plate, index) => {
+                const plateCard = document.createElement('div');
+                plateCard.className = 'plate-card';
+
+                const croppedImageContainer = plate.cropped_image_path
+                    ? `<div class="plate-image-preview">
+                         <img src="/${plate.cropped_image_path}" alt="Biển số ${plate.license_plate}">
+                       </div>`
+                    : `<div class="plate-image-preview">
+                         <i class="fas fa-image" style="font-size: 3rem; color: var(--text-secondary);"></i>
+                       </div>`;
+
+                const vehicleTypeIcon = plate.vehicle_type === 'Xe máy'
+                    ? '<i class="fas fa-motorcycle"></i>'
+                    : '<i class="fas fa-car"></i>';
+
+                plateCard.innerHTML = `
+                    ${croppedImageContainer}
+                    <div class="plate-info">
+                        <h6 class="plate-number">${vehicleTypeIcon} ${plate.license_plate}</h6>
+                        <div class="plate-badges">
+                            <span class="plate-badge">${plate.vehicle_type}</span>
+                            <span class="plate-badge">${plate.plate_color}</span>
+                            <span class="plate-badge">${plate.plate_type}</span>
+                            <span class="plate-badge">AI: ${Math.round(plate.confidence * 100)}%</span>
+                        </div>
+                        <div class="plate-selection-input">
+                            <input type="radio" name="selectedPlate" value="${index}" id="plate_${index}">
+                            <label for="plate_${index}">Chọn biển số này</label>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(plateCard);
+            });
+
+            document.querySelectorAll('input[name="selectedPlate"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        selectedPlate = plates[parseInt(this.value)];
+                        document.getElementById('processSelectedBtn').disabled = false;
+
+                        document.querySelectorAll('.plate-card').forEach(card => {
+                            card.classList.remove('selected');
+                        });
+                        this.closest('.plate-card').classList.add('selected');
+                    }
+                });
+            });
+        }
+
+        document.getElementById('captureBtn').addEventListener('click', captureBothImages);
+
+        document.addEventListener('keydown', function(event) {
+            if ((event.code === 'Space' || event.keyCode === 32) && !isFull) {
+                event.preventDefault();
+                captureBothImages();
+            }
+        });
+
+        document.getElementById('processSelectedBtn').addEventListener('click', async function() {
+            if (!selectedPlate) return;
+
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+
+            await processEntry(selectedPlate);
+        });
+
+        // Thay thế hàm processEntry trong JavaScript của bạn
+        async function processEntry(plate) {
+            if (!plate || isFull) return;
+
+            try {
+                const plateBlob = await fetch(licensePlateImage).then(res => res.blob());
+                const faceBlob = await fetch(faceImage).then(res => res.blob());
+
+                const formData = new FormData();
+                formData.append('action', 'process');
+                formData.append('license_plate', plate.license_plate);
+                formData.append('plate_color', plate.plate_color);
+                formData.append('plate_type', plate.plate_type);
+                formData.append('confidence', plate.confidence);
+                formData.append('plate_image', plateBlob, 'plate.jpg');
+                formData.append('face_image', faceBlob, 'face.jpg');
+
+                const response = await fetch('/parking', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                showMessage(result.message, result.success ? 'success' : 'danger');
+
+                if (result.success) {
+                    // ✅ CẬP NHẬT PHẦN HIỂN THỊ KẾT QUẢ VỚI VỊ TRÍ ĐỖ XE
+                    const zoneIcon = result.vehicle_type === 'Xe máy'
+                        ? '<i class="fas fa-motorcycle"></i>'
+                        : '<i class="fas fa-car"></i>';
+
+                    const zoneName = result.vehicle_type === 'Xe máy' ? 'Khu Xe Máy' : 'Khu Xe Hơi';
+                    const parkingSpot = result.parking_spot || 'N/A';
+
+                    // Hiển thị thông tin vị trí trong QR Result
+                    document.querySelector('#qrResult h5').innerHTML = `
+                        <i class="fas fa-check-circle"></i>
+                        Mời xe vào bãi!
+                        <br>
+                        <span style="font-size: 1.5rem; margin-top: 10px; display: inline-block;">
+                            ${zoneIcon} Mời vào ${zoneName} - Vị trí số ${parkingSpot}
+                        </span>
+                    `;
+
+                    if (result.remaining_spots !== undefined && result.vehicle_type) {
+                        document.getElementById('capacityUpdate').innerHTML = `
+                            <div class="smart-alert" style="background: rgba(79, 172, 254, 0.1); border-color: rgba(79, 172, 254, 0.3); color: #4facfe; margin: 20px 0;">
+                                <h6>${zoneIcon} ${zoneName} - Vị trí ${parkingSpot}</h6>
+                                <p style="margin: 10px 0; font-size: 1.1rem;">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <strong>Đỗ tại ô số ${parkingSpot}</strong>
+                                </p>
+                                <p style="margin: 10px 0;">
+                                    Còn lại <strong>${result.remaining_spots}/${result.total_capacity}</strong> chỗ trong khu này
+                                </p>
+                            </div>
+                        `;
+                    }
+
+                    if (result.qr_code) {
+                        document.getElementById('qrCodeDisplay').innerHTML = `
+                            <img src="${result.qr_code}" alt="QR Code">
+                        `;
+                        document.getElementById('qrResult').classList.add('active');
+                    }
+
+                    // Hiển thị cảnh báo nếu là xe trùng biển
+                    if (result.is_duplicate && result.warning) {
+                        const warningAlert = document.createElement('div');
+                        warningAlert.className = 'smart-alert alert-danger';
+                        warningAlert.innerHTML = `
+                            <h6><i class="fas fa-exclamation-triangle"></i> CẢNH BÁO!</h6>
+                            <p>${result.warning}</p>
+                        `;
+                        document.getElementById('qrResult').insertBefore(
+                            warningAlert,
+                            document.getElementById('capacityUpdate')
+                        );
+                    }
+
+                    document.getElementById('multiplePlatesArea').classList.remove('active');
+                    document.getElementById('statusArea').classList.remove('active');
+
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 5000);
+                }
+            } catch (error) {
+                console.error('Lỗi khi xử lý:', error);
+                showMessage('Lỗi khi xử lý: ' + error.message, 'danger');
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.style.display = 'block';
+            messageArea.textContent = message;
+
+            messageArea.classList.remove('alert-danger', 'alert-warning', 'alert-success', 'alert-info');
+
+            if (type === 'danger') {
+                messageArea.style.background = 'rgba(250, 112, 154, 0.1)';
+                messageArea.style.borderColor = 'rgba(250, 112, 154, 0.3)';
+                messageArea.style.color = '#fa709a';
+            } else if (type === 'warning') {
+                messageArea.style.background = 'rgba(240, 147, 251, 0.1)';
+                messageArea.style.borderColor = 'rgba(240, 147, 251, 0.3)';
+                messageArea.style.color = '#f093fb';
+            } else if (type === 'success') {
+                messageArea.style.background = 'rgba(17, 153, 142, 0.1)';
+                messageArea.style.borderColor = 'rgba(17, 153, 142, 0.3)';
+                messageArea.style.color = '#11998e';
+            } else if (type === 'info') {
+                messageArea.style.background = 'rgba(79, 172, 254, 0.1)';
+                messageArea.style.borderColor = 'rgba(79, 172, 254, 0.3)';
+                messageArea.style.color = '#4facfe';
+            }
+
+            setTimeout(() => {
+                messageArea.style.display = 'none';
+            }, 5000);
+        }
+
+        initCameras();
+
+        window.addEventListener('beforeunload', () => {
+            if (licensePlateStream) {
+                licensePlateStream.getTracks().forEach(track => track.stop());
+            }
+            if (faceStream && faceStream !== licensePlateStream) {
+                faceStream.getTracks().forEach(track => track.stop());
+            }
+        });
+    });
+</script>
+
+{% endblock %}

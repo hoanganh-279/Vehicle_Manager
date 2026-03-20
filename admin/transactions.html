@@ -1,0 +1,952 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Quản lý giao dịch - Admin{% endblock %}
+{% block page_title %}Quản lý giao dịch{% endblock %}
+{% block page_subtitle %}Theo dõi và quản lý toàn bộ giao dịch{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+        --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+        --shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    body {
+        background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+    }
+
+    /* Stats Cards */
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--primary-gradient);
+        transition: height 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card:hover::before {
+        height: 100%;
+        opacity: 0.1;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        margin-bottom: 15px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stat-icon.primary { background: var(--primary-gradient); }
+    .stat-icon.success { background: var(--success-gradient); }
+    .stat-icon.danger { background: var(--danger-gradient); }
+    .stat-icon.info { background: var(--info-gradient); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 10px 0;
+        line-height: 1;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-sublabel {
+        color: #94a3b8;
+        font-size: 0.75rem;
+        margin-top: 5px;
+    }
+
+    /* Filter Card */
+    .filter-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        margin-bottom: 30px;
+    }
+
+    .filter-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .filter-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+        background: var(--primary-gradient);
+    }
+
+    .filter-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #475569;
+        font-size: 0.875rem;
+        margin-bottom: 8px;
+    }
+
+    .form-select, .form-control {
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 10px 15px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-select:focus, .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-filter {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    /* Chart Card */
+    .chart-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        margin-bottom: 30px;
+    }
+
+    .chart-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .chart-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+        background: var(--info-gradient);
+    }
+
+    .chart-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 320px;
+    }
+
+    /* Table Card */
+    .table-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        overflow: hidden;
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        padding: 20px 25px;
+        border-bottom: 2px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .table-header h5 {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .search-box {
+        display: flex;
+        gap: 10px;
+    }
+
+    .search-box input {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        padding: 10px 15px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        width: 250px;
+    }
+
+    .search-box input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-export {
+        background: var(--success-gradient);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-export:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    /* Table */
+    .table {
+        margin: 0;
+        border: none;
+    }
+
+    .table thead th {
+        border: none;
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 15px;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+        background: #f8fafc;
+        box-shadow: inset 0 0 10px rgba(102, 126, 234, 0.05);
+    }
+
+    .table tbody td {
+        padding: 15px;
+        vertical-align: middle;
+        color: #475569;
+    }
+
+    .badge-type {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .badge-parking {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .badge-topup {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+    }
+
+    .badge-refund {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .badge-pay {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    .badge-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-completed {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    .badge-pending {
+        background: linear-gradient(135deg, #ffd89b 0%, #ffa500 100%);
+        color: white;
+    }
+
+    .badge-failed {
+        background: var(--danger-gradient);
+        color: white;
+    }
+
+    .amount-debit {
+        color: #ef4444;
+        font-weight: 700;
+    }
+
+    .amount-credit {
+        color: #10b981;
+        font-weight: 700;
+    }
+
+    .table-footer {
+        padding: 15px 25px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .pagination {
+        margin: 0;
+    }
+
+    .pagination .page-link {
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        color: #667eea;
+        margin: 0 4px;
+        transition: all 0.3s ease;
+    }
+
+    .pagination .page-link:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .pagination .page-item.active .page-link {
+        background: #667eea;
+        border-color: #667eea;
+    }
+
+    .pagination .page-item.disabled .page-link {
+        background: #f1f5f9;
+        color: #94a3b8;
+    }
+
+    .time-text {
+        color: #94a3b8;
+        font-size: 0.875rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        color: #94a3b8;
+    }
+
+    .empty-state-icon {
+        font-size: 5rem;
+        margin-bottom: 20px;
+        opacity: 0.3;
+    }
+
+    /* Animations */
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-in {
+        animation: slideInUp 0.5s ease forwards;
+    }
+
+    .row > div {
+        animation: slideInUp 0.5s ease forwards;
+    }
+
+    .row > div:nth-child(1) { animation-delay: 0.1s; }
+    .row > div:nth-child(2) { animation-delay: 0.2s; }
+    .row > div:nth-child(3) { animation-delay: 0.3s; }
+    .row > div:nth-child(4) { animation-delay: 0.4s; }
+
+    @media (max-width: 768px) {
+        .table-header {
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .search-box {
+            width: 100%;
+            flex-direction: column;
+        }
+
+        .search-box input {
+            width: 100%;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+        }
+
+        .chart-container {
+            height: 250px;
+        }
+    }
+</style>
+
+<!-- Statistics Cards -->
+<div class="row mb-4 animate-in">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+            <div class="stat-label">Tổng Giao Dịch</div>
+            <div class="stat-value">{{ total_transactions }}</div>
+            <div class="stat-sublabel">Tất cả loại giao dịch</div>
+        </div>
+    </div>
+
+   <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon danger">
+                <i class="fas fa-minus-circle"></i>
+            </div>
+            <div class="stat-label">Tổng Chi</div>
+            <div class="stat-value">{{ total_debit|format_currency }}</div>
+            <div class="stat-sublabel">VND</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-plus-circle"></i>
+            </div>
+            <div class="stat-label">Tổng Thu</div>
+            <div class="stat-value">{{ total_credit|format_currency }}</div>
+            <div class="stat-sublabel">VND</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon info">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-label">Hoàn Thành</div>
+            <div class="stat-value">{{ completed_count }}</div>
+            <div class="stat-sublabel">Pending: {{ pending_count }} | Failed: {{ failed_count }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="filter-card animate-in" style="animation-delay: 0.2s;">
+    <div class="filter-header">
+        <div class="filter-icon">
+            <i class="fas fa-filter"></i>
+        </div>
+        <h6 class="filter-title">Bộ Lọc Giao Dịch</h6>
+    </div>
+    <form method="GET" action="/admin/transactions">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Khoảng thời gian</label>
+                <select class="form-select" name="date_range" id="dateRange">
+                    <option value="today" {% if date_range == 'today' %}selected{% endif %}>Hôm nay</option>
+                    <option value="week" {% if date_range == 'week' %}selected{% endif %}>7 ngày qua</option>
+                    <option value="month" {% if date_range == 'month' %}selected{% endif %}>30 ngày qua</option>
+                    <option value="all" {% if date_range == 'all' %}selected{% endif %}>Tất cả</option>
+                    <option value="custom" {% if date_range == 'custom' %}selected{% endif %}>Tùy chỉnh</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3" id="customDateRange" style="display: {% if date_range == 'custom' %}block{% else %}none{% endif %};">
+                <label class="form-label">Từ ngày</label>
+                <input type="date" class="form-control" name="start_date" value="{{ start_date }}">
+            </div>
+            <div class="col-md-2 mb-3" id="customDateRangeEnd" style="display: {% if date_range == 'custom' %}block{% else %}none{% endif %};">
+                <label class="form-label">Đến ngày</label>
+                <input type="date" class="form-control" name="end_date" value="{{ end_date }}">
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label">Loại giao dịch</label>
+                <select class="form-select" name="transaction_type">
+                    <option value="all" {% if transaction_type == 'all' %}selected{% endif %}>Tất cả</option>
+                    <option value="parking" {% if transaction_type == 'parking' %}selected{% endif %}>Phí đỗ xe</option>
+                    <option value="topup" {% if transaction_type == 'topup' %}selected{% endif %}>Nạp tiền</option>
+                    <option value="refund" {% if transaction_type == 'refund' %}selected{% endif %}>Hoàn tiền</option>
+                    <option value="pay_for_others" {% if transaction_type == 'pay_for_others' %}selected{% endif %}>Thanh toán hộ</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-select" name="status">
+                    <option value="all" {% if status == 'all' %}selected{% endif %}>Tất cả</option>
+                    <option value="completed" {% if status == 'completed' %}selected{% endif %}>Hoàn thành</option>
+                    <option value="pending" {% if status == 'pending' %}selected{% endif %}>Đang chờ</option>
+                    <option value="failed" {% if status == 'failed' %}selected{% endif %}>Thất bại</option>
+                </select>
+            </div>
+            <div class="col-md-1 mb-3">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn-filter">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Chart -->
+<div class="chart-card animate-in" style="animation-delay: 0.3s;">
+    <div class="chart-header">
+        <div class="chart-icon">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <h6 class="chart-title">Biểu Đồ Giao Dịch</h6>
+    </div>
+    <div class="chart-container">
+        <canvas id="transactionChart"></canvas>
+    </div>
+</div>
+
+<!-- Transactions Table -->
+<div class="table-card animate-in" style="animation-delay: 0.4s;">
+    <div class="table-header">
+        <h5>
+            <i class="fas fa-list"></i>
+            Danh Sách Giao Dịch (<span id="transactionCount">{{ transactions|length }}</span> giao dịch)
+        </h5>
+        <div class="search-box">
+            <input type="text" id="transactionSearch" class="form-control" placeholder="Tìm kiếm biển số, thẻ...">
+            <button class="btn-export" onclick="exportToExcel()">
+                <i class="fas fa-file-excel"></i> Xuất Excel
+            </button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table" id="transactionsTable">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Thời Gian</th>
+                    <th>Loại</th>
+                    <th>Thẻ</th>
+                    <th>Khách Hàng</th>
+                    <th>Biển Số Xe</th>
+                    <th>Số Tiền</th>
+                    <th>Trạng Thái</th>
+                    <th>Mã GD</th>
+                </tr>
+            </thead>
+            <tbody id="transactionsTableBody">
+                <!-- Rendered by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-footer">
+        <div>
+            <span id="pageInfo" class="time-text"></span>
+        </div>
+        <nav>
+            <ul class="pagination pagination-sm mb-0" id="pagination"></ul>
+        </nav>
+    </div>
+
+    {% if not transactions %}
+    <div class="empty-state">
+        <i class="fas fa-receipt empty-state-icon"></i>
+        <p style="font-size: 1.125rem; margin: 0;">Không có giao dịch nào</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let transactionsData = {{ transactions | tojson | safe }};
+let filteredData = transactionsData;
+const itemsPerPage = 10;
+let currentPage = 1;
+
+// Date range toggle
+document.getElementById('dateRange').addEventListener('change', function() {
+    const customRange = document.getElementById('customDateRange');
+    const customRangeEnd = document.getElementById('customDateRangeEnd');
+    if (this.value === 'custom') {
+        customRange.style.display = 'block';
+        customRangeEnd.style.display = 'block';
+    } else {
+        customRange.style.display = 'none';
+        customRangeEnd.style.display = 'none';
+    }
+});
+
+// Initialize Chart
+function initializeChart() {
+    const dailyData = {{ daily_data|tojson }};
+    const ctx = document.getElementById('transactionChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dailyData.map(d => d.date),
+            datasets: [
+                {
+                    label: 'Số giao dịch',
+                    data: dailyData.map(d => d.count),
+                    borderColor: 'rgb(102, 126, 234)',
+                    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                    yAxisID: 'y',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Tổng chi (VND)',
+                    data: dailyData.map(d => d.debit),
+                    borderColor: 'rgb(239, 68, 68)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                    yAxisID: 'y1',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Tổng thu (VND)',
+                    data: dailyData.map(d => d.credit),
+                    borderColor: 'rgb(16, 185, 129)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    yAxisID: 'y1',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: { display: true, text: 'Số giao dịch', color: '#64748b', font: { weight: '600' } },
+                    ticks: { color: '#64748b' },
+                    grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                    border: { display: false }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: { display: true, text: 'Số tiền (VND)', color: '#64748b', font: { weight: '600' } },
+                    ticks: { color: '#64748b' },
+                    grid: { drawOnChartArea: false },
+                    border: { display: false }
+                },
+                x: {
+                    ticks: { color: '#64748b' },
+                    grid: { display: false },
+                    border: { display: false }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { color: '#475569', font: { weight: '600' } }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    cornerRadius: 8,
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13 }
+                }
+            }
+        }
+    });
+}
+
+// Render table
+function renderTable(page, data) {
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginatedData = data.slice(start, end);
+    const tbody = document.getElementById('transactionsTableBody');
+    tbody.innerHTML = '';
+
+    paginatedData.forEach((t, index) => {
+        const typeClass =
+            (t.type_code === 'parking' || t.type_code === 'parking_mobile') ? 'badge-parking' :
+            t.type_code === 'topup' ? 'badge-topup' :
+            t.type_code === 'refund' ? 'badge-refund' :
+            t.type_code === 'pay_for_others' ? 'badge-pay' : 'badge-parking';
+
+        const statusClass =
+            t.status === 'completed' ? 'badge-completed' :
+            t.status === 'pending' ? 'badge-pending' :
+            t.status === 'failed' ? 'badge-failed' : 'badge-completed';
+
+        const statusText =
+            t.status === 'completed' ? 'Hoàn thành' :
+            t.status === 'pending' ? 'Đang chờ' :
+            t.status === 'failed' ? 'Thất bại' : t.status;
+
+        const amountClass = t.amount < 0 ? 'amount-debit' : 'amount-credit';
+        const amountSign = t.amount < 0 ? '- ' : '+ ';
+
+        const row = `
+            <tr>
+                <td>${start + index + 1}</td>
+                <td><small class="time-text">${t.created_at}</small></td>
+                <td><span class="badge-type ${typeClass}"><i class="fas fa-tag"></i> ${t.type}</span></td>
+                <td>
+                    <a href="/admin/cards/${t.card_id}" style="text-decoration: none; color: #667eea; font-weight: 600;">
+                        ${t.card_id.substring(0, 8)}...
+                    </a>
+                </td>
+                <td>
+                    <div style="font-weight: 600; color: #1e293b;">${t.card_name}</div>
+                    <small class="time-text">${t.phone}</small>
+                </td>
+                <td>
+                    ${t.license_plate !== 'N/A'
+                        ? `<span class="badge-type" style="background: #e2e8f0; color: #475569;"><i class="fas fa-car"></i> ${t.license_plate}</span>`
+                        : '<span class="time-text">-</span>'}
+                </td>
+                <td>
+                    <strong class="${amountClass}">
+                        ${amountSign}${Math.abs(t.amount).toLocaleString('vi-VN')} VND
+                    </strong>
+                </td>
+                <td><span class="badge-status ${statusClass}">${statusText}</span></td>
+                <td><small class="time-text">${t.transaction_id}</small></td>
+            </tr>
+        `;
+        tbody.insertAdjacentHTML('beforeend', row);
+    });
+
+    updatePagination(data);
+    document.getElementById('transactionCount').textContent = data.length;
+}
+
+// Update pagination
+function updatePagination(data) {
+    const totalPages = Math.ceil(data.length / itemsPerPage);
+    const pagination = document.getElementById('pagination');
+    const pageInfo = document.getElementById('pageInfo');
+    pagination.innerHTML = '';
+
+    pageInfo.textContent = `Trang ${currentPage} / ${totalPages} (${data.length} giao dịch)`;
+
+    // Previous button
+    pagination.insertAdjacentHTML('beforeend', `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="event.preventDefault(); changePage(${currentPage - 1});">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </li>
+    `);
+
+    // Page numbers
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    if (startPage > 1) {
+        pagination.insertAdjacentHTML('beforeend', `
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="event.preventDefault(); changePage(1);">1</a>
+            </li>
+        `);
+        if (startPage > 2) {
+            pagination.insertAdjacentHTML('beforeend', `
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+            `);
+        }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        pagination.insertAdjacentHTML('beforeend', `
+            <li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="event.preventDefault(); changePage(${i});">${i}</a>
+            </li>
+        `);
+    }
+
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            pagination.insertAdjacentHTML('beforeend', `
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+            `);
+        }
+        pagination.insertAdjacentHTML('beforeend', `
+            <li class="page-item">
+                <a class="page-link" href="#" onclick="event.preventDefault(); changePage(${totalPages});">${totalPages}</a>
+            </li>
+        `);
+    }
+
+    // Next button
+    pagination.insertAdjacentHTML('beforeend', `
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="event.preventDefault(); changePage(${currentPage + 1});">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+    `);
+}
+
+// Change page
+function changePage(page) {
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderTable(currentPage, filteredData);
+    document.querySelector('.table-responsive').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Search functionality
+
+document.getElementById('transactionSearch').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+
+    filteredData = transactionsData.filter(t =>
+        (t.license_plate && t.license_plate.toLowerCase().includes(searchTerm)) ||
+        (t.card_id && t.card_id.toLowerCase().includes(searchTerm)) ||
+        (t.card_name && t.card_name.toLowerCase().includes(searchTerm)) ||
+        (t.phone && t.phone.toLowerCase().includes(searchTerm)) ||
+        (t.transaction_id && t.transaction_id.toLowerCase().includes(searchTerm)) ||
+        (t.type && t.type.toLowerCase().includes(searchTerm))
+    );
+
+    currentPage = 1;
+    renderTable(currentPage, filteredData);
+});
+
+// Export to Excel
+function exportToExcel() {
+    const params = new URLSearchParams({
+        date_range: '{{ date_range }}',
+        transaction_type: '{{ transaction_type }}',
+        status: '{{ status }}',
+        start_date: '{{ start_date }}',
+        end_date: '{{ end_date }}'
+    });
+    window.location.href = '/admin/export_transactions_excel?' + params.toString();
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeChart();
+    renderTable(currentPage, filteredData);
+});
+</script>
+{% endblock %}

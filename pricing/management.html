@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2><i class="fas fa-money-bill-wave"></i> Quản lý giá tiền gửi xe</h2>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>Bảng giá hiện tại</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Khung giờ</th>
+                                <th>Thời gian bắt đầu</th>
+                                <th>Thời gian kết thúc</th>
+                                <th>Giá hiện tại (VNĐ/giờ)</th>
+                                <th>Loại</th>
+                                <th>Mô tả</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for price in prices %}
+                            <tr>
+                                <td>{{ price[1] }}</td>
+                                <td>{{ price[2] }}</td>
+                                <td>{{ price[3] }}</td>
+                                <td>
+                                    <input type="number" class="form-control price-input"
+                                           data-id="{{ price[0] }}" value="{{ price[4] }}">
+                                </td>
+                                <td>
+                                    {% if price[5] %}
+                                        <span class="badge bg-warning">Qua đêm</span>
+                                    {% else %}
+                                        <span class="badge bg-info">Theo giờ</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ price[6] or '' }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary update-price"
+                                            data-id="{{ price[0] }}">
+                                        <i class="fas fa-save"></i> Cập nhật
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Lưu ý:</strong>
+                    <ul>
+                        <li>Phí qua đêm được tính theo đêm, không theo giờ</li>
+                        <li>Thay đổi giá sẽ áp dụng ngay lập tức cho các xe ra bãi sau đó</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Xử lý cập nhật giá
+    document.querySelectorAll('.update-price').forEach(button => {
+        button.addEventListener('click', function() {
+            const priceId = this.getAttribute('data-id');
+            const priceInput = document.querySelector(`.price-input[data-id="${priceId}"]`);
+            const newPrice = priceInput.value;
+
+            if (!newPrice || newPrice <= 0) {
+                alert('Vui lòng nhập giá hợp lệ');
+                return;
+            }
+
+            // Gửi yêu cầu cập nhật
+            fetch('/admin/pricing/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `id=${priceId}&price_per_hour=${newPrice}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Cập nhật giá thành công!');
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Lỗi kết nối: ' + error);
+            });
+        });
+    });
+});
+</script>
+
+<style>
+.price-input {
+    width: 120px;
+    display: inline-block;
+}
+</style>
+{% endblock %}

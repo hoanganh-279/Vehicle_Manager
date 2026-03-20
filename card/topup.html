@@ -1,0 +1,1526 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="header-section">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="icon-wrapper">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div>
+                    <h1 class="title-gradient">Nạp tiền vào thẻ</h1>
+                    <p class="subtitle">
+                        <i class="fas fa-shield-alt"></i>
+                        Thanh toán an toàn với Stripe, MoMo & VNPay
+                    </p>
+                </div>
+            </div>
+            <div class="progress-badges">
+                <span class="badge-custom">
+                    <i class="fas fa-lock"></i> Bảo mật
+                </span>
+                <span class="badge-custom">
+                    <i class="fas fa-zap"></i> Nhanh chóng
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content-grid">
+        <!-- QR Scanner Card -->
+        <div class="glass-card">
+            <div class="card-header-modern">
+                <div class="card-header-content">
+                    <div style="display: flex; align-items: center;">
+                        <div class="header-icon">
+                            <i class="fas fa-qrcode"></i>
+                        </div>
+                        <div>
+                            <h5 style="margin: 0; font-weight: 700;">Quét mã QR thẻ</h5>
+                            <small style="color: #6b7280;">Bước 1: Xác định thẻ của bạn</small>
+                        </div>
+                    </div>
+                    <span class="status-badge" id="scannerStatus">
+                        <i class="fas fa-circle pulse-dot"></i> Hoạt động
+                    </span>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <!-- Camera Selection -->
+                <div class="camera-selector">
+                    <label class="form-label-modern">
+                        <i class="fas fa-video"></i> Chọn Camera
+                    </label>
+                    <select class="form-control-modern" id="cameraSelect">
+                        <option value="">Đang tải danh sách camera...</option>
+                    </select>
+                </div>
+
+                <!-- Camera Preview -->
+                <div class="camera-container">
+                    <video autoplay class="camera-video" id="cardQrVideo" playsinline></video>
+                    <div class="qr-overlay">
+                        <div class="scan-line"></div>
+                        <div class="corner corner-tl"></div>
+                        <div class="corner corner-tr"></div>
+                        <div class="corner corner-bl"></div>
+                        <div class="corner corner-br"></div>
+                    </div>
+                </div>
+
+                <div class="camera-instructions">
+                    <div class="instruction-item">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Đặt mã QR vào giữa khung hình</span>
+                    </div>
+                    <div class="instruction-item">
+                        <i class="fas fa-sun"></i>
+                        <span>Đảm bảo ánh sáng đủ để quét</span>
+                    </div>
+                </div>
+
+                <!-- Scanner Buttons -->
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-gradient-primary" id="startCardScannerBtn" style="flex: 1;">
+                        <i class="fas fa-camera"></i>
+                        <span>Bật quét QR</span>
+                    </button>
+                    <button class="btn-gradient-secondary" id="stopCardScannerBtn" style="flex: 1; display: none;">
+                        <i class="fas fa-stop"></i>
+                        <span>Dừng quét</span>
+                    </button>
+                </div>
+
+                <!-- QR Result -->
+                <div id="qrResultPreview"></div>
+            </div>
+        </div>
+
+        <!-- Top-up Form Card -->
+        <div class="glass-card">
+            <div class="card-header-modern">
+                <div style="display: flex; align-items: center;">
+                    <div class="header-icon gradient-success">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div>
+                        <h5 style="margin: 0; font-weight: 700;">Thông tin nạp tiền</h5>
+                        <small style="color: #6b7280;">Bước 2: Chọn số tiền và thanh toán</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <form id="topupForm">
+                    <div class="form-grid-single">
+                        <!-- Card ID -->
+                        <div>
+                            <label class="form-label-modern">
+                                <i class="fas fa-id-card" style="color: #2563eb;"></i>
+                                Mã thẻ
+                                <span class="required">*</span>
+                            </label>
+                            <input class="form-control-modern" id="cardId" name="card_id" placeholder="Nhập mã thẻ hoặc quét QR" required type="text">
+                            <div class="form-feedback">Quét QR hoặc nhập thủ công</div>
+                        </div>
+
+                        <!-- Card Info Display -->
+                        <div id="cardInfo" class="card-info-display" style="display: none;">
+                            <div class="info-header">
+                                <i class="fas fa-user-check"></i>
+                                <span>Thông tin thẻ</span>
+                            </div>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Họ và tên</span>
+                                    <span class="info-value" id="cardName">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Số điện thoại</span>
+                                    <span class="info-value" id="cardPhone">-</span>
+                                </div>
+                                <div class="info-item balance-item">
+                                    <span class="info-label">Số dư hiện tại</span>
+                                    <span class="info-value balance-value" id="cardBalance">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Amount -->
+                        <div>
+                            <label class="form-label-modern">
+                                <i class="fas fa-money-bill-wave" style="color: #10b981;"></i>
+                                Số tiền nạp (VND)
+                                <span class="required">*</span>
+                            </label>
+                            <input class="form-control-modern" id="topupAmount" min="5000" name="amount" placeholder="Nhập số tiền" required step="1000" type="number">
+                            <div class="form-feedback">Tối thiểu 5,000 VND</div>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div>
+                            <label class="form-label-modern">
+                                <i class="fas fa-credit-card" style="color: #f59e0b;"></i>
+                                Phương thức thanh toán
+                                <span class="required">*</span>
+                            </label>
+                            <div class="payment-methods">
+                                <label class="payment-option">
+                                    <input checked name="paymentMethod" type="radio" value="card">
+                                    <div class="payment-card">
+                                        <i class="fas fa-credit-card"></i>
+                                        <span>Thẻ ngân hàng</span>
+                                        <small>Stripe</small>
+                                    </div>
+                                </label>
+                                <label class="payment-option">
+                                    <input name="paymentMethod" type="radio" value="momo">
+                                    <div class="payment-card">
+                                        <i class="fas fa-mobile-alt"></i>
+                                        <span>Ví MoMo</span>
+                                        <small>QR Payment</small>
+                                    </div>
+                                </label>
+                                <label class="payment-option">
+                                    <input name="paymentMethod" type="radio" value="vnpay">
+                                    <div class="payment-card">
+                                        <i class="fas fa-university"></i>
+                                        <span>VNPay</span>
+                                        <small>ATM/QR</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Stripe Payment Section -->
+                        <div id="stripePaymentSection">
+                            <label class="form-label-modern">
+                                <i class="fas fa-lock" style="color: #6366f1;"></i>
+                                Thông tin thẻ thanh toán
+                            </label>
+                            <div id="cardElement" class="stripe-card-element"></div>
+                        </div>
+
+                        <!-- MoMo Payment Section -->
+                        <div id="momoPaymentSection" style="display: none;">
+                            <div class="payment-info-box">
+                                <i class="fas fa-info-circle"></i>
+                                <p>Bạn sẽ được chuyển hướng đến trang MoMo để hoàn tất thanh toán</p>
+                            </div>
+                        </div>
+
+                        <!-- VNPay Payment Section -->
+                        <div id="vnpayPaymentSection" style="display: none;">
+                            <div class="payment-info-box">
+                                <i class="fas fa-info-circle"></i>
+                                <p>Bạn sẽ được chuyển hướng đến trang VNPay để thanh toán</p>
+                            </div>
+                            <div style="margin-top: 15px;">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-bank"></i>
+                                    Chọn ngân hàng (tùy chọn)
+                                </label>
+                                <select class="form-control-modern" id="vnpayBankCode">
+                                    <option value="">-- Chọn sau trên trang VNPay --</option>
+                                    <option value="VNPAYQR">VNPay QR</option>
+                                    <option value="VNBANK">Ngân hàng nội địa</option>
+                                    <option value="INTCARD">Thẻ quốc tế</option>
+                                    <option value="VIETCOMBANK">Vietcombank</option>
+                                    <option value="VIETINBANK">Vietinbank</option>
+                                    <option value="BIDV">BIDV</option>
+                                    <option value="AGRIBANK">Agribank</option>
+                                    <option value="TECHCOMBANK">Techcombank</option>
+                                    <option value="MBBANK">MB Bank</option>
+                                    <option value="ACB">ACB</option>
+                                    <option value="SACOMBANK">Sacombank</option>
+                                    <option value="TPBANK">TPBank</option>
+                                    <option value="VPBank">VPBank</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div style="margin-top: 1.5rem;">
+                        <button class="btn-gradient-success" disabled id="topupBtn" type="submit">
+                            <i class="fas fa-wallet"></i>
+                            <span>Nạp tiền ngay</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Message Toast -->
+<div class="message-toast" id="messageArea"></div>
+
+<!-- MoMo Payment Modal -->
+<div class="success-modal-overlay" id="momoModal" style="display: none;">
+    <div class="success-modal" style="max-width: 500px;">
+        <button class="modal-close" onclick="closeMomoModal()">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="success-animation" style="background: linear-gradient(135deg, rgba(167, 0, 167, 0.05), rgba(200, 0, 200, 0.05));">
+            <div style="margin-bottom: 20px;">
+                <i class="fas fa-mobile-alt" style="font-size: 60px; color: #a700a7;"></i>
+            </div>
+            <h2 class="success-title" style="color: #a700a7;">Thanh toán qua MoMo</h2>
+            <p class="success-message">Quét mã QR hoặc nhấn nút bên dưới</p>
+        </div>
+
+        <div style="padding: 30px; text-align: center;">
+            <div style="margin-bottom: 20px;">
+                <p style="margin-bottom: 5px;"><strong>Mã thẻ:</strong> <span id="momoCardId"></span></p>
+                <p style="margin-bottom: 0;"><strong>Số tiền:</strong> <span id="momoAmount" style="color: #10b981; font-weight: 700; font-size: 1.25rem;"></span> VND</p>
+            </div>
+
+            <a class="btn-primary-modal" href="#" id="momoPayUrl" style="display: inline-flex; width: auto;">
+                <i class="fas fa-external-link-alt"></i>Mở trang thanh toán MoMo
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Success Notification Modal -->
+<div class="success-modal-overlay" id="successNotificationModal" style="display: none;">
+    <div class="success-modal" style="max-width: 500px;">
+        <div class="success-animation">
+            <div class="success-checkmark">
+                <svg class="checkmark" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+                    <circle class="checkmark-circle" cx="26" cy="26" fill="none" r="25"/>
+                    <path class="checkmark-check" d="M14.1 27.2l7.1 7.2 16.7-16.8" fill="none"/>
+                </svg>
+            </div>
+            <h2 class="success-title">Nạp tiền thành công!</h2>
+            <p class="success-message" id="successNotificationMessage"></p>
+        </div>
+
+        <div style="padding: 30px; text-align: center;">
+            <button class="btn-primary-modal" onclick="closeSuccessModal()" style="display: inline-flex; width: auto;">
+                <i class="fas fa-check"></i>Đóng
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let cardQrStream = null;
+        let cardQrScanning = false;
+        let cardId = null;
+        const stripe = Stripe('{{ stripe_publishable_key }}');
+        let elements;
+        let cardElement;
+
+        // Handle URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const successParam = urlParams.get('success');
+        const messageParam = urlParams.get('message');
+        const initialCardId = urlParams.get('card_id');
+
+        if (successParam === 'true' && messageParam) {
+            showSuccessNotification(decodeURIComponent(messageParam));
+            window.history.replaceState({}, document.title, '/card/topup');
+        } else if (initialCardId) {
+            cardId = decodeURIComponent(initialCardId);
+            document.getElementById('cardId').value = cardId;
+            fetchCardInfo(cardId);
+            window.history.replaceState({}, document.title, '/card/topup');
+        }
+
+        // Payment method toggle
+        document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.getElementById('stripePaymentSection').style.display = this.value === 'card' ? 'block' : 'none';
+                document.getElementById('momoPaymentSection').style.display = this.value === 'momo' ? 'block' : 'none';
+                document.getElementById('vnpayPaymentSection').style.display = this.value === 'vnpay' ? 'block' : 'none';
+            });
+        });
+
+        async function getCameraDevices() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                const cameraSelect = document.getElementById('cameraSelect');
+
+                cameraSelect.innerHTML = '<option value="">Chọn một camera</option>';
+
+                videoDevices.forEach((device, index) => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || `Camera ${index + 1}`;
+                    cameraSelect.appendChild(option);
+                });
+
+                if (videoDevices.length > 0) {
+                    cameraSelect.value = videoDevices[0].deviceId;
+                }
+            } catch (err) {
+                console.error('Lỗi khi liệt kê camera:', err);
+                showMessage('Không thể liệt kê camera: ' + err.message, 'danger');
+            }
+        }
+
+        function startCardQRScanner() {
+            const selectedCamera = document.getElementById('cameraSelect').value;
+            if (!selectedCamera) {
+                showMessage('Vui lòng chọn một camera trước khi bắt đầu quét', 'warning');
+                return;
+            }
+
+            navigator.mediaDevices.getUserMedia({
+                video: {
+                    deviceId: { exact: selectedCamera },
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                }
+            })
+            .then(function(stream) {
+                cardQrStream = stream;
+                document.getElementById('cardQrVideo').srcObject = stream;
+                document.getElementById('cardQrVideo').play();
+                cardQrScanning = true;
+
+                document.getElementById('startCardScannerBtn').style.display = 'none';
+                document.getElementById('stopCardScannerBtn').style.display = 'flex';
+                document.getElementById('scannerStatus').innerHTML = '<i class="fas fa-circle pulse-dot"></i> Scanning';
+
+                scanQRCode();
+            })
+            .catch(function(err) {
+                console.error('Lỗi khi truy cập camera:', err);
+                showMessage('Lỗi khi truy cập camera: ' + err.message, 'danger');
+            });
+        }
+
+        function stopCardQRScanner() {
+            cardQrScanning = false;
+            if (cardQrStream) {
+                cardQrStream.getTracks().forEach(track => track.stop());
+            }
+            document.getElementById('startCardScannerBtn').style.display = 'flex';
+            document.getElementById('stopCardScannerBtn').style.display = 'none';
+            document.getElementById('scannerStatus').innerHTML = '<i class="fas fa-circle pulse-dot"></i> Ready';
+        }
+
+        function scanQRCode() {
+            const video = document.getElementById('cardQrVideo');
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+
+            function tick() {
+                if (video.readyState === video.HAVE_ENOUGH_DATA && cardQrScanning) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                        inversionAttempts: 'dontInvert',
+                    });
+
+                    if (code) {
+                        stopCardQRScanner();
+                        cardId = code.data;
+                        document.getElementById('cardId').value = code.data;
+
+                        document.getElementById('qrResultPreview').innerHTML = `
+                            <div class="qr-result-success">
+                                <i class="fas fa-check-circle"></i>
+                                <div>
+                                    <span style="font-weight: 600;">Quét thành công!</span>
+                                    <span style="font-size: 0.85rem; color: #6b7280;">Mã thẻ: ${code.data}</span>
+                                </div>
+                            </div>
+                        `;
+
+                        fetchCardInfo(code.data);
+                        showMessage(`Đã quét mã QR thẻ thành công: ${code.data}`, 'success');
+                    }
+                }
+
+                if (cardQrScanning) {
+                    requestAnimationFrame(tick);
+                }
+            }
+
+            tick();
+        }
+
+        function fetchCardInfo(cardId) {
+            fetch(`/card/info?card_id=${cardId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('cardName').textContent = data.name;
+                        document.getElementById('cardPhone').textContent = data.phone;
+                        document.getElementById('cardBalance').textContent = data.balance.toLocaleString();
+                        document.getElementById('cardInfo').style.display = 'block';
+                        document.getElementById('topupBtn').disabled = false;
+                        showMessage(`Tìm thấy thông tin thẻ ${cardId}`, 'info');
+                    } else {
+                        showMessage(data.message, 'danger');
+                        document.getElementById('topupBtn').disabled = true;
+                        document.getElementById('cardInfo').style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lấy thông tin thẻ:', error);
+                    showMessage('Lỗi khi lấy thông tin thẻ: ' + error.message, 'danger');
+                    document.getElementById('topupBtn').disabled = true;
+                    document.getElementById('cardInfo').style.display = 'none';
+                });
+        }
+
+        function initStripeElements() {
+            elements = stripe.elements();
+            cardElement = elements.create('card', {
+                style: {
+                    base: {
+                        fontSize: '16px',
+                        color: '#1e293b',
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                        '::placeholder': {
+                            color: '#9ca3af',
+                        },
+                    },
+                    invalid: {
+                        color: '#ef4444',
+                    }
+                }
+            });
+            cardElement.mount('#cardElement');
+        }
+
+        function showMessage(message, type) {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.style.display = 'block';
+            messageArea.textContent = message;
+            messageArea.className = `message-toast alert-${type}`;
+            setTimeout(() => {
+                messageArea.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccessNotification(message) {
+            document.getElementById('successNotificationMessage').textContent = message;
+            document.getElementById('successNotificationModal').style.display = 'flex';
+            setTimeout(() => {
+                closeSuccessModal();
+            }, 5000);
+        }
+
+        window.closeSuccessModal = function() {
+            document.getElementById('successNotificationModal').style.display = 'none';
+            resetForm();
+        };
+
+        window.closeMomoModal = function() {
+            document.getElementById('momoModal').style.display = 'none';
+        };
+
+        function resetForm() {
+            document.getElementById('topupForm').reset();
+            document.getElementById('cardInfo').style.display = 'none';
+            document.getElementById('topupBtn').disabled = true;
+            document.getElementById('qrResultPreview').innerHTML = '';
+            document.getElementById('stripePaymentSection').style.display = 'block';
+            document.getElementById('momoPaymentSection').style.display = 'none';
+            document.getElementById('vnpayPaymentSection').style.display = 'none';
+            cardId = null;
+            if (cardElement) {
+                cardElement.clear();
+            }
+        }
+
+        async function processStripePayment(cardId, amount) {
+            const formData = new FormData();
+            formData.append('action', 'topup');
+            formData.append('card_id', cardId);
+            formData.append('amount', amount);
+            formData.append('payment_method', 'card');
+
+            const response = await fetch('/parking/exit', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                const { error, paymentIntent } = await stripe.confirmCardPayment(result.client_secret, {
+                    payment_method: { card: cardElement }
+                });
+
+                if (error) {
+                    throw new Error(error.message);
+                }
+
+                if (paymentIntent.status === 'succeeded') {
+                    const confirmFormData = new FormData();
+                    confirmFormData.append('action', 'confirm_topup');
+                    confirmFormData.append('card_id', cardId);
+                    confirmFormData.append('payment_intent_id', paymentIntent.id);
+                    confirmFormData.append('amount', amount);
+
+                    const confirmResponse = await fetch('/parking/exit', {
+                        method: 'POST',
+                        body: confirmFormData
+                    });
+
+                    return await confirmResponse.json();
+                }
+            } else {
+                throw new Error(result.message);
+            }
+        }
+
+        async function processMomoPayment(cardId, amount) {
+            const formData = new FormData();
+            formData.append('action', 'topup');
+            formData.append('card_id', cardId);
+            formData.append('amount', amount);
+            formData.append('payment_method', 'momo');
+
+            const response = await fetch('/parking/exit', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                document.getElementById('momoCardId').textContent = cardId;
+                document.getElementById('momoAmount').textContent = amount.toLocaleString();
+                document.getElementById('momoPayUrl').href = result.pay_url;
+                document.getElementById('momoModal').style.display = 'flex';
+                return { success: true, pay_url: result.pay_url };
+            } else {
+                throw new Error(result.message);
+            }
+        }
+
+        async function processVNPayPayment(cardId, amount) {
+            const bankCode = document.getElementById('vnpayBankCode').value;
+            const formData = new FormData();
+            formData.append('action', 'topup');
+            formData.append('card_id', cardId);
+            formData.append('amount', amount);
+            formData.append('payment_method', 'vnpay');
+            if (bankCode) {
+                formData.append('bank_code', bankCode);
+            }
+
+            const response = await fetch('/parking/exit', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success && result.pay_url) {
+                window.location.href = result.pay_url;
+            } else {
+                throw new Error(result.message || 'Không thể tạo thanh toán VNPay');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('startCardScannerBtn').addEventListener('click', startCardQRScanner);
+        document.getElementById('stopCardScannerBtn').addEventListener('click', stopCardQRScanner);
+
+        document.getElementById('cardId').addEventListener('input', function() {
+            cardId = this.value.trim();
+            if (cardId) {
+                fetchCardInfo(cardId);
+            } else {
+                document.getElementById('cardInfo').style.display = 'none';
+                document.getElementById('topupBtn').disabled = true;
+            }
+        });
+
+        document.getElementById('topupForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const amount = parseInt(document.getElementById('topupAmount').value);
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+
+            if (!amount || amount < 5000) {
+                showMessage('Vui lòng nhập số tiền hợp lệ (tối thiểu 5,000 VND)', 'warning');
+                return;
+            }
+
+            if (!cardId) {
+                showMessage('Vui lòng nhập mã thẻ hoặc quét mã QR', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('topupBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-modern"></span> Đang xử lý...';
+
+            try {
+                let result;
+
+                if (paymentMethod === 'card') {
+                    result = await processStripePayment(cardId, amount);
+                    if (result.success) {
+                        showSuccessNotification(result.message);
+                    } else {
+                        showMessage(result.message, 'danger');
+                    }
+                } else if (paymentMethod === 'momo') {
+                    await processMomoPayment(cardId, amount);
+                } else if (paymentMethod === 'vnpay') {
+                    await processVNPayPayment(cardId, amount);
+                    return;
+                }
+            } catch (error) {
+                console.error('Lỗi khi nạp tiền:', error);
+                showMessage('Lỗi khi nạp tiền: ' + error.message, 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-wallet"></i><span>Nạp tiền ngay</span><i class="fas fa-arrow-right"></i>';
+            }
+        });
+
+        getCameraDevices();
+        initStripeElements();
+
+        window.addEventListener('beforeunload', () => {
+            if (cardQrStream) {
+                cardQrStream.getTracks().forEach(track => track.stop());
+            }
+        });
+    });
+</script>
+
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1e40af;
+        --primary-light: #3b82f6;
+        --secondary: #6b7280;
+        --success: #10b981;
+        --success-dark: #059669;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --info: #0ea5e9;
+        --dark: #1e293b;
+        --light: #f8fafc;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #e0f2fe 100%);
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+            radial-gradient(circle at 20% 30%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(6, 182, 212, 0.08) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .container-fluid {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Header Section */
+    .header-section {
+        animation: fadeInDown 0.6s ease;
+        margin-bottom: 2rem;
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .icon-wrapper {
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        color: white;
+        background: linear-gradient(135deg, #10b981, #059669);
+        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .title-gradient {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #059669, #10b981);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+        color: #475569;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .progress-badges {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .badge-custom {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+        backdrop-filter: blur(10px);
+        color: #059669;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    /* Content Grid */
+    .content-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* Glass Card */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(37, 99, 235, 0.1);
+        box-shadow: 0 20px 60px rgba(37, 99, 235, 0.08);
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 70px rgba(37, 99, 235, 0.15);
+    }
+
+    .card-header-modern {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(37, 99, 235, 0.08);
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.03), rgba(6, 182, 212, 0.03));
+    }
+
+    .card-header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .header-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #2563eb, #1e40af);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        margin-right: 15px;
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+    }
+
+    .header-icon.gradient-success {
+        background: linear-gradient(135deg, #10b981, #059669);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+        color: var(--success);
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .pulse-dot {
+        font-size: 8px;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Form Elements */
+    .form-label-modern {
+        font-weight: 600;
+        color: var(--dark);
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control-modern {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-control-modern:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    .camera-selector {
+        margin-bottom: 1rem;
+    }
+
+    .camera-container {
+        position: relative;
+        width: 100%;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #000;
+        aspect-ratio: 4/3;
+        margin-bottom: 1rem;
+    }
+
+    .camera-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .qr-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 240px;
+        height: 240px;
+        pointer-events: none;
+    }
+
+    .corner {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(37, 99, 235, 0.9);
+        box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
+    }
+
+    .corner-tl { top: 0; left: 0; border-right: none; border-bottom: none; border-radius: 12px 0 0 0; }
+    .corner-tr { top: 0; right: 0; border-left: none; border-bottom: none; border-radius: 0 12px 0 0; }
+    .corner-bl { bottom: 0; left: 0; border-right: none; border-top: none; border-radius: 0 0 0 12px; }
+    .corner-br { bottom: 0; right: 0; border-left: none; border-top: none; border-radius: 0 0 12px 0; }
+
+    .scan-line {
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #2563eb, transparent);
+        box-shadow: 0 0 10px rgba(37, 99, 235, 0.5);
+        animation: scan 2s ease-in-out infinite;
+    }
+
+    .camera-instructions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .instruction-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+
+    .instruction-item i {
+        color: var(--primary);
+    }
+
+    /* Buttons */
+    .btn-gradient-primary, .btn-gradient-secondary, .btn-gradient-success {
+        width: 100%;
+        padding: 14px 24px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-gradient-primary {
+        background: linear-gradient(135deg, #2563eb, #1e40af);
+        box-shadow: 0 10px 30px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-gradient-secondary {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        box-shadow: 0 10px 30px rgba(107, 114, 128, 0.25);
+    }
+
+    .btn-gradient-success {
+        background: linear-gradient(135deg, var(--success), var(--success-dark));
+        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-gradient-primary:hover, .btn-gradient-secondary:hover, .btn-gradient-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 40px rgba(37, 99, 235, 0.35);
+    }
+
+    .btn-gradient-primary:disabled, .btn-gradient-secondary:disabled, .btn-gradient-success:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* QR Result */
+    .qr-result-success {
+        margin-top: 15px;
+        padding: 15px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+        border: 2px solid var(--success);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .qr-result-success i {
+        font-size: 24px;
+        color: var(--success);
+    }
+
+    .qr-result-success div {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    /* Form Grid */
+    .form-grid-single {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .required {
+        color: var(--danger);
+        margin-left: 2px;
+    }
+
+    .form-feedback {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+
+    /* Card Info Display */
+    .card-info-display {
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.03), rgba(6, 182, 212, 0.03));
+        border: 2px solid rgba(37, 99, 235, 0.15);
+        border-radius: 12px;
+        padding: 15px;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .info-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(37, 99, 235, 0.1);
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .info-item.balance-item {
+        grid-column: 1 / -1;
+        padding: 12px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+        border-radius: 8px;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        color: #9ca3af;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        font-weight: 700;
+        color: var(--dark);
+        font-size: 1rem;
+    }
+
+    .balance-value {
+        color: var(--success);
+        font-size: 1.25rem;
+    }
+
+    .balance-value::after {
+        content: ' VND';
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    /* Payment Methods */
+    .payment-methods {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .payment-option {
+        cursor: pointer;
+    }
+
+    .payment-option input[type="radio"] {
+        display: none;
+    }
+
+    .payment-card {
+        padding: 15px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        text-align: center;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .payment-card i {
+        font-size: 24px;
+        color: #6b7280;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .payment-card span {
+        display: block;
+        font-weight: 600;
+        color: var(--dark);
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+    }
+
+    .payment-card small {
+        display: block;
+        font-size: 0.75rem;
+        color: #9ca3af;
+    }
+
+    .payment-option input[type="radio"]:checked + .payment-card {
+        border-color: var(--primary);
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(30, 64, 175, 0.05));
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    }
+
+    .payment-option input[type="radio"]:checked + .payment-card i {
+        color: var(--primary);
+    }
+
+    /* Stripe Card Element */
+    .stripe-card-element {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 14px 16px;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .stripe-card-element:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    /* Payment Info Box */
+    .payment-info-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 15px;
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(6, 182, 212, 0.1));
+        border: 1px solid rgba(14, 165, 233, 0.2);
+        border-radius: 12px;
+    }
+
+    .payment-info-box i {
+        font-size: 20px;
+        color: var(--info);
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .payment-info-box p {
+        margin: 0;
+        color: #475569;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    /* Processing State */
+    .spinner-modern {
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+    }
+
+    /* Message Toast */
+    .message-toast {
+        position: fixed;
+        top: 100px;
+        right: 30px;
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+        animation: slideInRight 0.5s ease;
+        max-width: 400px;
+        font-weight: 500;
+        display: none;
+    }
+
+    .message-toast.alert-success {
+        background: linear-gradient(135deg, var(--success), var(--success-dark));
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .message-toast.alert-danger {
+        background: linear-gradient(135deg, var(--danger), #dc2626);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .message-toast.alert-warning {
+        background: linear-gradient(135deg, var(--warning), #ea580c);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .message-toast.alert-info {
+        background: linear-gradient(135deg, var(--info), #0284c7);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Success Modal */
+    .success-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .success-modal {
+        background: white;
+        border-radius: 24px;
+        max-width: 900px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+        animation: modalSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(0, 0, 0, 0.05);
+        color: #6b7280;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+    .modal-close:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger);
+        transform: rotate(90deg);
+    }
+
+    .success-animation {
+        text-align: center;
+        padding: 40px 40px 30px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05));
+        border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+    }
+
+    .success-checkmark {
+        margin: 0 auto 30px;
+    }
+
+    .checkmark {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: block;
+        stroke-width: 3;
+        stroke: #10b981;
+        stroke-miterlimit: 10;
+        box-shadow: inset 0px 0px 0px #10b981;
+        animation: fill 0.4s ease-in-out 0.4s forwards, scale 0.3s ease-in-out 0.9s both;
+    }
+
+    .checkmark-circle {
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+        stroke-width: 3;
+        stroke-miterlimit: 10;
+        stroke: #10b981;
+        fill: none;
+        animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    }
+
+    .checkmark-check {
+        transform-origin: 50% 50%;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        stroke: #10b981;
+        stroke-width: 3;
+        animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+    }
+
+    .success-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--success);
+        margin-bottom: 10px;
+    }
+
+    .success-message {
+        color: #6b7280;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .btn-primary-modal {
+        padding: 14px 28px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-primary-modal:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(16, 185, 129, 0.35);
+        color: white;
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    @keyframes scan {
+        0% { top: 0; }
+        50% { top: 100%; }
+        100% { top: 0; }
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    @keyframes modalSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes stroke {
+        100% {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    @keyframes scale {
+        0%, 100% {
+            transform: none;
+        }
+        50% {
+            transform: scale3d(1.1, 1.1, 1);
+        }
+    }
+
+    @keyframes fill {
+        100% {
+            box-shadow: inset 0px 0px 0px 30px #10b981;
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 968px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .payment-methods {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .title-gradient {
+            font-size: 1.5rem;
+        }
+
+        .icon-wrapper {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,1200 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Quản lý xe - Admin{% endblock %}
+{% block page_title %}Quản lý xe{% endblock %}
+{% block page_subtitle %}Thống kê và quản lý xe vào/ra bãi{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --motorbike-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --car-gradient: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+        --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+        --shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    body {
+        background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+    }
+
+    /* Stats Cards */
+    .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--primary-gradient);
+        transition: height 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card:hover::before {
+        height: 100%;
+        opacity: 0.1;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        margin-bottom: 15px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stat-icon.primary { background: var(--primary-gradient); }
+    .stat-icon.success { background: var(--success-gradient); }
+    .stat-icon.warning { background: var(--warning-gradient); }
+    .stat-icon.info { background: var(--info-gradient); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 10px 0;
+        line-height: 1;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Chart Section */
+    .chart-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        margin-bottom: 30px;
+    }
+
+    .chart-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .chart-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+    }
+
+    .chart-icon.info { background: var(--info-gradient); }
+
+    .chart-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 320px;
+    }
+
+    /* Tab Navigation */
+    .nav-tabs {
+        border-bottom: 2px solid #e2e8f0;
+        margin-bottom: 25px;
+    }
+
+    .nav-link {
+        color: #64748b;
+        border-radius: 12px 12px 0 0;
+        border: none;
+        padding: 12px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .nav-link:hover {
+        background: #f8fafc;
+        color: #1e293b;
+    }
+
+    .nav-link.active {
+        background: transparent;
+        color: #667eea;
+        border-bottom: 3px solid #667eea;
+    }
+
+    /* Table Styling */
+    .table-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        overflow: hidden;
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        padding: 20px 25px;
+        border-bottom: 2px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .table-header h5 {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .search-box {
+        display: flex;
+        gap: 10px;
+    }
+
+    .search-box input {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        padding: 10px 15px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-box input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .refresh-btn {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .refresh-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    /* Table */
+    .table {
+        margin: 0;
+        border: none;
+    }
+
+    .table thead th {
+        border: none;
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 15px;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+        background: #f8fafc;
+        box-shadow: inset 0 0 10px rgba(102, 126, 234, 0.05);
+    }
+
+    .table tbody td {
+        padding: 15px;
+        vertical-align: middle;
+        color: #475569;
+    }
+
+    .license-plate {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 1rem;
+    }
+
+    .badge-pill {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-color {
+        background: #e2e8f0;
+        color: #475569;
+    }
+
+    .badge-vehicle {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .badge-type-car {
+        background: var(--car-gradient);
+        color: white;
+    }
+
+    .badge-type-motorbike {
+        background: var(--motorbike-gradient);
+        color: white;
+    }
+
+    .time-text {
+        color: #94a3b8;
+        font-size: 0.875rem;
+    }
+
+    .action-btn {
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: #667eea;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.875rem;
+    }
+
+    .action-btn:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+        transform: translateY(-2px);
+    }
+
+    .action-btn-danger {
+        color: #ef4444;
+        border-color: #ef4444;
+    }
+
+    .action-btn-danger:hover {
+        background: #ef4444;
+        color: white;
+    }
+
+    .table-footer {
+        padding: 15px 25px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .pagination {
+        margin: 0;
+    }
+
+    .pagination .page-link {
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        color: #667eea;
+        margin: 0 4px;
+        transition: all 0.3s ease;
+    }
+
+    .pagination .page-link:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .pagination .page-item.active .page-link {
+        background: #667eea;
+        border-color: #667eea;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        color: #94a3b8;
+    }
+
+    .empty-state-icon {
+        font-size: 5rem;
+        margin-bottom: 20px;
+        opacity: 0.3;
+    }
+
+    /* Custom Modal */
+    .custom-modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 100%);
+        backdrop-filter: blur(8px);
+        animation: fadeIn 0.3s ease;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .custom-modal.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .custom-modal-content {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25),
+                    0 0 1px rgba(255, 255, 255, 0.5) inset;
+        max-width: 1400px;
+        width: 95%;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        overflow: hidden;
+        position: relative;
+        margin: auto;
+    }
+
+    .custom-modal-header {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-bottom: 2px solid rgba(226, 232, 240, 0.5);
+        padding: 28px 35px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 24px 24px 0 0;
+    }
+
+    .custom-modal-header h5 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .custom-modal-header h5 span {
+        color: #667eea;
+        font-weight: 700;
+    }
+
+    .custom-modal-close {
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        border: 1px solid rgba(226, 232, 240, 0.5);
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        font-size: 1.5rem;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custom-modal-close:hover {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+    }
+
+    .custom-modal-body {
+        padding: 40px 35px;
+    }
+
+    .custom-modal-body .row {
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+    .custom-modal-body .col-md-4 {
+        text-align: center;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .image-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(248, 250, 252, 0.3) 100%);
+        border: 1.5px solid rgba(226, 232, 240, 0.6);
+        border-radius: 18px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .image-card:hover {
+        border-color: rgba(102, 126, 234, 0.5);
+        box-shadow: 0 15px 50px rgba(102, 126, 234, 0.2);
+        transform: translateY(-8px);
+    }
+
+    .custom-modal-body h6 {
+        margin: 0 0 18px 0;
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .custom-modal-body h6 i {
+        color: #667eea;
+        font-size: 1.1rem;
+    }
+
+    .custom-modal-body img {
+        width: 100%;
+        height: 350px;
+        object-fit: contain;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(226, 232, 240, 0.5);
+    }
+
+    .custom-modal-body img:hover {
+        transform: scale(1.05);
+        box-shadow: 0 16px 50px rgba(0, 0, 0, 0.2);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-40px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .custom-modal.show {
+            padding: 10px;
+        }
+
+        .custom-modal-content {
+            width: 100%;
+        }
+
+        .custom-modal-header {
+            padding: 20px 20px;
+        }
+
+        .custom-modal-header h5 {
+            font-size: 1.25rem;
+        }
+
+        .custom-modal-body {
+            padding: 20px;
+        }
+
+        .custom-modal-body .row {
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .custom-modal-body img {
+            max-height: 300px;
+        }
+
+        .image-card {
+            padding: 15px;
+        }
+    }
+
+    /* Loading overlay */
+    #loadingOverlay {
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+    }
+
+    /* Animations */
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-in {
+        animation: slideInUp 0.5s ease forwards;
+    }
+
+    .row > div {
+        animation: slideInUp 0.5s ease forwards;
+    }
+
+    .row > div:nth-child(1) { animation-delay: 0.1s; }
+    .row > div:nth-child(2) { animation-delay: 0.2s; }
+    .row > div:nth-child(3) { animation-delay: 0.3s; }
+    .row > div:nth-child(4) { animation-delay: 0.4s; }
+
+    @media (max-width: 768px) {
+        .table-header {
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .search-box {
+            width: 100%;
+            flex-direction: column;
+        }
+
+        .search-box input {
+            width: 100%;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+        }
+
+        .chart-container {
+            height: 250px;
+        }
+    }
+</style>
+
+<!-- Stats Overview -->
+<div class="row mb-4 animate-in">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <i class="fas fa-car"></i>
+            </div>
+            <div class="stat-label">Xe Trong Bãi</div>
+            <div class="stat-value">{{ vehicles_in_parking }}</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-sign-in-alt"></i>
+            </div>
+            <div class="stat-label">Xe Vào Hôm Nay</div>
+            <div class="stat-value">{{ today_entries }}</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon warning">
+                <i class="fas fa-sign-out-alt"></i>
+            </div>
+            <div class="stat-label">Xe Ra Hôm Nay</div>
+            <div class="stat-value">{{ today_exits }}</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-icon info">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-label">Tổng Xe Đã Ra</div>
+            <div class="stat-value">{{ vehicles_exited }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Section -->
+<div class="row mb-4 animate-in" style="animation-delay: 0.2s;">
+    <div class="col-12">
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-icon info">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h6 class="chart-title">Thống kê xe vào theo giờ hôm nay</h6>
+            </div>
+            <div class="chart-container">
+                <canvas id="hourlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tab Navigation -->
+<ul class="nav nav-tabs" id="vehicleTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="parked-tab" data-bs-toggle="tab" data-bs-target="#parked" type="button" role="tab">
+            <i class="fas fa-car"></i> Xe Trong Bãi ({{ vehicles_in_parking }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">
+            <i class="fas fa-history"></i> Lịch Sử Xe Ra ({{ exit_history|length }})
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="vehicleTabContent">
+    <!-- Parked Vehicles Tab -->
+    <div class="tab-pane fade show active" id="parked" role="tabpanel">
+        <div class="table-card animate-in" style="animation-delay: 0.3s;">
+            <div class="table-header">
+                <h5><i class="fas fa-car"></i> Danh Sách Xe Đang Trong Bãi</h5>
+                <div class="search-box">
+                    <input type="text" id="parkedSearch" class="form-control form-control-sm" placeholder="Tìm kiếm biển số..." style="width: 200px;">
+                    <button class="refresh-btn" onclick="refreshParkedVehicles()">
+                        <i class="fas fa-sync-alt"></i> Làm Mới
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover" id="parkedTable">
+                    <thead>
+                        <tr>
+                            <th>Biển Số</th>
+                            <th>Màu Biển</th>
+                            <th>Loại Biển</th>
+                            <th>Loại Xe</th>
+                            <th>Giờ Vào</th>
+                            <th>Thời Gian Đỗ</th>
+                            <th>Phí Dự Kiến</th>
+                            <th>Hình Ảnh</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="parkedTableBody">
+                        <!-- Rendered by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-footer">
+                <div>
+                    <span id="parkedPageInfo" class="time-text"></span>
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0" id="parkedPagination"></ul>
+                </nav>
+            </div>
+
+            {% if not parked_vehicles %}
+            <div class="empty-state">
+                <i class="fas fa-car empty-state-icon"></i>
+                <p style="font-size: 1.125rem; margin: 0;">Hiện không có xe nào trong bãi</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- History Tab -->
+    <div class="tab-pane fade" id="history" role="tabpanel">
+        <div class="table-card animate-in" style="animation-delay: 0.3s;">
+            <div class="table-header">
+                <h5><i class="fas fa-history"></i> Lịch Sử Xe Ra Gần Đây</h5>
+                <div class="search-box">
+                    <input type="text" id="historySearch" class="form-control form-control-sm" placeholder="Tìm kiếm biển số..." style="width: 200px;">
+                    <button class="refresh-btn" onclick="refreshHistoryVehicles()">
+                        <i class="fas fa-sync-alt"></i> Làm Mới
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover" id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Biển Số</th>
+                            <th>Màu Biển</th>
+                            <th>Loại Biển</th>
+                            <th>Loại Xe</th>
+                            <th>Giờ Vào</th>
+                            <th>Giờ Ra</th>
+                            <th>Thời Gian Đỗ</th>
+                            <th>Phí Đã Thu</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <!-- Rendered by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-footer">
+                <div>
+                    <span id="historyPageInfo" class="time-text"></span>
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0" id="historyPagination"></ul>
+                </nav>
+            </div>
+
+            {% if not exit_history %}
+            <div class="empty-state">
+                <i class="fas fa-history empty-state-icon"></i>
+                <p style="font-size: 1.125rem; margin: 0;">Chưa có lịch sử xe ra</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Custom Image Modal -->
+<div class="custom-modal" id="imageModal" onclick="if(event.target === this) closeImageModal()">
+    <div class="custom-modal-content">
+        <div class="custom-modal-header">
+            <h5>
+                <i class="fas fa-car" style="color: #667eea;"></i>
+                Hình Ảnh Xe
+                <span id="modalLicensePlate"></span>
+            </h5>
+            <button class="custom-modal-close" onclick="closeImageModal()" title="Đóng">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="custom-modal-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <h6><i class="fas fa-face-smile"></i> Khuôn Mặt</h6>
+                    <div class="image-card">
+                        <img id="modalFaceImage" alt="Khuôn mặt" onerror="this.src='/static/images/default-image.jpg'">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h6><i class="fas fa-car"></i> Biển Số</h6>
+                    <div class="image-card">
+                        <img id="modalPlateImage" alt="Biển số" onerror="this.src='/static/images/default-image.jpg'">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h6><i class="fas fa-qrcode"></i> Mã QR</h6>
+                    <div class="image-card">
+                        <img id="modalQRImage" alt="Mã QR" onerror="this.src='/static/images/default-image.jpg'">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="d-none position-fixed top-0 start-0 w-100 h-100">
+    <div class="d-flex justify-content-center align-items-center h-100">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+let parkedVehiclesData = {{ parked_vehicles | tojson | safe }};
+let exitHistoryData = {{ exit_history | tojson | safe }};
+let todayVehiclesData = {{ today_vehicles | tojson | safe }};
+
+let hourlyChart;
+const itemsPerPage = 10;
+let currentParkedPage = 1;
+let currentHistoryPage = 1;
+let parkedFilteredData = parkedVehiclesData;
+let historyFilteredData = exitHistoryData;
+
+function initializeChart() {
+    const ctx = document.getElementById('hourlyChart').getContext('2d');
+    const hours = Array.from({length: 24}, (_, i) => `${i.toString().padStart(2, '0')}:00`);
+    const counts = new Array(24).fill(0);
+
+    todayVehiclesData.forEach(vehicle => {
+        if (vehicle.entry_time_str) {
+            const timeParts = vehicle.entry_time_str.split(' ')[1];
+            const hour = parseInt(timeParts.split(':')[0], 10);
+            if (!isNaN(hour) && hour >= 0 && hour < 24) {
+                counts[hour]++;
+            }
+        }
+    });
+
+    hourlyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: hours,
+            datasets: [{
+                label: 'Số Xe Vào',
+                data: counts,
+                backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                borderColor: 'rgba(102, 126, 234, 1)',
+                borderWidth: 2,
+                borderRadius: 8,
+                hoverBackgroundColor: 'rgba(102, 126, 234, 1)',
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        color: '#64748b',
+                        font: { size: 12 }
+                    },
+                    grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                    border: { display: false }
+                },
+                x: {
+                    ticks: { color: '#64748b', font: { size: 12 } },
+                    grid: { display: false },
+                    border: { display: false }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    cornerRadius: 8,
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13 }
+                }
+            }
+        }
+    });
+}
+
+function renderParkedTable(page, data) {
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginatedData = data.slice(start, end);
+    const tbody = document.getElementById('parkedTableBody');
+    tbody.innerHTML = '';
+
+    paginatedData.forEach(vehicle => {
+        const vehicleType = vehicle.vehicle_type === 'Xe máy' ? 'badge-type-motorbike' : 'badge-type-car';
+        const row = `
+            <tr>
+                <td><span class="license-plate">${vehicle.license_plate}</span></td>
+                <td><span class="badge-pill badge-color">${vehicle.plate_color}</span></td>
+                <td>${vehicle.plate_type}</td>
+                <td><span class="badge-pill ${vehicleType}"><i class="fas fa-${vehicle.vehicle_type === 'Xe máy' ? 'motorcycle' : 'car'}"></i> ${vehicle.vehicle_type}</span></td>
+                <td><span class="time-text">${vehicle.entry_time_str}</span></td>
+                <td><span style="color: #f59f00; font-weight: 600;"><i class="fas fa-clock"></i> ${vehicle.duration}</span></td>
+                <td><span style="color: #10b981; font-weight: 700;">${vehicle.estimated_fee.toLocaleString('vi-VN')} VND</span></td>
+                <td>
+                    <button class="action-btn" onclick="viewImages('${vehicle.license_plate}', '${vehicle.face_image_path.replace(/\\/g, '/')}', '${vehicle.plate_image_path.replace(/\\/g, '/')}', '${vehicle.qr_code_path.replace(/\\/g, '/')}')">
+                        <i class="fas fa-images"></i> Xem
+                    </button>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 6px;">
+                        <a href="/admin/vehicles/${vehicle.id}" class="action-btn">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <button class="action-btn action-btn-danger" onclick="deleteVehicle(${vehicle.id}, '${vehicle.license_plate}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        tbody.insertAdjacentHTML('beforeend', row);
+    });
+
+    updateParkedPagination(data);
+}
+
+function renderHistoryTable(page, data) {
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginatedData = data.slice(start, end);
+    const tbody = document.getElementById('historyTableBody');
+    tbody.innerHTML = '';
+
+    paginatedData.forEach(vehicle => {
+        const vehicleType = vehicle.vehicle_type === 'Xe máy' ? 'badge-type-motorbike' : 'badge-type-car';
+        const row = `
+            <tr>
+                <td><span class="license-plate">${vehicle.license_plate}</span></td>
+                <td><span class="badge-pill badge-color">${vehicle.plate_color}</span></td>
+                <td>${vehicle.plate_type}</td>
+                <td><span class="badge-pill ${vehicleType}"><i class="fas fa-${vehicle.vehicle_type === 'Xe máy' ? 'motorcycle' : 'car'}"></i> ${vehicle.vehicle_type}</span></td>
+                <td><span class="time-text">${vehicle.entry_time_str}</span></td>
+                <td><span class="time-text">${vehicle.exit_time_str}</span></td>
+                <td><span style="color: #f59f00; font-weight: 600;"><i class="fas fa-clock"></i> ${vehicle.duration}</span></td>
+                <td><span style="color: #10b981; font-weight: 700;">${vehicle.fee.toLocaleString('vi-VN')} VND</span></td>
+                <td>
+                    <div style="display: flex; gap: 6px;">
+                        <a href="/admin/vehicles/${vehicle.id}" class="action-btn">
+                            <i class="fas fa-eye"></i> Chi Tiết
+                        </a>
+                        <button class="action-btn action-btn-danger" onclick="deleteVehicle(${vehicle.id}, '${vehicle.license_plate}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        tbody.insertAdjacentHTML('beforeend', row);
+    });
+
+    updateHistoryPagination(data);
+}
+
+function updateParkedPagination(data) {
+    const totalPages = Math.ceil(data.length / itemsPerPage);
+    const pagination = document.getElementById('parkedPagination');
+    const pageInfo = document.getElementById('parkedPageInfo');
+    pagination.innerHTML = '';
+
+    pageInfo.textContent = `Trang ${currentParkedPage} / ${totalPages} (${data.length} xe)`;
+
+    pagination.insertAdjacentHTML('beforeend', `
+        <li class="page-item ${currentParkedPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="event.preventDefault(); changeParkedPage(${currentParkedPage - 1});">← Trước</a>
+        </li>
+    `);
+
+    for (let i = 1; i <= totalPages; i++) {
+        pagination.insertAdjacentHTML('beforeend', `
+            <li class="page-item ${i === currentParkedPage ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="event.preventDefault(); changeParkedPage(${i});">${i}</a>
+            </li>
+        `);
+    }
+
+    pagination.insertAdjacentHTML('beforeend', `
+        <li class="page-item ${currentParkedPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="event.preventDefault(); changeParkedPage(${currentParkedPage + 1});">Sau →</a>
+        </li>
+    `);
+}
+
+function updateHistoryPagination(data) {
+    const totalPages = Math.ceil(data.length / itemsPerPage);
+    const pagination = document.getElementById('historyPagination');
+    const pageInfo = document.getElementById('historyPageInfo');
+    pagination.innerHTML = '';
+
+    pageInfo.textContent = `Trang ${currentHistoryPage} / ${totalPages} (${data.length} xe)`;
+
+    pagination.insertAdjacentHTML('beforeend', `
+        <li class="page-item ${currentHistoryPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="event.preventDefault(); changeHistoryPage(${currentHistoryPage - 1});">← Trước</a>
+        </li>
+    `);
+
+    for (let i = 1; i <= totalPages; i++) {
+        pagination.insertAdjacentHTML('beforeend', `
+            <li class="page-item ${i === currentHistoryPage ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="event.preventDefault(); changeHistoryPage(${i});">${i}</a>
+            </li>
+        `);
+    }
+
+    pagination.insertAdjacentHTML('beforeend', `
+        <li class="page-item ${currentHistoryPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="event.preventDefault(); changeHistoryPage(${currentHistoryPage + 1});">Sau →</a>
+        </li>
+    `);
+}
+
+function changeParkedPage(page) {
+    if (page < 1 || page > Math.ceil(parkedFilteredData.length / itemsPerPage)) return;
+    currentParkedPage = page;
+    renderParkedTable(currentParkedPage, parkedFilteredData);
+    document.querySelector('#parked .table-responsive').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function changeHistoryPage(page) {
+    if (page < 1 || page > Math.ceil(historyFilteredData.length / itemsPerPage)) return;
+    currentHistoryPage = page;
+    renderHistoryTable(currentHistoryPage, historyFilteredData);
+    document.querySelector('#history .table-responsive').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function searchParkedVehicles() {
+    const searchTerm = document.getElementById('parkedSearch').value.toLowerCase();
+    parkedFilteredData = parkedVehiclesData.filter(vehicle =>
+        vehicle.license_plate.toLowerCase().includes(searchTerm)
+    );
+    currentParkedPage = 1;
+    renderParkedTable(currentParkedPage, parkedFilteredData);
+}
+
+function searchHistoryVehicles() {
+    const searchTerm = document.getElementById('historySearch').value.toLowerCase();
+    historyFilteredData = exitHistoryData.filter(vehicle =>
+        vehicle.license_plate.toLowerCase().includes(searchTerm)
+    );
+    currentHistoryPage = 1;
+    renderHistoryTable(currentHistoryPage, historyFilteredData);
+}
+
+function refreshParkedVehicles() {
+    showLoading(true);
+    location.reload();
+}
+
+function refreshHistoryVehicles() {
+    showLoading(true);
+    location.reload();
+}
+
+function viewImages(licensePlate, facePath, platePath, qrPath) {
+    document.getElementById('modalLicensePlate').textContent = licensePlate;
+    const formatPath = (path) => (!path ? '/static/images/default-image.jpg' : '/' + path.replace(/\\/g, '/').replace(/^\/+/, ''));
+    document.getElementById('modalFaceImage').src = formatPath(facePath);
+    document.getElementById('modalPlateImage').src = formatPath(platePath);
+    document.getElementById('modalQRImage').src = formatPath(qrPath);
+
+    const modal = document.getElementById('imageModal');
+    modal.classList.add('show');
+
+    // Scroll modal container to top when opened
+    setTimeout(() => {
+        modal.scrollTop = 0;
+    }, 10);
+
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageModal() {
+    document.getElementById('imageModal').classList.remove('show');
+    // Restore body scroll
+    document.body.style.overflow = '';
+}
+
+function deleteVehicle(vehicleId, licensePlate) {
+    if (confirm(`CẢNH BÁO: Bạn có chắc muốn XÓA VĨNH VIỄN xe ${licensePlate} khỏi hệ thống?\nHành động này không thể hoàn tác!`)) {
+        showLoading(true);
+        fetch(`/admin/vehicles/delete/${vehicleId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`Lỗi khi xóa xe: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            showLoading(false);
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                showError('Lỗi: ' + data.message);
+            }
+        })
+        .catch(error => {
+            showLoading(false);
+            showError('Lỗi kết nối: ' + error.message);
+        });
+    }
+}
+
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+    errorDiv.style.zIndex = '9999';
+    errorDiv.role = 'alert';
+    errorDiv.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
+    document.body.appendChild(errorDiv);
+    setTimeout(() => errorDiv.remove(), 5000);
+}
+
+function showLoading(show) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (show) overlay.classList.remove('d-none');
+    else overlay.classList.add('d-none');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeChart();
+    renderParkedTable(currentParkedPage, parkedFilteredData);
+    renderHistoryTable(currentHistoryPage, historyFilteredData);
+    document.getElementById('parkedSearch').addEventListener('input', searchParkedVehicles);
+    document.getElementById('historySearch').addEventListener('input', searchHistoryVehicles);
+    setInterval(() => location.reload(), 60000);
+});
+</script>
+{% endblock %}

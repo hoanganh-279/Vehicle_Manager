@@ -1,0 +1,377 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Chi Tiết Hóa Đơn{% endblock %}
+
+{% block page_title %}Chi Tiết Hóa Đơn{% endblock %}
+
+{% block page_subtitle %}Thông tin chi tiết giao dịch{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-10 col-lg-11">
+            <!-- Back Button -->
+            <div class="mb-4">
+                <a href="{{ url_for('admin_card_topup_history') }}" class="btn btn-outline-secondary shadow-sm d-inline-flex align-items-center">
+                    <i class="fas fa-arrow-left me-2"></i> Quay lại Lịch sử
+                </a>
+            </div>
+
+            <!-- Invoice Card -->
+            <div class="card shadow-sm border-0 rounded-3 overflow-hidden" id="invoiceCard">
+                <!-- Header -->
+                <div class="card-header bg-gradient-silver text-dark py-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="mb-1 fw-bold">HÓA ĐƠN DỊCH VỤ</h3>
+                            <p class="text-dark-75 mb-3">Hệ Thống Bãi Xe NQT</p>
+                            <div class="small">
+                                <p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i>63, Trần Văn Ơn, Thủ Dầu Một, TP.HCM</p>
+                                <p class="mb-1"><i class="fas fa-phone me-2"></i>0963920003</p>
+                                <p class="mb-0"><i class="fas fa-envelope me-2"></i>2124802010371@student.tdmu.edu.vn</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="bg-white bg-opacity-20 rounded-3 p-3">
+                                <h5 class="fw-semibold mb-2 text-dark">Số hóa đơn</h5>
+                                <div class="h4 fw-bold text-dark mb-2">{{ invoice_number }}</div>
+                                <small class="text-dark-75">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ transaction[9].strftime('%d/%m/%Y %H:%M:%S') }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="card-body p-4 p-md-5 bg-light">
+                    <!-- Customer Info -->
+                    <div class="mb-5">
+                        <h5 class="fw-bold text-silver-dark mb-4">THÔNG TIN KHÁCH HÀNG</h5>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <small class="text-muted fw-medium d-block mb-1">Khách hàng</small>
+                                <p class="mb-0 fw-semibold">{{ transaction[2] or 'N/A' }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted fw-medium d-block mb-1">Mã thẻ</small>
+                                <p class="mb-0 fw-semibold">{{ transaction[1] }}</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted fw-medium d-block mb-1">Số điện thoại</small>
+                                <p class="mb-0 fw-semibold">{{ transaction[3] or 'N/A' }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted fw-medium d-block mb-1">Email</small>
+                                <p class="mb-0 fw-semibold">{{ transaction[4] or 'N/A' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-5 border-silver-light">
+
+                    <!-- Transaction Details -->
+                    <h5 class="fw-bold text-silver-dark mb-4">CHI TIẾT GIAO DỊCH</h5>
+                    <div class="table-responsive mb-5">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-silver">
+                                <tr>
+                                    <th class="fw-semibold">Dịch vụ</th>
+                                    <th class="fw-semibold">Mã giao dịch</th>
+                                    <th class="fw-semibold">Phương thức</th>
+                                    <th class="fw-semibold">Số tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-semibold">Nạp tiền thẻ</td>
+                                    <td>
+                                        <code class="bg-light px-2 py-1 rounded-2">{{ transaction[7] or 'N/A' }}</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-silver-light text-black px-3 py-2 fw-semibold">
+                                            {{ transaction[6] | capitalize }}
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold text-success h5 mb-0">{{ amount_formatted }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-silver-dark mb-2">Trạng thái:</h6>
+                            <span class="badge px-4 py-2 fw-semibold
+                                {% if status_text|lower == 'hoàn thành' %}bg-success text-white
+                                {% elif status_text|lower == 'thất bại' %}bg-danger text-white
+                                {% elif status_text|lower == 'đang chờ' %}bg-warning text-dark
+                                {% else %}bg-light text-dark{% endif %}">
+                                {{ status_text }}
+                            </span>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <h5 class="fw-bold text-silver-dark mb-1">TỔNG CỘNG</h5>
+                            <h3 class="text-success mb-0">{{ amount_formatted }}</h3>
+                        </div>
+                    </div>
+
+                    <hr class="my-5 border-silver-light">
+
+                    <!-- Notes -->
+                    <div>
+                        <h5 class="fw-bold text-silver-dark mb-4">GHI CHÚ</h5>
+                        <div class="alert alert-silver-light border-0 rounded-3 p-4">
+                            <ul class="mb-0 list-unstyled">
+                                <li class="mb-2"><i class="fas fa-info-circle me-2 text-silver-dark"></i>Đây là hóa đơn điện tử, không cần chữ ký và dấu.</li>
+                                <li class="mb-2"><i class="fas fa-phone me-2 text-silver-dark"></i>Vui lòng liên hệ hotline nếu có bất kỳ thắc mắc nào: 0963920003</li>
+                                <li><i class="fas fa-thumbs-up me-2 text-success"></i>Cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi!</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="card-footer bg-light text-center py-3 border-top">
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        Hóa đơn được tạo tự động - Ngày tạo: {{ now.strftime('%d/%m/%Y %H:%M:%S') }}
+                    </small>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="row justify-content-center mt-4">
+                <div class="col-auto">
+                    <div class="d-flex gap-2 flex-column flex-md-row">
+                        <button class="btn btn-outline-silver px-4" onclick="printInvoice()">
+                            <i class="fas fa-print me-2"></i>In hóa đơn
+                        </button>
+                        <a href="{{ url_for('export_invoice', transaction_id=transaction[0]) }}" target="_blank" class="btn btn-silver px-4">
+                            <i class="fas fa-download me-2"></i>Tải PDF
+                        </a>
+                        <a href="{{ url_for('send_invoice_email', transaction_id=transaction[0]) }}" class="btn btn-outline-success px-4">
+                            <i class="fas fa-envelope me-2"></i>Gửi Email
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function printInvoice() {
+    window.print();
+}
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+/* Silver Color Scheme */
+:root {
+    --silver: #C0C0C0;
+    --silver-light: #E6E6E6;
+    --silver-dark: #A9A9A9;
+    --silver-text: #333333;
+}
+
+/* General Styles */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.bg-gradient-silver {
+    background: linear-gradient(135deg, var(--silver) 0%, var(--silver-dark) 100%);
+}
+
+.text-dark-75 {
+    color: rgba(51, 51, 51, 0.75);
+}
+
+.text-silver-dark {
+    color: var(--silver-text);
+}
+
+.bg-silver-light {
+    background-color: var(--silver-light);
+}
+
+.border-silver-light {
+    border-color: var(--silver-light);
+}
+
+.btn-silver {
+    background-color: var(--silver);
+    color: var(--silver-text);
+    border-color: var(--silver-dark);
+}
+
+.btn-silver:hover {
+    background-color: var(--silver-dark);
+    border-color: var(--silver);
+}
+
+.btn-outline-silver {
+    border-color: var(--silver-dark);
+    color: var(--silver-dark);
+}
+
+.btn-outline-silver:hover {
+    background-color: var(--silver-light);
+    color: var(--silver-text);
+}
+
+.alert-silver-light {
+    background-color: var(--silver-light);
+    color: var(--silver-text);
+}
+
+.table-silver {
+    background-color: var(--silver-light);
+}
+
+.badge {
+    border: 1px solid var(--silver-dark);
+    font-size: 0.9rem;
+}
+
+.table {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table thead th {
+    background-color: var(--silver-light);
+    border-bottom: 2px solid var(--silver-dark);
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 0.5rem 1.25rem;
+}
+
+/* Status and Method Colors */
+.bg-success {
+    background-color: #28a745 !important;
+}
+
+.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.bg-warning {
+    background-color: #ffc107 !important;
+}
+
+.text-black {
+    color: #000000 !important;
+}
+
+/* Print Styles */
+@media print {
+    .d-flex,
+    .card-footer {
+        display: none !important;
+    }
+
+    .container-fluid {
+        padding: 0 !important;
+        max-width: none !important;
+    }
+
+    body {
+        font-size: 11pt;
+        background:ස
+
+ystem: white !important;
+        color: #000 !important;
+    }
+
+    .card {
+        box-shadow: none !important;
+        border: 1px solid var(--silver-dark);
+    }
+
+    .bg-gradient-silver,
+    .card-header {
+        background: var(--silver) !important;
+        color: var(--silver-text) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .table-silver {
+        background: var(--silver-light) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .text-success {
+        color: #28a745 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .alert-silver-light {
+        background: var(--silver-light) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .bg-success {
+        background: #28a745 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .bg-danger {
+        background: #dc3545 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .bg-warning {
+        background: #ffc107 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .text-black {
+        color: #000000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .d-flex {
+        flex-direction: column;
+        gap: 0.75rem !important;
+    }
+
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .card-body {
+        padding: 1.5rem !important;
+    }
+}
+</style>
+{% endblock %}
