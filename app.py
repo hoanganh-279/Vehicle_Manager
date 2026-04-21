@@ -39,8 +39,8 @@
 import os
 import io
 import json
-import pdfkit
-import pyodbc
+# import pdfkit
+import psycopg2
 import stripe
 from datetime import datetime, timedelta, date
 from functools import wraps
@@ -1323,7 +1323,7 @@ def recognize_plate():
     try:
         # Import detector
         from camera_alpr import LicensePlateDetector
-        import cv2
+        # import cv2
         import numpy as np
         
         # Tạo thư mục lưu ảnh nếu chưa có
