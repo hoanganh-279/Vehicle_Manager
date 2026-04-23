@@ -1,0 +1,305 @@
+═══════════════════════════════════════════════════════════════════════════
+                    SƠ ĐỒ LUỒNG THANH TOÁN XE RA BÃI
+═══════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         LUỒNG THANH TOÁN HOÀN CHỈNH                     │
+└─────────────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────────┐
+    │   NGƯỜI DÙNG     │
+    │  (Nhân viên bãi) │
+    └────────┬─────────┘
+             │
+             │ 1. Tìm xe (QR/Biển số/Nhập tay)
+             ▼
+    ┌────────────────────────────┐
+    │   FRONTEND (Browser)       │
+    │   parking/exit.html        │
+    └────────┬───────────────────┘
+             │
+             │ 2. Hiển thị thông tin xe
+             │    + Biển số, loại xe, giờ vào
+             │    + Thời gian đỗ
+             ▼
+    ┌────────────────────────────┐
+    │   Nhấn "Tính phí"          │
+    └────────┬───────────────────┘
+             │
+             │ 3. POST /parking/exit
+             │    action: "calculate"
+             ▼
+    ┌────────────────────────────┐
+    │   BACKEND (Flask)          │
+    │   app.py                   │
+    └────────┬───────────────────┘
+             │
+             │ 4. Tính phí dựa trên:
+             │    - Thời gian đỗ
+             │    - Loại xe (Xe máy/Xe hơi)
+             │    - Giá theo giờ
+             ▼
+    ┌────────────────────────────┐
+    │   Trả về JSON              │
+    │   {                        │
+    │     parking_fee: 15000,    │
+    │     duration: "2h 30m",    │
+    │     rate: 5000             │
+    │   }                        │
+    └────────┬───────────────────┘
+             │
+             │ 5. Hiển thị phí + Chọn phương thức
+             ▼
+    ┌────────────────────────────────────────────────────────────────┐
+    │   CHỌN PHƯƠNG THỨC THANH TOÁN                                  │
+    ├────────────────────────────────────────────────────────────────┤
+    │  [ Tiền mặt ]  [ Thẻ thành viên ]  [ MoMo ]  [ VNPay ]        │
+    └────────┬───────────────────────────────────────────────────────┘
+             │
+             │ 6. Nhấn "Xác nhận thanh toán"
+             │    ↓ Hiển thị loading spinner
+             │    ↓ "🔄 Đang xử lý thanh toán..."
+             ▼
+    ┌────────────────────────────┐
+    │   POST /parking/exit       │
+    │   {                        │
+    │     vehicle_id: 123,       │
+    │     payment_method: "cash",│
+    │     parking_fee: 15000     │
+    │   }                        │
+    └────────┬───────────────────┘
+             │
+             ▼
+    ┌─────────────────────────────────────────────────────────────┐
+    │   BACKEND XỬ LÝ THANH TOÁN                                  │
+    ├─────────────────────────────────────────────────────────────┤
+    │                                                             │
+    │   ┌─────────────────────────────────────────────────┐     │
+    │   │  try {                                          │     │
+    │   │                                                 │     │
+    │   │    // Kiểm tra xe tồn tại                      │     │
+    │   │    vehicle = query_db(...)                     │     │
+    │   │                                                 │     │
+    │   │    // Xử lý theo phương thức                   │     │
+    │   │    if payment_method == "momo":                │     │
+    │   │        → Tạo link thanh toán MoMo              │     │
+    │   │        → Trả về pay_url                        │     │
+    │   │                                                 │     │
+    │   │    if payment_method == "card":                │     │
+    │   │        → Kiểm tra số dư thẻ                    │     │
+    │   │        → Trừ tiền từ thẻ                       │     │
+    │   │                                                 │     │
+    │   │    // Cập nhật database                        │     │
+    │   │    execute_db(                                 │     │
+    │   │      "UPDATE vehicles                          │     │
+    │   │       SET status='exited',                     │     │
+    │   │           exit_time=?,                         │     │
+    │   │           actual_fee=?,                        │     │
+    │   │           payment_status='paid',               │     │
+    │   │           payment_method=?                     │     │
+    │   │       WHERE id=?"                              │     │
+    │   │    )                                           │     │
+    │   │                                                 │     │
+    │   │    // Log thành công                           │     │
+    │   │    app.logger.info(                            │     │
+    │   │      "✅ Xe #123 đã ra bãi - Phí: 15000"      │     │
+    │   │    )                                           │     │
+    │   │                                                 │     │
+    │   │    // Trả về JSON thành công                   │     │
+    │   │    return jsonify({                            │     │
+    │   │      success: true,                            │     │
+    │   │      message: "Xe đã ra bãi thành công"       │     │
+    │   │    })                                          │     │
+    │   │                                                 │     │
+    │   │  } catch (Exception e) {                       │     │
+    │   │                                                 │     │
+    │   │    // Log lỗi                                  │     │
+    │   │    app.logger.error(                           │     │
+    │   │      "❌ Lỗi cập nhật xe #123: " + str(e)     │     │
+    │   │    )                                           │     │
+    │   │                                                 │     │
+    │   │    // Trả về JSON lỗi thân thiện               │     │
+    │   │    return jsonify({                            │     │
+    │   │      success: false,                           │     │
+    │   │      message: "Lỗi hệ thống: Không thể..."    │     │
+    │   │    })                                          │     │
+    │   │                                                 │     │
+    │   │  }                                             │     │
+    │   └─────────────────────────────────────────────────┘     │
+    │                                                             │
+    └─────────────────┬───────────────────────────────────────────┘
+                      │
+                      │ 7. Trả về JSON response
+                      ▼
+    ┌─────────────────────────────────────────────────────────────┐
+    │   FRONTEND XỬ LÝ RESPONSE                                   │
+    ├─────────────────────────────────────────────────────────────┤
+    │                                                             │
+    │   // Kiểm tra Content-Type                                 │
+    │   if (!contentType.includes('application/json')) {         │
+    │       throw Error("Server trả về HTML")                    │
+    │   }                                                         │
+    │                                                             │
+    │   const data = await res.json()                            │
+    │                                                             │
+    │   if (data.success) {                                      │
+    │       // Hiển thị thông báo thành công                     │
+    │       showPayAlert("✅ Thanh toán thành công!", "success") │
+    │                                                             │
+    │       // Tự động chuyển màn hình sau 0.8s                  │
+    │       setTimeout(() => {                                   │
+    │           showExitSuccess(...)                             │
+    │       }, 800)                                              │
+    │   } else {                                                 │
+    │       // Hiển thị lỗi thân thiện                           │
+    │       showPayAlert("⚠️ " + data.message, "danger")         │
+    │   }                                                         │
+    │                                                             │
+    └─────────────────┬───────────────────────────────────────────┘
+                      │
+                      │ 8. Hiển thị kết quả
+                      ▼
+    ┌─────────────────────────────────────────────────────────────┐
+    │   MÀN HÌNH KẾT QUẢ                                          │
+    ├─────────────────────────────────────────────────────────────┤
+    │                                                             │
+    │   🎉 Xe đã ra bãi thành công!                              │
+    │                                                             │
+    │   ┌─────────────────────────────────────────┐             │
+    │   │  Tổng phí đã thu: 15,000 đ              │             │
+    │   │  Thanh toán qua: Tiền mặt               │             │
+    │   │  Thời gian: 12/04/2026 14:30            │             │
+    │   └─────────────────────────────────────────┘             │
+    │                                                             │
+    │   [ 🖨️  In biên lai ]  [ ➕ Xe tiếp theo ]                │
+    │                                                             │
+    └─────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    LUỒNG XỬ LÝ LỖI (ERROR HANDLING)                     │
+└─────────────────────────────────────────────────────────────────────────┘
+
+    ❌ LỖI XẢY RA Ở BACKEND
+    │
+    ├─→ Exception được bắt trong try-catch
+    │
+    ├─→ Log chi tiết vào terminal:
+    │   "❌ Lỗi cập nhật xe #123 ra bãi: Invalid column name..."
+    │
+    ├─→ Trả về JSON error (KHÔNG phải HTML):
+    │   {
+    │     "success": false,
+    │     "message": "Lỗi hệ thống: Không thể ghi nhận thanh toán"
+    │   }
+    │
+    └─→ Frontend nhận JSON
+        │
+        ├─→ Kiểm tra Content-Type: OK (application/json)
+        │
+        ├─→ Parse JSON: OK
+        │
+        ├─→ Hiển thị toast notification:
+        │   "⚠️ Lỗi hệ thống: Không thể ghi nhận thanh toán"
+        │
+        └─→ Khôi phục nút về trạng thái ban đầu
+            User có thể thử lại
+
+═══════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    CẤU TRÚC DATABASE                                     │
+└─────────────────────────────────────────────────────────────────────────┘
+
+    TABLE: vehicles
+    ├── id (INT, PRIMARY KEY)
+    ├── license_plate (NVARCHAR)
+    ├── vehicle_type (NVARCHAR)
+    ├── status (NVARCHAR) → 'parked' | 'exited'
+    ├── entry_time (DATETIME)
+    ├── exit_time (DATETIME)
+    ├── actual_fee (DECIMAL)
+    ├── payment_status (NVARCHAR) → 'paid' | 'pending'
+    └── payment_method (NVARCHAR) ⭐ MỚI
+        │
+        ├── Giá trị hợp lệ:
+        │   - 'cash' (Tiền mặt)
+        │   - 'member_card' (Thẻ thành viên)
+        │   - 'momo' (MoMo)
+        │   - 'vnpay' (VNPay)
+        │   - 'stripe' (Stripe)
+        │   - NULL (Chưa thanh toán)
+        │
+        ├── Constraint: CK_vehicles_payment_method
+        │   CHECK (payment_method IN (...))
+        │
+        └── Index: IX_vehicles_payment_method
+            (Tăng tốc query theo payment_method)
+
+═══════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    PHƯƠNG THỨC THANH TOÁN                                │
+└─────────────────────────────────────────────────────────────────────────┘
+
+    1. TIỀN MẶT (cash)
+       ├── Xử lý: Trực tiếp tại bãi
+       ├── Backend: Cập nhật trạng thái ngay
+       └── Frontend: Hiển thị kết quả ngay
+
+    2. THẺ THÀNH VIÊN (member_card)
+       ├── Xử lý: Trừ tiền từ số dư thẻ
+       ├── Backend: 
+       │   ├── Kiểm tra số dư
+       │   ├── Trừ tiền: UPDATE cards SET balance = balance - fee
+       │   └── Cập nhật trạng thái xe
+       └── Frontend: Hiển thị số dư trước/sau
+
+    3. MOMO (momo)
+       ├── Xử lý: Chuyển hướng đến trang MoMo
+       ├── Backend:
+       │   ├── Tạo link thanh toán: create_momo_payment()
+       │   ├── Trả về pay_url
+       │   └── Chờ IPN callback để cập nhật
+       └── Frontend: Mở popup trang MoMo
+
+    4. VNPAY (vnpay)
+       ├── Xử lý: Chuyển hướng đến trang VNPay
+       ├── Backend: Tương tự MoMo
+       └── Frontend: Mở popup trang VNPay
+
+    5. STRIPE (stripe)
+       ├── Xử lý: Thanh toán thẻ quốc tế
+       ├── Backend: Tích hợp Stripe API
+       └── Frontend: Hiển thị form nhập thẻ
+
+═══════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    LOGGING & MONITORING                                  │
+└─────────────────────────────────────────────────────────────────────────┘
+
+    TERMINAL (Flask Server)
+    │
+    ├── ✅ Thành công:
+    │   "✅ Xe #123 đã ra bãi - Phí: 15000 - Phương thức: cash"
+    │
+    ├── ❌ Lỗi:
+    │   "❌ Lỗi cập nhật xe #123 ra bãi: Invalid column name 'payment_method'"
+    │
+    └── 📊 Thống kê:
+        "INFO: 127.0.0.1 - - [12/Apr/2026 14:30:00] "POST /parking/exit HTTP/1.1" 200 -"
+
+    BROWSER CONSOLE (F12)
+    │
+    ├── ✅ Thành công:
+    │   "✅ Thanh toán thành công!"
+    │
+    ├── ❌ Lỗi:
+    │   "❌ Lỗi thanh toán: {success: false, message: '...'}"
+    │
+    └── 🔍 Debug:
+        "❌ Backend trả về HTML thay vì JSON: <!DOCTYPE html>..."
+
+═══════════════════════════════════════════════════════════════════════════

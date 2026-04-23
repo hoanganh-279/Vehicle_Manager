@@ -1,0 +1,370 @@
+<!-- 
+═══════════════════════════════════════════════════════════════════════════
+PARKING EXIT - PRODUCTION-READY VERSION
+═══════════════════════════════════════════════════════════════════════════
+Đã fix tất cả vấn đề:
+1. ✅ Ngăn double submit với flag + idempotency key
+2. ✅ KHÔNG gửi parking_fee từ Frontend (Backend tự tính)
+3. ✅ Validate input trước khi gửi
+4. ✅ Xử lý lỗi network tốt hơn
+5. ✅ Loading state rõ ràng
+═══════════════════════════════════════════════════════════════════════════
+-->
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// GLOBAL STATE
+// ═══════════════════════════════════════════════════════════════════════════
+
+let currentVehicle = null;
+let selectedPayment = null;
+let isProcessing = false;  // ✅ FIX: Flag để ngăn double submit
+let currentIdempotencyKey = null;  // ✅ FIX: Lưu key hiện tại
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ FIX: Tạo idempotency key unique
+ */
+function generateIdempotencyKey(vehicleId) {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(7);
+    return `payment-${vehicleId}-${timestamp}-${random}`;
+}
+
+/**
+ * ✅ FIX: Validate input trước khi gửi
+ */
+function validatePaymentData() {
+    const errors = [];
+    
+    if (!currentVehicle || !currentVehicle.id) {
+        errors.push('Chưa chọn xe');
+    }
+    
+    if (!selectedPayment) {
+        errors.push('Chưa chọn phương thức thanh toán');
+    }
+    
+    const validMethods = ['cash', 'card', 'member_card', 'momo', 'vnpay', 'stripe'];
+    if (selectedPayment && !validMethods.includes(selectedPayment)) {
+        errors.push('Phương thức thanh toán không hợp lệ');
+    }
+    
+    if (['card', 'member_card'].includes(selectedPayment)) {
+        const cardId = document.getElementById('payCardId')?.value?.trim();
+        if (!cardId) {
+            errors.push('Chưa nhập mã thẻ thành viên');
+        }
+    }
+    
+    return {
+        valid: errors.length === 0,
+        errors: errors
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PAYMENT PROCESSING - PRODUCTION VERSION
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * ✅ FIXED: Xử lý thanh toán với tất cả security measures
+ */
+async function processPayment() {
+    // ✅ FIX #3: Kiểm tra flag để ngăn double submit
+    if (isProcessing) {
+        console.warn('⚠️ Đang xử lý thanh toán, vui lòng đợi...');
+        showPayAlert('<i class="fas fa-exclamation-triangle"></i> Đang xử lý, vui lòng đợi...', 'warning');
+        return;
+    }
+    
+    // ✅ FIX: Validate input trước khi gửi
+    const validation = validatePaymentData();
+    if (!validation.valid) {
+        showPayAlert(
+            '<i class="fas fa-exclamation-circle"></i> ' + validation.errors.join(', '),
+            'danger'
+        );
+        return;
+    }
+    
+    // Set flag và disable UI
+    isProcessing = true;
+    const btn = document.getElementById('btnPay');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý thanh toán...';
+    clearPayAlert();
+    
+    // ✅ FIX: Tạo idempotency key unique
+    currentIdempotencyKey = generateIdempotencyKey(currentVehicle.id);
+    
+    // ✅ FIX: Chuẩn bị payload (KHÔNG gửi parking_fee)
+    const payload = {
+        vehicle_id: currentVehicle.id,
+        payment_method: selectedPayment,
+        // ❌ KHÔNG gửi parking_fee - Backend sẽ tự tính!
+        // parking_fee: currentVehicle.parking_fee,  // ← XÓA DÒNG NÀY
+    };
+    
+    // Thêm card_id nếu thanh toán bằng thẻ
+    if (['card', 'member_card'].includes(selectedPayment)) {
+        payload.card_id = document.getElementById('payCardId').value.trim();
+    }
+    
+    try {
+        console.log('📤 Sending payment request:', {
+            ...payload,
+            idempotency_key: currentIdempotencyKey
+        });
+        
+        const res = await fetch('/parking/exit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Idempotency-Key': currentIdempotencyKey  // ✅ FIX: Gửi idempotency key
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        // ✅ FIX: Kiểm tra Content-Type trước khi parse
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await res.text();
+            console.error('❌ Backend trả về HTML thay vì JSON:', text);
+            throw new Error('Lỗi hệ thống: Server trả về định dạng không hợp lệ');
+        }
+        
+        const data = await res.json();
+        console.log('📥 Payment response:', data);
+        
+        if (data.success) {
+            // ✅ Thanh toán thành công
+            const resultData = data.data || {};
+            const fee = resultData.parking_fee || 0;
+            
+            // Hiển thị thông báo thành công
+            showPayAlert(
+                '<i class="fas fa-check-circle"></i> ' + (data.message || 'Thanh toán thành công!'),
+                'success'
+            );
+            
+            // Tự động chuyển sang màn hình kết quả sau 0.8s
+            setTimeout(() => {
+                showExitSuccess(fee, selectedPayment);
+            }, 800);
+            
+        } else {
+            // ❌ Thanh toán thất bại
+            const errorMsg = data.message || 'Lỗi xử lý thanh toán';
+            showPayAlert(
+                '<i class="fas fa-exclamation-circle"></i> ' + errorMsg,
+                'danger'
+            );
+            console.error('❌ Payment failed:', data);
+            
+            // Reset UI để user có thể thử lại
+            isProcessing = false;
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+        
+    } catch (e) {
+        // ❌ Lỗi network hoặc exception
+        console.error('❌ Exception trong processPayment:', e);
+        showPayAlert(
+            '<i class="fas fa-exclamation-triangle"></i> Lỗi kết nối: ' + e.message,
+            'danger'
+        );
+        
+        // Reset UI
+        isProcessing = false;
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
+/**
+ * ✅ FIXED: Tính phí (chỉ để hiển thị, Backend sẽ tính lại)
+ */
+async function proceedToPayment() {
+    if (!currentVehicle) return;
+    
+    try {
+        // Gọi API để tính phí (Backend tính)
+        const res = await fetch('/parking/exit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                vehicle_id: currentVehicle.id,
+                action: 'calculate'
+            })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+            const fee = data.parking_fee || 0;
+            
+            // ⚠️ LƯU Ý: Chỉ lưu để hiển thị, KHÔNG gửi lên Backend khi thanh toán
+            currentVehicle.parking_fee_display = fee;
+            
+            showFeeAndPayment(fee, data);
+        } else {
+            showPayAlert('Lỗi tính phí: ' + data.message, 'danger');
+        }
+        
+    } catch (e) {
+        console.error('❌ Lỗi tính phí:', e);
+        showPayAlert('Lỗi kết nối khi tính phí', 'danger');
+    }
+}
+
+/**
+ * Hiển thị phí và form thanh toán
+ */
+function showFeeAndPayment(fee, data) {
+    const now = new Date();
+    
+    document.getElementById('feeAmount').textContent = fee.toLocaleString('vi-VN') + ' đ';
+    document.getElementById('fPlate').textContent = currentVehicle.license_plate;
+    document.getElementById('fType').textContent = currentVehicle.vehicle_type || '—';
+    document.getElementById('fEntry').textContent = currentVehicle.entry_time || '—';
+    document.getElementById('fExit').textContent = now.toLocaleTimeString('vi-VN');
+    document.getElementById('fDuration').textContent = data.duration || currentVehicle.duration || '—';
+    document.getElementById('fRate').textContent = currentVehicle.vehicle_type === 'Xe hơi' ? '15,000 đ/giờ' : '5,000 đ/giờ';
+    
+    document.getElementById('feeDisplay').classList.add('show');
+    document.getElementById('paymentSection').style.display = 'block';
+    document.getElementById('guideCard').style.display = 'none';
+    
+    // Auto-select card nếu xe có card_id
+    if (currentVehicle.card_id) {
+        document.getElementById('payCardId').value = currentVehicle.card_id;
+        selectPayment('card');
+    }
+    
+    setStep(3);
+}
+
+/**
+ * Hiển thị màn hình kết quả thành công
+ */
+function showExitSuccess(fee, method) {
+    const methodNames = {
+        cash: 'Tiền mặt',
+        card: 'Thẻ thành viên',
+        member_card: 'Thẻ thành viên',
+        momo: 'MoMo',
+        vnpay: 'VNPay',
+        stripe: 'Stripe'
+    };
+    
+    document.getElementById('rFee').textContent = Number(fee).toLocaleString('vi-VN') + ' đ';
+    document.getElementById('rPayMethod').textContent = 'Thanh toán qua: ' + (methodNames[method] || method);
+    document.getElementById('resultTime').textContent = new Date().toLocaleString('vi-VN');
+    
+    // Ẩn các card khác
+    document.getElementById('searchCard').style.display = 'none';
+    document.getElementById('vehicleInfoCard').style.display = 'none';
+    document.getElementById('feeDisplay').style.display = 'none';
+    document.getElementById('paymentSection').style.display = 'none';
+    
+    // Hiển thị result card
+    document.getElementById('resultCard').classList.add('show');
+    setStep(4);
+    
+    // ✅ Reset flag để cho phép thanh toán xe tiếp theo
+    isProcessing = false;
+    currentIdempotencyKey = null;
+}
+
+/**
+ * Reset tất cả để xử lý xe tiếp theo
+ */
+function resetAll() {
+    currentVehicle = null;
+    selectedPayment = null;
+    isProcessing = false;  // ✅ Reset flag
+    currentIdempotencyKey = null;  // ✅ Reset key
+    
+    document.getElementById('resultCard').classList.remove('show');
+    document.getElementById('searchCard').style.display = 'block';
+    document.getElementById('searchCard').style.opacity = '1';
+    document.getElementById('vehicleInfoCard').classList.remove('show');
+    document.getElementById('vehicleInfoCard').style.display = '';
+    document.getElementById('feeDisplay').classList.remove('show');
+    document.getElementById('feeDisplay').style.display = '';
+    document.getElementById('paymentSection').style.display = 'none';
+    document.getElementById('guideCard').style.display = 'block';
+    document.getElementById('discountRow').style.display = 'none';
+    document.getElementById('cardBalance').style.display = 'none';
+    document.getElementById('manualSearch').value = '';
+    
+    document.querySelectorAll('.payment-btn').forEach(b => b.classList.remove('selected'));
+    
+    const btn = document.getElementById('btnPay');
+    btn.disabled = true;
+    btn.onclick = processPayment;
+    btn.innerHTML = '<i class="fas fa-check-circle"></i> Xác nhận thanh toán';
+    
+    clearSearchAlert();
+    clearPayAlert();
+    setStep(1);
+}
+
+/**
+ * Chọn phương thức thanh toán
+ */
+function selectPayment(method) {
+    selectedPayment = method;
+    document.querySelectorAll('.payment-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('pay-' + method).classList.add('selected');
+    document.getElementById('cardPaySection').style.display = method === 'card' ? 'block' : 'none';
+    document.getElementById('btnPay').disabled = (method === 'card');
+    if (method !== 'card') document.getElementById('btnPay').disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function setStep(n) {
+    [1, 2, 3, 4].forEach(i => {
+        const s = document.getElementById('step' + i);
+        s.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
+    });
+}
+
+function showPayAlert(msg, type) {
+    document.getElementById('payAlert').innerHTML = `<div class="alert-exit alert-exit-${type}">${msg}</div>`;
+}
+
+function clearPayAlert() {
+    document.getElementById('payAlert').innerHTML = '';
+}
+
+function showSearchAlert(msg, type) {
+    document.getElementById('searchAlert').innerHTML = `<div class="alert-exit alert-exit-${type}">${msg}</div>`;
+}
+
+function clearSearchAlert() {
+    document.getElementById('searchAlert').innerHTML = '';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('✅ Payment system initialized (Production version)');
+    console.log('🔒 Security features enabled:');
+    console.log('   - Double submit prevention');
+    console.log('   - Idempotency key');
+    console.log('   - Backend price recalculation');
+    console.log('   - Input validation');
+});
+</script>

@@ -1,4 +1,4 @@
-{% extends "admin_base.html" %}
+﻿{% extends "admin/base.html" %}
 
 {% block title %}Quản lý khách hàng - Admin{% endblock %}
 {% block page_title %}Quản lý khách hàng{% endblock %}
@@ -161,11 +161,13 @@
 
     .table-header {
         background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        padding: 20px 25px;
+        padding: 22px 28px;
         border-bottom: 2px solid #e2e8f0;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
     }
 
     .table-header h5 {
@@ -189,7 +191,7 @@
         padding: 10px 15px;
         font-size: 0.875rem;
         transition: all 0.3s ease;
-        min-width: 250px;
+        min-width: 280px;
     }
 
     .search-box input:focus {
@@ -209,10 +211,12 @@
         background: #f8fafc;
         color: #475569;
         font-weight: 700;
-        font-size: 0.875rem;
+        font-size: 0.8rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        padding: 15px;
+        padding: 16px 12px;
+        white-space: nowrap;
+        vertical-align: middle;
     }
 
     .table tbody tr {
@@ -223,29 +227,37 @@
     .table tbody tr:hover {
         background: #f8fafc;
         box-shadow: inset 0 0 10px rgba(102, 126, 234, 0.05);
+        transform: translateX(2px);
     }
 
     .table tbody td {
-        padding: 15px;
+        padding: 14px 12px;
         vertical-align: middle;
         color: #475569;
+        font-size: 0.875rem;
     }
 
     .card-code {
         font-family: 'Courier New', monospace;
         font-weight: 700;
         color: #1e293b;
-        font-size: 0.9rem;
-        background: #f1f5f9;
-        padding: 4px 8px;
-        border-radius: 6px;
+        font-size: 0.85rem;
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        padding: 6px 10px;
+        border-radius: 8px;
+        display: inline-block;
+        border: 1px solid #cbd5e1;
     }
 
     .badge-pill {
-        padding: 5px 12px;
+        padding: 6px 14px;
         border-radius: 20px;
         font-size: 0.75rem;
         font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
     }
 
     .badge-balance {
@@ -272,22 +284,24 @@
 
     .time-text {
         color: #94a3b8;
-        font-size: 0.875rem;
+        font-size: 0.8rem;
+        font-weight: 500;
     }
 
     .action-btn {
-        padding: 6px 10px;
+        padding: 8px 12px;
         border-radius: 8px;
         border: 1px solid #e2e8f0;
         background: white;
         color: #667eea;
         cursor: pointer;
         transition: all 0.3s ease;
-        font-size: 0.875rem;
+        font-size: 0.8rem;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
+        font-weight: 600;
     }
 
     .action-btn:hover {
@@ -295,16 +309,20 @@
         color: white;
         border-color: #667eea;
         transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     }
 
     .action-btn-danger {
         color: #ef4444;
-        border-color: #ef4444;
+        border-color: #fecaca;
+        background: #fef2f2;
     }
 
     .action-btn-danger:hover {
         background: #ef4444;
         color: white;
+        border-color: #ef4444;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
     }
 
     .table-footer {
@@ -501,18 +519,18 @@
         <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>#</th>
-                    <th>Mã Thẻ</th>
-                    <th>Tên Chủ Thẻ</th>
-                    <th>SĐT</th>
-                    <th>Số Dư</th>
-                    <th>Thao Tác</th>
+                    <th style="width: 60px; text-align: center;">#</th>
+                    <th style="width: 120px;">Mã Thẻ</th>
+                    <th style="width: 180px;">Tên Chủ Thẻ</th>
+                    <th style="width: 120px;">SĐT</th>
+                    <th style="width: 150px; text-align: right;">Số Dư</th>
+                    <th style="width: 120px; text-align: center;">Thao Tác</th>
                 </tr>
             </thead>
             <tbody>
                 {% for card in top_cards %}
                 <tr>
-                    <td>
+                    <td style="text-align: center;">
                         <span class="badge-rank">
                             {% if loop.index == 1 %}🥇
                             {% elif loop.index == 2 %}🥈
@@ -520,16 +538,16 @@
                             {% else %}{{ loop.index }}{% endif %}
                         </span>
                     </td>
-                    <td><span class="card-code">{{ card.id[:8] }}</span></td>
-                    <td><strong>{{ card.name }}</strong></td>
+                    <td><span class="card-code">{{ card.id if card.id|length <= 8 else card.id[:8] }}</span></td>
+                    <td><strong style="color: #1e293b;">{{ card.name }}</strong></td>
                     <td class="time-text">{{ card.phone }}</td>
-                    <td>
+                    <td style="text-align: right;">
                         <span class="badge-pill badge-balance">
-                            {{ card.balance|format_currency }} VND
+                            <i class="fas fa-wallet"></i> {{ card.balance|format_currency }} VND
                         </span>
                     </td>
-                    <td>
-                        <a href="/admin/cards/{{ card.id }}" class="action-btn">
+                    <td style="text-align: center;">
+                        <a href="{{ url_for('admin_card_detail', card_id=card.id) }}" class="action-btn" title="Xem chi tiết">
                             <i class="fas fa-eye"></i> Xem
                         </a>
                     </td>
@@ -557,56 +575,58 @@
         <table class="table table-hover" id="cardsTable">
             <thead>
                 <tr>
-                    <th>Mã Thẻ</th>
-                    <th>Tên Chủ Thẻ</th>
-                    <th>SĐT</th>
-                    <th>Email</th>
-                    <th>Số Dư</th>
-                    <th>Xe Đang Gửi</th>
-                    <th>Tổng Xe Đã Gửi</th>
-                    <th>Ngày Tạo</th>
-                    <th>Thao Tác</th>
+                    <th style="width: 120px;">Mã Thẻ</th>
+                    <th style="width: 180px;">Tên Chủ Thẻ</th>
+                    <th style="width: 120px;">SĐT</th>
+                    <th style="width: 200px;">Email</th>
+                    <th style="width: 130px; text-align: right;">Số Dư</th>
+                    <th style="width: 110px; text-align: center;">Xe Đang Gửi</th>
+                    <th style="width: 120px; text-align: center;">Tổng Xe Đã Gửi</th>
+                    <th style="width: 150px;">Ngày Tạo</th>
+                    <th style="width: 140px; text-align: center;">Thao Tác</th>
                 </tr>
             </thead>
             <tbody id="cardsTableBody">
                 {% for card in cards %}
                 <tr>
-                    <td><span class="card-code">{{ card.id[:8] }}</span></td>
-                    <td><strong>{{ card.name }}</strong></td>
+                    <td><span class="card-code">{{ card.id if card.id|length <= 8 else card.id[:8] }}</span></td>
+                    <td><strong style="color: #1e293b;">{{ card.name }}</strong></td>
                     <td class="time-text">{{ card.phone }}</td>
-                    <td class="time-text">{{ card.email }}</td>
-                    <td>
+                    <td class="time-text" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ card.email }}">{{ card.email }}</td>
+                    <td style="text-align: right;">
                         <span class="badge-pill badge-balance">
-                            {{ card.balance|format_currency }} VND
+                            <i class="fas fa-wallet"></i> {{ card.balance|format_currency }} VND
                         </span>
                     </td>
-                    <td>
+                    <td style="text-align: center;">
                         {% if card.vehicles_count > 0 %}
                             <span class="badge-pill badge-vehicles">
                                 <i class="fas fa-car"></i> {{ card.vehicles_count }}
                             </span>
                         {% else %}
-                            <span class="badge-pill" style="background: #e2e8f0; color: #64748b;">0</span>
+                            <span class="badge-pill" style="background: #f1f5f9; color: #94a3b8;">
+                                <i class="fas fa-minus"></i> 0
+                            </span>
                         {% endif %}
                     </td>
-                    <td>
+                    <td style="text-align: center;">
                         <span class="badge-pill badge-total">
-                            {{ card.total_parked }}
+                            <i class="fas fa-history"></i> {{ card.total_parked }}
                         </span>
                     </td>
                     <td>
                         <span class="time-text">
-                            {{ card.created_at.strftime('%d/%m/%Y %H:%M') }}
+                            <i class="far fa-calendar-alt"></i> {{ card.created_at.strftime('%d/%m/%Y %H:%M') }}
                         </span>
                     </td>
-                    <td>
-                        <div style="display: flex; gap: 6px;">
-                            <a href="/admin/cards/{{ card.id }}" class="action-btn">
-                                <i class="fas fa-eye"></i>
+                    <td style="text-align: center;">
+                        <div style="display: flex; gap: 8px; justify-content: center;">
+                            <a href="{{ url_for('admin_card_detail', card_id=card.id) }}" class="action-btn" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i> Xem
                             </a>
                             {% if card.vehicles_count == 0 %}
                             <button class="action-btn action-btn-danger"
-                                    onclick="deleteCard('{{ card.id }}', '{{ card.name }}')">
+                                    onclick="deleteCard('{{ card.id }}', '{{ card.name }}')" title="Xóa thẻ">
                                 <i class="fas fa-trash"></i>
                             </button>
                             {% endif %}
@@ -757,7 +777,7 @@
             return;
         }
 
-        fetch(`/admin/cards/delete/${cardId}`, {
+        fetch(`/admin/cards/${cardId}/delete`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         })

@@ -1,0 +1,48 @@
+
+═══════════════════════════════════════════════════════════════════════════
+REFACTOR REPORT - APP.PY TO DUAL-MODE
+═══════════════════════════════════════════════════════════════════════════
+Date: 2026-04-22 14:23:59
+
+SUMMARY:
+--------
+Original file: app.py (2225 lines)
+Refactored file: app.py.refactored (2316 lines)
+Total changes: 8
+
+CHANGES MADE:
+-------------
+1. ✅ Added dual-mode imports
+2. ✅ Commented out old get_db() function
+3. ✅ Commented out old query_db() function
+4. ✅ Commented out old execute_db() function
+5. ✅ Replaced 17 ISNULL() calls
+6. ⚠️  Added warning for 81 placeholders (MANUAL REVIEW REQUIRED)
+7. ✅ Updated webhook import to dual-mode version
+8. ✅ Added initialization code
+
+
+NEXT STEPS:
+-----------
+1. ⚠️  REVIEW app.py.refactored carefully
+2. ⚠️  MANUAL: Fix all placeholder warnings (? → %s conditional)
+3. ⚠️  MANUAL: Add {sql_limit_clause(N)} at end of TOP N queries
+4. ✅ Test on Local (SQL Server):
+   python app.py.refactored
+5. ✅ If tests pass, backup and replace:
+   cp app.py app.py.backup
+   cp app.py.refactored app.py
+6. ✅ Test again
+7. ✅ Commit and push to GitHub
+8. ✅ Deploy to Render
+
+WARNINGS:
+---------
+⚠️  This script handles COMMON patterns only!
+⚠️  MANUAL REVIEW is REQUIRED for:
+    - Placeholder conversions (? → %s)
+    - Complex queries with subqueries
+    - Dynamic SQL generation
+    - Error handling in database operations
+
+═══════════════════════════════════════════════════════════════════════════

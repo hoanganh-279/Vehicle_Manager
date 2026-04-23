@@ -1,0 +1,77 @@
+═══════════════════════════════════════════════════════════════════════════
+                    HƯỚNG DẪN NHANH: SỬA LỖI THANH TOÁN
+═══════════════════════════════════════════════════════════════════════════
+
+🔴 LỖI: [SQL Server]Invalid column name 'payment_method'
+
+✅ GIẢI PHÁP: 3 BƯỚC ĐƠN GIẢN
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 1: CHẠY SQL SCRIPT (2 phút)                                        │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. Mở SQL Server Management Studio (SSMS)
+2. Kết nối: LAPTOP-3J6T1I18\SQLEXPRESS01
+3. Database: ParkingManagement
+4. File → Open → add_payment_method_column.sql
+5. Nhấn F5
+
+Kết quả:
+✅ Đã thêm cột payment_method vào bảng vehicles
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 2: KHỞI ĐỘNG LẠI SERVER (30 giây)                                  │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. Dừng Flask: Ctrl+C
+2. Chạy lại: python app.py
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 3: TEST (1 phút)                                                   │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. Vào: http://localhost:5000/parking/exit
+2. Tìm xe → Chọn "Tiền mặt" → Nhấn "Xác nhận thanh toán"
+3. ✅ Thành công!
+
+═══════════════════════════════════════════════════════════════════════════
+
+📁 CÁC FILE ĐÃ THAY ĐỔI
+
+✅ add_payment_method_column.sql - SQL script (MỚI)
+✅ app.py - Backend với error handling (CẬP NHẬT)
+✅ parking/exit.html - Frontend với loading spinner (CẬP NHẬT)
+
+═══════════════════════════════════════════════════════════════════════════
+
+🎯 KẾT QUẢ
+
+TRƯỚC:
+❌ Lỗi SQL hiển thị ra ngoài
+❌ Không có loading spinner
+❌ Lỗi "Unexpected token '<'"
+
+SAU:
+✅ Thanh toán thành công
+✅ Loading spinner chuyên nghiệp
+✅ Thông báo đẹp mắt
+✅ Tự động chuyển màn hình kết quả
+
+═══════════════════════════════════════════════════════════════════════════
+
+📚 TÀI LIỆU CHI TIẾT
+
+- FIX_PAYMENT_METHOD_SUMMARY.md - Tóm tắt đầy đủ
+- HUONG_DAN_SUA_LOI_THANH_TOAN.md - Hướng dẫn chi tiết
+- BEFORE_AFTER_COMPARISON.md - So sánh trước/sau
+- CHECKLIST_FIX_PAYMENT.txt - Checklist đầy đủ
+
+═══════════════════════════════════════════════════════════════════════════
+
+💡 LƯU Ý
+
+- Phải chạy SQL script trước khi test
+- Phải khởi động lại Flask server
+- Nếu vẫn lỗi, xem log trong terminal
+
+═══════════════════════════════════════════════════════════════════════════

@@ -1,1373 +1,1407 @@
 {% extends "base.html" %}
-
+{% block title %}Xe Vào Bãi — Parking System{% endblock %}
 {% block content %}
 <style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        --card-bg: rgba(255, 255, 255, 0.05);
-        --card-border: rgba(255, 255, 255, 0.1);
-        --shadow-glow: 0 8px 32px rgba(102, 126, 234, 0.2);
-        --text-glow: 0 0 20px rgba(102, 126, 234, 0.5);
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+        -webkit-font-smoothing: antialiased
     }
 
-    /* Animated Background */
-    .ai-background {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        opacity: 0.15;
-        z-index: 0;
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 24px;
+        background: rgba(0, 0, 0, 0.15);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2)
     }
 
-    .ai-background::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background:
-            radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.3) 0%, transparent 50%);
-        animation: gradientPulse 8s ease-in-out infinite;
-    }
-
-    @keyframes gradientPulse {
-        0%, 100% { opacity: 0.5; transform: scale(1); }
-        50% { opacity: 0.8; transform: scale(1.1); }
-    }
-
-    /* Header Section */
-    .smart-header {
-        text-align: center;
-        margin-bottom: 40px;
-        padding: 30px;
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 20px;
-        backdrop-filter: blur(10px);
-        box-shadow: var(--shadow-glow);
-        animation: fadeInDown 0.8s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .smart-header::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(45deg, transparent, rgba(102, 126, 234, 0.1), transparent);
-        animation: shimmer 3s infinite;
-    }
-
-    @keyframes shimmer {
-        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-    }
-
-    .smart-header h2 {
-        font-size: 2.5rem;
+    .top-bar .logo {
+        font-size: 1.2rem;
         font-weight: 700;
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 10px;
-        position: relative;
-        z-index: 1;
-    }
-
-    .smart-header .subtitle {
-        color: var(--text-secondary);
-        font-size: 1.1rem;
-        margin-top: 10px;
-    }
-
-    /* Parking Zone Cards */
-    .parking-zones {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 30px;
-        margin-bottom: 40px;
-        animation: fadeInUp 0.8s ease 0.2s backwards;
-    }
-
-    .zone-card {
-        background: var(--card-bg);
-        border: 2px solid var(--card-border);
-        border-radius: 20px;
-        padding: 30px;
-        backdrop-filter: blur(10px);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-        cursor: pointer;
-    }
-
-    .zone-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--primary-gradient);
-        opacity: 0;
-        transition: opacity 0.4s ease;
-    }
-
-    .zone-card:hover {
-        transform: translateY(-10px) scale(1.02);
-        box-shadow: var(--shadow-glow), 0 20px 60px rgba(0, 0, 0, 0.3);
-        border-color: rgba(102, 126, 234, 0.5);
-    }
-
-    .zone-card:hover::before {
-        opacity: 0.1;
-    }
-
-    .zone-card.motorbike-zone {
-        border-color: rgba(245, 87, 108, 0.3);
-    }
-
-    .zone-card.car-zone {
-        border-color: rgba(79, 172, 254, 0.3);
-    }
-
-    .zone-header {
+        color: #fff;
         display: flex;
         align-items: center;
-        margin-bottom: 25px;
-        position: relative;
-        z-index: 1;
+        gap: 10px
     }
 
-    .zone-icon {
-        width: 60px;
-        height: 60px;
-        background: var(--primary-gradient);
-        border-radius: 15px;
+    .stat-pill {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        padding: 5px 14px;
+        font-size: .82rem;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px
+    }
+
+    .stat-pill.warn {
+        background: rgba(245, 159, 0, 0.25);
+        border-color: rgba(245, 159, 0, 0.6)
+    }
+
+    .stat-pill.full {
+        background: rgba(239, 68, 68, 0.25);
+        border-color: rgba(239, 68, 68, 0.6)
+    }
+
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 370px;
+        gap: 20px;
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto
+    }
+
+    .card {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 20px;
+        backdrop-filter: blur(10px);
+        margin-bottom: 16px;
+        color: #fff
+    }
+
+    .card-title {
+        font-size: .95rem;
+        font-weight: 700;
+        margin-bottom: 14px;
         display: flex;
         align-items: center;
-        justify-content: center;
-        margin-right: 20px;
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-        animation: iconFloat 3s ease-in-out infinite;
+        gap: 9px;
+        color: #fff
     }
 
-    @keyframes iconFloat {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-    }
-
-    .zone-icon i {
-        font-size: 28px;
-        color: white;
-    }
-
-    .zone-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin: 0;
-    }
-
-    .zone-stats-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
-        margin-bottom: 20px;
+    .camera-wrap {
         position: relative;
-        z-index: 1;
-    }
-
-    .stat-box {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
-        padding: 15px;
-        text-align: center;
-        transition: all 0.3s ease;
-    }
-
-    .stat-box:hover {
-        background: rgba(255, 255, 255, 0.08);
-        transform: scale(1.05);
-    }
-
-    .stat-label {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        margin-bottom: 8px;
-        display: block;
-    }
-
-    .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        display: block;
-        background: var(--success-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .stat-value.warning {
-        background: var(--warning-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .stat-value.danger {
-        background: var(--danger-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    /* Progress Bar */
-    .smart-progress {
-        height: 30px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 15px;
         overflow: hidden;
-        position: relative;
-        margin-bottom: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: #000;
+        aspect-ratio: 16/9
     }
 
-    .smart-progress-bar {
-        height: 100%;
-        background: var(--success-gradient);
-        border-radius: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 0.9rem;
-        transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .smart-progress-bar::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
+    .camera-wrap video {
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-        animation: progressShine 2s infinite;
+        object-fit: cover;
+        display: block
     }
 
-    @keyframes progressShine {
-        0% { left: -100%; }
-        100% { left: 100%; }
-    }
-
-    /* Alert Messages */
-    .smart-alert {
-        padding: 20px;
-        border-radius: 15px;
-        margin-top: 20px;
-        backdrop-filter: blur(10px);
-        border: 1px solid;
-        animation: slideInRight 0.5s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .smart-alert::before {
-        content: '';
+    .scan-line {
         position: absolute;
         left: 0;
-        top: 0;
-        width: 4px;
-        height: 100%;
-        background: currentColor;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #fff, transparent);
+        animation: scan 2s linear infinite
     }
 
-    .smart-alert.alert-danger {
-        background: rgba(250, 112, 154, 0.1);
-        border-color: rgba(250, 112, 154, 0.3);
-        color: #fa709a;
-    }
+    @keyframes scan {
+        0% {
+            top: 10%
+        }
 
-    .smart-alert.alert-warning {
-        background: rgba(240, 147, 251, 0.1);
-        border-color: rgba(240, 147, 251, 0.3);
-        color: #f093fb;
-    }
-
-    /* Camera Section */
-    .camera-panel {
-        background: var(--card-bg);
-        border: 2px solid var(--card-border);
-        border-radius: 20px;
-        padding: 30px;
-        backdrop-filter: blur(10px);
-        box-shadow: var(--shadow-glow);
-        margin-bottom: 30px;
-        animation: fadeInUp 0.8s ease 0.4s backwards;
-    }
-
-    .camera-panel-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 30px;
-        padding-bottom: 20px;
-        border-bottom: 2px solid var(--card-border);
-    }
-
-    .camera-panel-header h4 {
-        font-size: 1.8rem;
-        font-weight: 700;
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .camera-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 30px;
-        margin-bottom: 30px;
-    }
-
-    .camera-box {
-        background: rgba(255, 255, 255, 0.03);
-        border: 2px solid var(--card-border);
-        border-radius: 15px;
-        padding: 20px;
-        transition: all 0.3s ease;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .camera-box:hover {
-        border-color: rgba(102, 126, 234, 0.5);
-        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.2);
-    }
-
-    .camera-box h5 {
-        margin-bottom: 15px;
-        font-size: 1.2rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-shrink: 0;
-    }
-
-    .camera-box h5 i {
-        color: #667eea;
-    }
-
-    .camera-select {
-        width: 100%;
-        padding: 12px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--card-border);
-        border-radius: 10px;
-        color: var(--text-primary);
-        margin-bottom: 15px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        flex-shrink: 0;
-    }
-
-    .camera-select:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
-    }
-
-    .camera-video {
-    width: 100%;
-    aspect-ratio: 16 / 9;   /* hoặc 4/3 nếu webcam của bạn vậy */
-    border-radius: 12px;
-    border: 2px solid var(--card-border);
-    background: #000;
-    object-fit: cover;
-    display: block;
-}
-
-    @media (max-width: 768px) {
-        .camera-video {
-            height: 250px;
+        100% {
+            top: 90%
         }
     }
 
-    .camera-preview {
-    margin-top: 15px;
-    border-radius: 12px;
-    overflow: hidden;
-    width: 100%;
-    aspect-ratio: 16 / 9;   /* giống trên cho đều nhau */
-    display: block;
-}
-
-   .camera-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;      /* thay vì contain */
-    border-radius: 0;       /* vì khung ngoài đã bo góc */
-    border: none;
-    box-shadow: none;
-}
-
-    @media (max-width: 768px) {
-        .camera-preview {
-            min-height: 250px;
-            max-height: 250px;
-        }
-
-        .camera-preview img {
-            max-height: 250px;
-        }
-    }
-
-    /* Capture Button */
-    .capture-section {
-        text-align: center;
-        padding: 30px;
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 15px;
-        border: 1px solid var(--card-border);
-        margin-bottom: 30px;
-    }
-
-    .smart-btn {
-        padding: 18px 40px;
-        font-size: 1.2rem;
-        font-weight: 700;
-        border: none;
-        border-radius: 15px;
-        background: var(--primary-gradient);
-        color: white;
-        cursor: pointer;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .smart-btn::before {
-        content: '';
+    .cam-label {
         position: absolute;
-        top: 50%;
+        bottom: 10px;
         left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, .6);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: .75rem;
+        white-space: nowrap;
+        color: #fff
     }
 
-    .smart-btn:hover::before {
-        width: 300px;
-        height: 300px;
-    }
-
-    .smart-btn:hover {
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
-    }
-
-    .smart-btn:active {
-        transform: translateY(-1px) scale(1.02);
-    }
-
-    .smart-btn:disabled {
-        background: linear-gradient(135deg, #666 0%, #999 100%);
-        cursor: not-allowed;
-        opacity: 0.5;
-    }
-
-    .smart-btn i {
-        margin-right: 10px;
-    }
-
-    /* Processing Indicator */
-    .processing-indicator {
-        display: none;
-        text-align: center;
-        padding: 30px;
-        animation: fadeIn 0.5s ease;
-    }
-
-    .processing-indicator.active {
-        display: block;
-    }
-
-    .spinner {
-        width: 60px;
-        height: 60px;
-        margin: 0 auto 20px;
-        border: 4px solid rgba(102, 126, 234, 0.2);
-        border-top: 4px solid #667eea;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-
-    /* Plates Selection */
-    .plates-selection-area {
-        display: none;
-        animation: fadeInUp 0.6s ease;
-        margin-top: 30px;
-    }
-
-    .plates-selection-area.active {
-        display: block;
-    }
-
-    .plates-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 25px;
-        margin: 25px 0;
-    }
-
-    .plate-card {
-        background: rgba(255, 255, 255, 0.03);
-        border: 2px solid var(--card-border);
-        border-radius: 15px;
-        padding: 20px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .plate-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--primary-gradient);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .plate-card:hover {
-        transform: translateY(-5px);
-        border-color: rgba(102, 126, 234, 0.5);
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-    }
-
-    .plate-card.selected {
-        border-color: #11998e;
-        background: rgba(17, 153, 142, 0.1);
-    }
-
-    .plate-card.selected::before {
-        opacity: 0.1;
-    }
-
-    .plate-image-preview {
-        width: 100%;
-        height: 120px;
-        background: rgba(0, 0, 0, 0.3);
-        border-radius: 10px;
+    .cam-controls {
         display: flex;
+        gap: 8px;
+        margin-top: 10px
+    }
+
+    .cam-controls select {
+        flex: 1;
+        background: rgba(255, 255, 255, .15);
+        border: 1px solid rgba(255, 255, 255, .3);
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: .85rem
+    }
+
+    .cam-controls select option {
+        background: #764ba2;
+        color: #fff
+    }
+
+    .btn {
+        border: none;
+        border-radius: 10px;
+        padding: 9px 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .2s;
+        display: inline-flex;
         align-items: center;
+        gap: 7px;
+        font-size: .88rem
+    }
+
+    .btn:disabled {
+        opacity: .4;
+        cursor: not-allowed
+    }
+
+    .btn-white {
+        background: #fff;
+        color: #667eea
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #11998e, #38ef7d);
+        color: #fff
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, .4);
+        color: #fff
+    }
+
+    .btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, .2)
+    }
+
+    .btn-full {
+        width: 100%;
         justify-content: center;
-        margin-bottom: 15px;
-        overflow: hidden;
-        border: 1px solid var(--card-border);
+        padding: 13px;
+        font-size: .95rem
     }
 
-    .plate-image-preview img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
+    .plate-box {
+        background: rgba(255, 255, 255, .15);
+        border: 2px solid rgba(255, 255, 255, .5);
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 12px;
+        display: none
     }
 
-    .plate-info {
-        position: relative;
-        z-index: 1;
+    .plate-box.show {
+        display: block
     }
 
     .plate-number {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin: 15px 0;
-        background: var(--success-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: 3px;
+        text-align: center;
+        color: #fff
     }
 
-    .plate-badges {
+    .plate-meta {
         display: flex;
-        flex-wrap: wrap;
         gap: 8px;
-        margin-bottom: 15px;
+        justify-content: center;
+        margin-top: 8px;
+        flex-wrap: wrap
     }
 
-    .plate-badge {
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 0.85rem;
+    .badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: .78rem;
         font-weight: 600;
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, .2);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, .3)
     }
 
-    .plate-selection-input {
+    .form-group {
+        margin-bottom: 13px
+    }
+
+    .form-group label {
+        font-size: .82rem;
+        color: rgba(255, 255, 255, .8);
+        margin-bottom: 5px;
+        display: block
+    }
+
+    .form-control {
+        width: 100%;
+        background: rgba(255, 255, 255, .15);
+        border: 1px solid rgba(255, 255, 255, .3);
+        color: #fff;
+        border-radius: 10px;
+        padding: 9px 13px;
+        font-size: .9rem
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #fff;
+        background: rgba(255, 255, 255, .2)
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, .5)
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px
+    }
+
+    .steps {
         display: flex;
+        margin-bottom: 18px
+    }
+
+    .step {
+        flex: 1;
+        text-align: center;
+        padding: 9px 4px;
+        font-size: .78rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, .5);
+        border-bottom: 3px solid rgba(255, 255, 255, .2);
+        transition: all .3s
+    }
+
+    .step.active {
+        color: #fff;
+        border-bottom-color: #fff
+    }
+
+    .step.done {
+        color: #38ef7d;
+        border-bottom-color: #38ef7d
+    }
+
+    .step-num {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .2);
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 12px;
-        background: rgba(255, 255, 255, 0.05);
+        margin-bottom: 3px;
+        font-size: .78rem
+    }
+
+    .step.active .step-num {
+        background: #fff;
+        color: #667eea
+    }
+
+    .step.done .step-num {
+        background: #38ef7d;
+        color: #fff
+    }
+
+    .alert {
+        padding: 11px 15px;
         border-radius: 10px;
-        margin-top: 15px;
+        margin-bottom: 13px;
+        font-size: .87rem;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: #fff
     }
 
-    .plate-selection-input input[type="radio"] {
-        width: 20px;
-        height: 20px;
-        margin-right: 10px;
-        accent-color: #11998e;
+    .alert-success {
+        background: rgba(17, 153, 142, .4);
+        border: 1px solid rgba(56, 239, 125, .5)
     }
 
-    /* QR Result */
-    .qr-result {
-        display: none;
+    .alert-danger {
+        background: rgba(239, 68, 68, .4);
+        border: 1px solid rgba(239, 68, 68, .5)
+    }
+
+    .alert-warning {
+        background: rgba(245, 159, 0, .4);
+        border: 1px solid rgba(245, 159, 0, .5)
+    }
+
+    .alert-info {
+        background: rgba(255, 255, 255, .15);
+        border: 1px solid rgba(255, 255, 255, .3)
+    }
+
+    .result-card {
+        background: rgba(17, 153, 142, .3);
+        border: 2px solid rgba(56, 239, 125, .6);
+        border-radius: 16px;
+        padding: 24px;
         text-align: center;
-        padding: 40px;
-        background: rgba(17, 153, 142, 0.1);
-        border: 2px solid rgba(17, 153, 142, 0.3);
-        border-radius: 20px;
-        animation: fadeInUp 0.6s ease;
-        margin-top: 30px;
+        display: none;
+        color: #fff
     }
 
-    .qr-result.active {
+    .result-card.show {
+        display: block
+    }
+
+    .result-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 16px;
+        text-align: left
+    }
+
+    .result-row {
+        background: rgba(255, 255, 255, .1);
+        border-radius: 8px;
+        padding: 10px 13px
+    }
+
+    .result-row .label {
+        font-size: .75rem;
+        color: rgba(255, 255, 255, .7)
+    }
+
+    .result-row .value {
+        font-size: .93rem;
+        font-weight: 600;
+        color: #fff
+    }
+
+    .cap-bar {
+        height: 7px;
+        background: rgba(255, 255, 255, .2);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 5px
+    }
+
+    .cap-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width .5s;
+        background: rgba(255, 255, 255, .7)
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════ */
+    /* FALLBACK WORKFLOW STYLES */
+    /* ══════════════════════════════════════════════════════════════════════ */
+    
+    .snapshot-preview {
+        display: none;
+        margin-top: 12px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        position: relative;
+    }
+
+    .snapshot-preview.show {
         display: block;
     }
 
-    .qr-result h5 {
-        font-size: 1.8rem;
-        margin-bottom: 20px;
-        background: var(--success-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+    .snapshot-preview img {
+        width: 100%;
+        height: auto;
+        display: block;
     }
 
-    .qr-code-display {
-        margin: 30px 0;
+    .snapshot-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
     }
 
-    .qr-code-display img {
-        border-radius: 15px;
-        border: 3px solid #11998e;
-        padding: 15px;
-        background: white;
-        box-shadow: 0 10px 40px rgba(17, 153, 142, 0.3);
+    .manual-mode-indicator {
+        display: none;
+        background: rgba(245, 159, 0, 0.3);
+        border: 2px solid rgba(245, 159, 0, 0.6);
+        border-radius: 10px;
+        padding: 10px 15px;
+        margin-bottom: 12px;
+        color: #fff;
+        font-size: 0.85rem;
+        align-items: center;
+        gap: 8px;
     }
 
-    /* Animations */
-    @keyframes fadeInDown {
-        from {
-            opacity: 0;
-            transform: translateY(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .manual-mode-indicator.show {
+        display: flex;
     }
 
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .manual-mode-indicator i {
+        font-size: 1.2rem;
     }
 
-    @keyframes slideInRight {
-        from {
-            opacity: 0;
-            transform: translateX(50px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
+    .suspicious-checkbox {
+        display: none;
+        background: rgba(239, 68, 68, 0.2);
+        border: 2px solid rgba(239, 68, 68, 0.5);
+        border-radius: 10px;
+        padding: 12px 15px;
+        margin-top: 12px;
+        cursor: pointer;
+        transition: all 0.3s;
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+    .suspicious-checkbox.show {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .smart-header h2 {
-            font-size: 2rem;
-        }
+    .suspicious-checkbox:hover {
+        background: rgba(239, 68, 68, 0.3);
+        border-color: rgba(239, 68, 68, 0.7);
+    }
 
-        .parking-zones {
-            grid-template-columns: 1fr;
-        }
+    .suspicious-checkbox input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
 
-        .camera-grid {
-            grid-template-columns: 1fr;
-        }
+    .suspicious-checkbox label {
+        flex: 1;
+        cursor: pointer;
+        margin: 0;
+        color: #fff;
+        font-weight: 600;
+    }
 
-        .zone-stats-grid {
-            grid-template-columns: 1fr;
-        }
+    .comparison-view {
+        display: none;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 12px;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
 
-        .plates-grid {
-            grid-template-columns: 1fr;
-        }
+    .comparison-view.show {
+        display: grid;
+    }
 
-        .smart-btn {
-            padding: 15px 30px;
-            font-size: 1rem;
-        }
+    .comparison-item {
+        text-align: center;
+    }
+
+    .comparison-item img {
+        width: 100%;
+        border-radius: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        margin-bottom: 8px;
+    }
+
+    .comparison-label {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 600;
+    }
+
+    .comparison-value {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: 2px;
+        margin-top: 5px;
+    }
+
+    .btn-manual-override {
+        background: linear-gradient(135deg, #f59f00, #f76707);
+        color: #fff;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-manual-override:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(245, 159, 0, 0.4);
+    }
+
+    .audit-trail-info {
+        display: none;
+        background: rgba(59, 130, 246, 0.2);
+        border: 1px solid rgba(59, 130, 246, 0.5);
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-top: 10px;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .audit-trail-info.show {
+        display: block;
+    }
+
+    .audit-trail-info i {
+        margin-right: 6px;
+        color: #60a5fa;
     }
 </style>
 
-<div class="ai-background"></div>
-
-<div class="container">
-    <!-- Smart Header -->
-    <div class="smart-header">
-        <h2><i class="fas fa-brain"></i> Hệ Thống Vào Bãi Thủ Công</h2>
-        <p class="subtitle">
-            <i class="fas fa-robot"></i> Hệ thống nhận diện thông minh với AI
-        </p>
-    </div>
-
-    <!-- Parking Zones -->
-    <div class="parking-zones">
-        <!-- Motorbike Zone -->
-        <div class="zone-card motorbike-zone">
-            <div class="zone-header">
-                <div class="zone-icon">
-                    <i class="fas fa-motorcycle"></i>
-                </div>
-                <h3 class="zone-title">KHU XE MÁY</h3>
-            </div>
-
-            <div class="zone-stats-grid">
-                <div class="stat-box">
-                    <span class="stat-label">Tổng chỗ</span>
-                    <span class="stat-value">{{ motorbike_capacity }}</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-label">Đang đỗ</span>
-                    <span class="stat-value warning">{{ motorbike_count }}</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-label">Còn trống</span>
-                    <span class="stat-value {% if motorbike_remaining <= 0 %}danger{% elif motorbike_remaining <= 5 %}warning{% endif %}">
-                        {{ motorbike_remaining }}
-                    </span>
-                </div>
-            </div>
-
-            <div class="smart-progress">
-                <div class="smart-progress-bar" style="width: {{ (motorbike_count / motorbike_capacity * 100) if motorbike_capacity > 0 else 0 }}%">
-                    {{ "%.0f"|format(motorbike_count / motorbike_capacity * 100) if motorbike_capacity > 0 else 0 }}%
-                </div>
-            </div>
-
-            {% if motorbike_remaining <= 0 %}
-            <div class="smart-alert alert-danger">
-                <i class="fas fa-exclamation-triangle"></i> <strong>Khu xe máy đã đầy!</strong>
-            </div>
-            {% elif motorbike_remaining <= 5 %}
-            <div class="smart-alert alert-warning">
-                <i class="fas fa-exclamation-circle"></i> Sắp đầy! Chỉ còn {{ motorbike_remaining }} chỗ
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Car Zone -->
-        <div class="zone-card car-zone">
-            <div class="zone-header">
-                <div class="zone-icon">
-                    <i class="fas fa-car"></i>
-                </div>
-                <h3 class="zone-title">KHU XE HƠI</h3>
-            </div>
-
-            <div class="zone-stats-grid">
-                <div class="stat-box">
-                    <span class="stat-label">Tổng chỗ</span>
-                    <span class="stat-value">{{ car_capacity }}</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-label">Đang đỗ</span>
-                    <span class="stat-value warning">{{ car_count }}</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-label">Còn trống</span>
-                    <span class="stat-value {% if car_remaining <= 0 %}danger{% elif car_remaining <= 5 %}warning{% endif %}">
-                        {{ car_remaining }}
-                    </span>
-                </div>
-            </div>
-
-            <div class="smart-progress">
-                <div class="smart-progress-bar" style="width: {{ (car_count / car_capacity * 100) if car_capacity > 0 else 0 }}%">
-                    {{ "%.0f"|format(car_count / car_capacity * 100) if car_capacity > 0 else 0 }}%
-                </div>
-            </div>
-
-            {% if car_remaining <= 0 %}
-            <div class="smart-alert alert-danger">
-                <i class="fas fa-exclamation-triangle"></i> <strong>Khu xe hơi đã đầy!</strong>
-            </div>
-            {% elif car_remaining <= 5 %}
-            <div class="smart-alert alert-warning">
-                <i class="fas fa-exclamation-circle"></i> Sắp đầy! Chỉ còn {{ car_remaining }} chỗ
-            </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Camera Panel -->
-    <div class="camera-panel">
-        <div class="camera-panel-header">
-            <h4><i class="fas fa-camera-retro"></i> Camera Nhận Diện</h4>
-        </div>
-
-        {% if is_full %}
-        <div class="smart-alert alert-danger">
-            <h5><i class="fas fa-ban"></i> TẤT CẢ BÃI ĐÃ ĐẦY!</h5>
-            <p>Cả 2 khu đỗ xe đã đầy. Không thể nhận thêm xe vào bãi.</p>
-        </div>
-        {% endif %}
-
-        <div class="camera-grid">
-            <!-- License Plate Camera -->
-            <div class="camera-box">
-                <h5><i class="fas fa-id-card"></i> Camera Biển Số</h5>
-                <select id="licensePlateCameraSelect" class="camera-select">
-                    <option value="">Chọn camera cho biển số</option>
-                </select>
-                <video id="licensePlateVideo" class="camera-video" autoplay playsinline></video>
-                <canvas id="licensePlateCanvas" style="display:none;"></canvas>
-                <div id="platePreview" class="camera-preview"></div>
-            </div>
-
-            <!-- Face Camera -->
-            <div class="camera-box">
-                <h5><i class="fas fa-user"></i> Camera Gương Mặt</h5>
-                <select id="faceCameraSelect" class="camera-select">
-                    <option value="">Chọn camera cho gương mặt</option>
-                </select>
-                <video id="faceVideo" class="camera-video" autoplay playsinline></video>
-                <canvas id="faceCanvas" style="display:none;"></canvas>
-                <div id="facePreview" class="camera-preview"></div>
-            </div>
-        </div>
-
-        <!-- Capture Section -->
-        <div class="capture-section">
-            <p style="margin-bottom: 20px; color: var(--text-secondary);">
-                Nhấn nút để làm thủ tục vào bãi
-            </p>
-            <button id="captureBtn" class="smart-btn" {% if is_full %}disabled{% endif %}>
-                <i class="fas fa-camera"></i>
-                {% if is_full %}TẤT CẢ BÃI ĐÃ ĐẦY{% else %}Làm Thủ Tục Vào Bãi{% endif %}
-            </button>
-        </div>
-
-        <!-- Processing Indicator -->
-        <div id="captureProcessing" class="processing-indicator">
-            <div class="spinner"></div>
-            <p style="font-size: 1.2rem; color: var(--text-secondary);">
-                <i class="fas fa-brain"></i> AI đang nhận diện và xử lý...
-            </p>
-        </div>
-
-        <!-- Multiple Plates Area -->
-        <div id="multiplePlatesArea" class="plates-selection-area">
-            <div class="smart-alert" style="background: rgba(17, 153, 142, 0.1); border-color: rgba(17, 153, 142, 0.3); color: #11998e;">
-                <h5><i class="fas fa-check-circle"></i> Đã nhận diện được <span id="totalPlatesCount">0</span> biển số!</h5>
-                <p>Chọn biển số bạn muốn đưa vào bãi:</p>
-            </div>
-            <div id="platesSelection" class="plates-grid"></div>
-            <div style="text-align: center; margin-top: 25px;">
-                <button id="processSelectedBtn" class="smart-btn" disabled>
-                    <i class="fas fa-car"></i> Đưa Xe Vào Bãi
-                </button>
-            </div>
-        </div>
-
-        <!-- Status Area -->
-        <div id="statusArea" class="plates-selection-area">
-            <div class="smart-alert" style="background: rgba(79, 172, 254, 0.1); border-color: rgba(79, 172, 254, 0.3); color: #4facfe;">
-                <h5><i class="fas fa-info-circle"></i> Trạng thái Xử Lý</h5>
-                <div id="statusInfo" style="margin-top: 15px;">
-                    <span id="currentLicensePlate" class="plate-badge" style="font-size: 1rem;">Biển số: Đang chờ...</span>
-                    <span id="plateColorBadge" class="plate-badge" style="display:none;">Màu: N/A</span>
-                    <span id="plateTypeBadge" class="plate-badge" style="display:none;">Loại: N/A</span>
-                    <span id="vehicleTypeBadge" class="plate-badge" style="display:none;">Phân loại: N/A</span>
-                    <span id="confidenceBadge" class="plate-badge" style="display:none;">Độ chính xác: 0%</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Message Area -->
-        <div id="messageArea" class="smart-alert" style="display: none;"></div>
-
-        <!-- QR Result -->
-        <div id="qrResult" class="qr-result">
-            <h5><i class="fas fa-check-circle"></i> Xe Đã Vào Bãi Thành Công!</h5>
-            <div id="capacityUpdate"></div>
-            <p style="margin: 20px 0; color: var(--text-secondary);">Mã QR để ra bãi:</p>
-            <div id="qrCodeDisplay" class="qr-code-display"></div>
-            <p style="margin-top: 20px; color: var(--text-secondary);">
-                <i class="fas fa-save"></i> Vui lòng lưu lại mã QR này để sử dụng khi ra bãi
-            </p>
-        </div>
+<div class="top-bar">
+    <div class="logo"><i class="fas fa-shield-alt"></i>Xe Vào Bãi</div>
+    <div style="display:flex;gap:10px;align-items:center;">
+        <span class="stat-pill {% if motorbike_remaining <= 5 %}warn{% endif %}">
+            <i class="fas fa-motorcycle"></i> Xe máy: {{ motorbike_remaining }}/{{ motorbike_capacity }}
+        </span>
+        <span class="stat-pill {% if car_remaining <= 5 %}warn{% endif %}">
+            <i class="fas fa-car"></i> Xe hơi: {{ car_remaining }}/{{ car_capacity }}
+        </span>
+        <a href="/admin/dashboard" class="btn btn-outline" style="padding:6px 13px;font-size:.82rem;">
+            <i class="fas fa-arrow-left"></i> Admin
+        </a>
     </div>
 </div>
 
+{% if is_full %}
+<div style="padding:10px 24px;">
+    <div class="alert alert-danger"><i class="fas fa-ban"></i> <strong>Bãi xe đã đầy!</strong></div>
+</div>
+{% endif %}
+
+<div class="main-grid">
+    <div>
+        <div class="steps">
+            <div class="step active" id="step1">
+                <div class="step-num">1</div>Nhận diện
+            </div>
+            <div class="step" id="step2">
+                <div class="step-num">2</div>Xác nhận
+            </div>
+            <div class="step" id="step3">
+                <div class="step-num">3</div>Hoàn tất
+            </div>
+        </div>
+        <div class="card" id="sectionCamera">
+            <div class="card-title"><i class="fas fa-camera"></i> Camera nhận diện biển số</div>
+            <div class="camera-wrap">
+                <video id="plateVideo" autoplay playsinline muted></video>
+                <div
+                    style="position:absolute;inset:0;border:2px solid rgba(255,255,255,.4);border-radius:12px;pointer-events:none;">
+                    <div class="scan-line"></div>
+                </div>
+                <div class="cam-label"><i class="fas fa-crosshairs"></i> Hướng camera vào biển số xe</div>
+            </div>
+            <div class="cam-controls">
+                <select id="plateCamSelect">
+                    <option value="">-- Chọn camera --</option>
+                </select>
+                <button class="btn btn-white" id="btnCapturePlate" onclick="capturePlate()">
+                    <i class="fas fa-camera"></i> Chụp biển số
+                </button>
+                <button class="btn btn-outline" onclick="switchCamera()">
+                    <i class="fas fa-sync"></i>
+                </button>
+                <button class="btn-manual-override" onclick="enableManualMode()" id="btnManualOverride">
+                    <i class="fas fa-keyboard"></i> Nhập tay
+                </button>
+            </div>
+
+            <!-- Snapshot Preview -->
+            <div class="snapshot-preview" id="snapshotPreview">
+                <img id="snapshotImage" src="" alt="Snapshot">
+                <div class="snapshot-badge">
+                    <i class="fas fa-camera"></i> Ảnh chụp
+                </div>
+            </div>
+
+            <!-- Manual Mode Indicator -->
+            <div class="manual-mode-indicator" id="manualModeIndicator">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span><strong>Chế độ nhập tay:</strong> OCR không thành công, vui lòng nhập biển số thủ công</span>
+            </div>
+
+            <!-- Comparison View (Cross-check) -->
+            <div class="comparison-view" id="comparisonView">
+                <div class="comparison-item">
+                    <img id="comparisonSnapshot" src="" alt="Ảnh chụp">
+                    <div class="comparison-label">Ảnh thực tế</div>
+                </div>
+                <div class="comparison-item">
+                    <div class="comparison-value" id="comparisonPlate">—</div>
+                    <div class="comparison-label">Biển số nhập</div>
+                </div>
+            </div>
+
+            <!-- Audit Trail Info -->
+            <div class="audit-trail-info" id="auditTrailInfo">
+                <i class="fas fa-info-circle"></i>
+                <strong>Lưu ý:</strong> Ảnh chụp và thông tin nhập tay sẽ được lưu vào hệ thống để tra soát.
+            </div>
+
+            <div class="plate-box" id="plateResult">
+                <div class="plate-number" id="plateNumber">—</div>
+                <div class="plate-meta">
+                    <span class="badge" id="plateColor">—</span>
+                    <span class="badge" id="plateType">—</span>
+                    <span class="badge" id="vehicleTypeTag">—</span>
+                </div>
+            </div>
+            <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;">
+                <button class="btn btn-outline" onclick="retakePlate()"><i class="fas fa-redo"></i> Chụp lại</button>
+                <button class="btn btn-success" onclick="confirmPlate()"><i class="fas fa-check"></i> Xác nhận</button>
+            </div>
+        </div>
+        <div style="margin-top:10px;">
+            <button class="btn btn-outline" style="font-size:.82rem;padding:6px 13px;" onclick="toggleManual()"><i
+                    class="fas fa-keyboard"></i> Nhập tay biển số</button>
+            <div id="manualInput" style="display:none;margin-top:10px;">
+                <div class="form-row">
+                    <div class="form-group"><label>Biển số xe *</label><input class="form-control" id="manualPlate"
+                            placeholder="51A-123.45"
+                            style="text-transform:uppercase;font-weight:700;letter-spacing:2px;"></div>
+                    <div class="form-group"><label>Loại xe</label><select class="form-control" id="manualVehicleType">
+                            <option value="Xe máy">🏍️ Xe máy</option>
+                            <option value="Xe hơi">🚗 Xe hơi</option>
+                        </select></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Màu biển</label><select class="form-control" id="manualPlateColor">
+                            <option>Trắng</option>
+                            <option>Vàng</option>
+                            <option>Xanh</option>
+                            <option>Đỏ</option>
+                        </select></div>
+                    <div class="form-group"><label>Loại biển</label><select class="form-control" id="manualPlateType">
+                            <option>Biển thường</option>
+                            <option>Biển ngoại giao</option>
+                            <option>Biển quân sự</option>
+                        </select></div>
+                </div>
+                <button class="btn btn-white" onclick="useManual()"><i class="fas fa-check"></i> Dùng thông tin
+                    này</button>
+            </div>
+        </div>
+    </div>
+    <div class="result-card" id="resultCard">
+        <div style="font-size:3rem;margin-bottom:10px;">✅</div>
+        <div style="font-size:1.4rem;font-weight:700;margin-bottom:6px;">Xe đã vào bãi thành công!</div>
+        <p style="color:rgba(255,255,255,.8);font-size:.88rem;" id="resultTime"></p>
+        <div class="result-info">
+            <div class="result-row">
+                <div class="label">Biển số</div>
+                <div class="value" id="rPlate">—</div>
+            </div>
+            <div class="result-row">
+                <div class="label">Loại xe</div>
+                <div class="value" id="rType">—</div>
+            </div>
+            <div class="result-row">
+                <div class="label">Vị trí đỗ</div>
+                <div class="value" id="rSpot">—</div>
+            </div>
+            <div class="result-row">
+                <div class="label">Giờ vào</div>
+                <div class="value" id="rTime2">—</div>
+            </div>
+            <div class="result-row">
+                <div class="label">Mã xe</div>
+                <div class="value" id="rId">—</div>
+            </div>
+            <div class="result-row">
+                <div class="label">Thẻ thành viên</div>
+                <div class="value" id="rCard">Không</div>
+            </div>
+        </div>
+        <div style="margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button class="btn btn-outline" onclick="printTicket()"><i class="fas fa-print"></i> In vé</button>
+            <button class="btn btn-success" onclick="resetForm()"><i class="fas fa-plus"></i> Xe tiếp theo</button>
+        </div>
+    </div>
+</div>
+<div>
+    <div class="card">
+        <div class="card-title"><i class="fas fa-info-circle"></i> Thông tin xe vào bãi</div>
+        <div id="alertArea"></div>
+        <div class="form-group"><label>Biển số xe <span style="color:#fca5a5">*</span></label><input
+                class="form-control" id="infoPlate" placeholder="Chờ nhận diện..."
+                style="font-size:1.05rem;font-weight:700;letter-spacing:2px;"></div>
+
+        <!-- Suspicious Vehicle Checkbox -->
+        <div class="suspicious-checkbox" id="suspiciousCheckbox">
+            <input type="checkbox" id="isSuspicious" onchange="handleSuspiciousChange()">
+            <label for="isSuspicious">
+                <i class="fas fa-shield-alt"></i> Đánh dấu xe đáng nghi ngờ (biển số giả/decal)
+            </label>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Loại xe</label><select class="form-control" id="infoVehicleType">
+                    <option value="Xe máy">🏍️ Xe máy</option>
+                    <option value="Xe hơi">🚗 Xe hơi</option>
+                </select></div>
+            <div class="form-group"><label>Màu biển</label><select class="form-control" id="infoPlateColor">
+                    <option>Trắng</option>
+                    <option>Vàng</option>
+                    <option>Xanh</option>
+                    <option>Đỏ</option>
+                </select></div>
+        </div>
+        <div class="form-group"><label>Loại biển</label><select class="form-control" id="infoPlateType">
+                <option>Biển thường</option>
+                <option>Biển ngoại giao</option>
+                <option>Biển quân sự</option>
+            </select></div>
+        <div class="form-group">
+            <label><i class="fas fa-id-card"></i> Mã thẻ thành viên (tuỳ chọn)</label>
+            <div style="display:flex;gap:8px;">
+                <input class="form-control" id="infoCardId" placeholder="Quét QR hoặc nhập mã thẻ">
+                <button class="btn btn-outline" onclick="lookupCard()"><i class="fas fa-search"></i></button>
+            </div>
+            <div id="cardInfo"
+                style="display:none;margin-top:8px;padding:10px;background:rgba(17,153,142,.3);border:1px solid rgba(56,239,125,.5);border-radius:8px;font-size:.85rem;color:#fff;">
+                <i class="fas fa-check-circle" style="color:#38ef7d"></i> <span id="cardInfoText"></span>
+            </div>
+        </div>
+        <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:12px;margin-bottom:14px;">
+            <div
+                style="display:flex;justify-content:space-between;font-size:.82rem;color:rgba(255,255,255,.8);margin-bottom:4px;">
+                <span><i class="fas fa-motorcycle"></i> Xe máy còn trống</span>
+                <span>{{ motorbike_remaining }}/{{ motorbike_capacity }}</span>
+            </div>
+            <div class="cap-bar">
+                <div class="cap-fill"
+                    style="width:{{ ((motorbike_count/motorbike_capacity)*100)|round if motorbike_capacity > 0 else 0 }}%">
+                </div>
+            </div>
+            <div
+                style="display:flex;justify-content:space-between;font-size:.82rem;color:rgba(255,255,255,.8);margin-top:8px;margin-bottom:4px;">
+                <span><i class="fas fa-car"></i> Xe hơi còn trống</span>
+                <span>{{ car_remaining }}/{{ car_capacity }}</span>
+            </div>
+            <div class="cap-bar">
+                <div class="cap-fill"
+                    style="width:{{ ((car_count/car_capacity)*100)|round if car_capacity > 0 else 0 }}%"></div>
+            </div>
+        </div>
+        <button class="btn btn-success btn-full" id="btnSubmit" onclick="submitEntry()" {% if is_full %}disabled{% endif
+            %}>
+            <i class="fas fa-sign-in-alt"></i> {% if is_full %}Bãi đã đầy{% else %}Xác nhận xe vào bãi{% endif %}
+        </button>
+    </div>
+    <div class="card">
+        <div class="card-title"><i class="fas fa-list-ol"></i> Quy trình</div>
+        <div style="font-size:.85rem;color:rgba(255,255,255,.8);line-height:2;">
+            <div>1. Camera tự động nhận diện biển số</div>
+            <div>2. Kiểm tra và xác nhận thông tin xe</div>
+            <div>3. Quét thẻ thành viên (nếu có)</div>
+            <div>4. Nhấn <strong style="color:#fff">Xác nhận xe vào bãi</strong></div>
+            <div>5. In vé / hiển thị QR cho khách</div>
+        </div>
+    </div>
+</div>
+</div>
+{% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        let licensePlateImage = null;
-        let faceImage = null;
-        let licensePlateStream = null;
-        let faceStream = null;
-        let detectedPlates = [];
-        let selectedPlate = null;
-        let isCapturing = false;
-        let videoDevices = [];
+    // ══════════════════════════════════════════════════════════════════════
+    // BIẾN TOÀN CỤC
+    // ══════════════════════════════════════════════════════════════════════
+    let plateData = null;
+    let cameraStream = null;
+    let currentCamIndex = 0;
+    let allCameras = [];
+    let isManualMode = false;
+    let capturedSnapshot = null; // Lưu ảnh chụp để gửi lên server
+    let captureTimestamp = null;
 
-        const isFull = {{ 'true' if is_full else 'false' }};
-        const remainingSpots = {{ remaining_spots }};
-        const motorbikeRemaining = {{ motorbike_remaining }};
-        const carRemaining = {{ car_remaining }};
-
-        async function populateCameraDropdowns() {
-            try {
-                videoDevices = (await navigator.mediaDevices.enumerateDevices())
-                    .filter(device => device.kind === 'videoinput');
-
-                if (videoDevices.length === 0) {
-                    showMessage('Không tìm thấy camera nào', 'danger');
-                    return;
-                }
-
-                const licensePlateSelect = document.getElementById('licensePlateCameraSelect');
-                const faceCameraSelect = document.getElementById('faceCameraSelect');
-
-                licensePlateSelect.innerHTML = '<option value="">Chọn camera cho biển số</option>';
-                faceCameraSelect.innerHTML = '<option value="">Chọn camera cho gương mặt</option>';
-
-                videoDevices.forEach((device, index) => {
-                    const option = document.createElement('option');
-                    option.value = device.deviceId;
-                    option.text = device.label || `Camera ${index + 1}`;
-                    licensePlateSelect.appendChild(option.cloneNode(true));
-                    faceCameraSelect.appendChild(option);
-                });
-
-                if (videoDevices.length >= 1) {
-                    licensePlateSelect.value = videoDevices[0].deviceId;
-                    await startCamera('licensePlateVideo', videoDevices[0].deviceId, 'environment');
-                }
-                if (videoDevices.length >= 2) {
-                    faceCameraSelect.value = videoDevices[1].deviceId;
-                    await startCamera('faceVideo', videoDevices[1].deviceId, 'user');
-                } else if (videoDevices.length === 1) {
-                    faceCameraSelect.value = videoDevices[0].deviceId;
-                    await startCamera('faceVideo', videoDevices[0].deviceId, 'user');
-                    showMessage('Chỉ tìm thấy 1 camera, sử dụng chung cho cả biển số và gương mặt', 'warning');
-                }
-            } catch (error) {
-                console.error('Lỗi khi liệt kê camera:', error);
-                showMessage('Lỗi khi liệt kê camera: ' + error.message, 'danger');
-            }
-        }
-
-        async function startCamera(videoElementId, deviceId, facingMode) {
-            const videoElement = document.getElementById(videoElementId);
-            const streamKey = videoElementId === 'licensePlateVideo' ? 'licensePlateStream' : 'faceStream';
-            const width = videoElementId === 'licensePlateVideo' ? { ideal: 1280 } : { ideal: 640 };
-            const height = videoElementId === 'licensePlateVideo' ? { ideal: 720 } : { ideal: 480 };
-
-            if (window[streamKey]) {
-                window[streamKey].getTracks().forEach(track => track.stop());
-            }
-
-            try {
-                window[streamKey] = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        deviceId: deviceId ? { exact: deviceId } : undefined,
-                        facingMode,
-                        width,
-                        height
-                    }
-                });
-                videoElement.srcObject = window[streamKey];
-            } catch (error) {
-                console.error(`Lỗi khi khởi tạo camera cho ${videoElementId}:`, error);
-                showMessage(`Lỗi khi khởi tạo camera: ${error.message}`, 'danger');
-            }
-        }
-
-        async function initCameras() {
-            if (isFull) {
-                showMessage('Tất cả bãi đã đầy, không thể sử dụng camera vào bãi', 'warning');
-                return;
-            }
-            await populateCameraDropdowns();
-        }
-
-        document.getElementById('licensePlateCameraSelect').addEventListener('change', async function() {
-            if (this.value) {
-                await startCamera('licensePlateVideo', this.value, 'environment');
-            } else {
-                if (licensePlateStream) {
-                    licensePlateStream.getTracks().forEach(track => track.stop());
-                    document.getElementById('licensePlateVideo').srcObject = null;
-                }
-            }
+    // ══════════════════════════════════════════════════════════════════════
+    // HÀM CHUẨN HÓA BIỂN SỐ XE (Data Sanitization)
+    // ══════════════════════════════════════════════════════════════════════
+    function sanitizePlateNumber(rawText) {
+        if (!rawText) return '';
+        
+        // Bước 1: Chuyển thành chữ hoa và loại bỏ khoảng trắng thừa
+        let cleaned = rawText.toUpperCase().trim();
+        
+        // Bước 2: Loại bỏ các ký tự không hợp lệ (chỉ giữ chữ cái, số, dấu chấm, gạch ngang)
+        cleaned = cleaned.replace(/[^A-Z0-9.\-\s]/g, '');
+        
+        // Bước 3: Loại bỏ các chuỗi rác phổ biến từ OCR
+        const garbagePatterns = [
+            /\.PVE$/i, /\.PE$/i, /\.VE$/i, /PVE$/i, /\s+PVE$/i, /[^A-Z0-9.\-\s]+$/
+        ];
+        garbagePatterns.forEach(pattern => {
+            cleaned = cleaned.replace(pattern, '');
         });
-
-        document.getElementById('faceCameraSelect').addEventListener('change', async function() {
-            if (this.value) {
-                await startCamera('faceVideo', this.value, 'user');
-            } else {
-                if (faceStream && faceStream !== licensePlateStream) {
-                    faceStream.getTracks().forEach(track => track.stop());
-                    document.getElementById('faceVideo').srcObject = null;
-                }
-            }
-        });
-
-        function captureFromVideo(videoElement, canvasElement) {
-            const canvas = document.getElementById(canvasElement);
-            const video = document.getElementById(videoElement);
-
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            return canvas.toDataURL('image/jpeg');
+        
+        // Bước 4: Chuẩn hóa format biển số Việt Nam
+        cleaned = cleaned.replace(/\s+/g, '');
+        cleaned = cleaned.replace(/([A-Z]+)(\d)/g, '$1-$2');
+        
+        const match = cleaned.match(/^(\d{2}[A-Z]{1,2})-(\d{3,})$/);
+        if (match && match[2].length >= 5) {
+            const nums = match[2];
+            cleaned = `${match[1]}-${nums.slice(0, -2)}.${nums.slice(-2)}`;
         }
+        
+        return cleaned.trim();
+    }
 
-        async function captureBothImages() {
-            if (isCapturing || isFull) return;
+    // ══════════════════════════════════════════════════════════════════════
+    // KHỞI TẠO CAMERA
+    // ══════════════════════════════════════════════════════════════════════
+    async function initCameras() {
+        try {
+            await navigator.mediaDevices.getUserMedia({ video: true });
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            allCameras = devices.filter(x => x.kind === 'videoinput');
+            
+            const select = document.getElementById('plateCamSelect');
+            select.innerHTML = '<option value="">-- Chọn camera --</option>';
+            allCameras.forEach((cam, i) => {
+                select.innerHTML += `<option value="${cam.deviceId}">${cam.label || 'Camera ' + (i + 1)}</option>`;
+            });
+            
+            if (allCameras.length > 0) startCamera(allCameras[0].deviceId);
+        } catch (e) {
+            showAlert('Không thể truy cập camera: ' + e.message, 'warning');
+        }
+    }
 
-            isCapturing = true;
-            document.getElementById('captureProcessing').classList.add('active');
-            document.getElementById('captureBtn').disabled = true;
+    async function startCamera(deviceId) {
+        if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: { deviceId: { exact: deviceId } }
+            });
+            document.getElementById('plateVideo').srcObject = cameraStream;
+        } catch (e) {
+            showAlert('Lỗi khởi động camera', 'danger');
+        }
+    }
 
-            detectedPlates = [];
-            selectedPlate = null;
-            document.getElementById('multiplePlatesArea').classList.remove('active');
-            document.getElementById('statusArea').classList.remove('active');
+    document.getElementById('plateCamSelect').addEventListener('change', function() {
+        if (this.value) startCamera(this.value);
+    });
 
+    function switchCamera() {
+        if (allCameras.length < 2) return;
+        currentCamIndex = (currentCamIndex + 1) % allCameras.length;
+        startCamera(allCameras[currentCamIndex].deviceId);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // CHỤP VÀ NHẬN DIỆN BIỂN SỐ
+    // ══════════════════════════════════════════════════════════════════════
+    async function capturePlate() {
+        const video = document.getElementById('plateVideo');
+        if (!video.srcObject) {
+            showAlert('Vui lòng bật camera!', 'warning');
+            return;
+        }
+        
+        const btn = document.getElementById('btnCapturePlate');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang nhận diện...';
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        
+        // Lưu snapshot để gửi lên server (dù OCR thành công hay thất bại)
+        capturedSnapshot = canvas.toDataURL('image/jpeg', 0.9);
+        captureTimestamp = new Date().toISOString();
+        
+        // Hiển thị snapshot preview
+        document.getElementById('snapshotImage').src = capturedSnapshot;
+        document.getElementById('snapshotPreview').classList.add('show');
+        
+        canvas.toBlob(async (blob) => {
+            const formData = new FormData();
+            formData.append('file', blob, 'plate.jpg');
+            
+            // Timeout 3 giây cho OCR
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('OCR timeout')), 3000)
+            );
+            
+            const fetchPromise = fetch('/recognize_plate', {
+                method: 'POST',
+                body: formData
+            });
+            
             try {
-                const plateImageData = captureFromVideo('licensePlateVideo', 'licensePlateCanvas');
-                const faceImageData = captureFromVideo('faceVideo', 'faceCanvas');
-
-                document.getElementById('platePreview').innerHTML =
-                    `<img src="${plateImageData}" alt="License Plate">`;
-                document.getElementById('facePreview').innerHTML =
-                    `<img src="${faceImageData}" alt="Face">`;
-
-                const blob = await fetch(plateImageData).then(res => res.blob());
-                const formData = new FormData();
-                formData.append('image', blob, 'license_plate.jpg');
-
-                const response = await fetch('/recognize_plate', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.success && result.plates) {
-                    detectedPlates = result.plates;
-                    licensePlateImage = plateImageData;
-                    faceImage = faceImageData;
-
-                    if (detectedPlates.length === 1) {
-                        const plate = detectedPlates[0];
-                        selectedPlate = plate;
-
-                        document.getElementById('statusArea').classList.add('active');
-                        document.getElementById('currentLicensePlate').textContent = `Biển số: ${plate.license_plate}`;
-                        document.getElementById('plateColorBadge').style.display = 'inline-block';
-                        document.getElementById('plateColorBadge').textContent = `Màu: ${plate.plate_color}`;
-                        document.getElementById('plateTypeBadge').style.display = 'inline-block';
-                        document.getElementById('plateTypeBadge').textContent = `Loại: ${plate.plate_type}`;
-                        document.getElementById('vehicleTypeBadge').style.display = 'inline-block';
-                        document.getElementById('vehicleTypeBadge').textContent = `Phân loại: ${plate.vehicle_type}`;
-                        document.getElementById('confidenceBadge').style.display = 'inline-block';
-                        document.getElementById('confidenceBadge').textContent = `Độ chính xác: ${Math.round(plate.confidence * 100)}%`;
-
-                        showMessage(`Đã nhận diện biển số: ${plate.license_plate}. Đang xử lý vào bãi...`, 'info');
-                        await processEntry(plate);
+                const response = await Promise.race([fetchPromise, timeoutPromise]);
+                const data = await response.json();
+                
+                if (data.success && data.plates && data.plates.length > 0) {
+                    const plate = data.plates[0];
+                    const cleanedPlate = sanitizePlateNumber(plate.van_ban);
+                    
+                    if (cleanedPlate) {
+                        showPlateResult(
+                            cleanedPlate,
+                            plate.mau || 'Trắng',
+                            plate.loai || 'Biển thường',
+                            plate.vehicle_type || 'Xe máy'
+                        );
+                        showAlert(`<i class="fas fa-check-circle"></i> Nhận diện thành công: <strong>${cleanedPlate}</strong>`, 'success');
+                        
+                        // Hiển thị comparison view
+                        showComparisonView(cleanedPlate);
                     } else {
-                        displayMultiplePlates(detectedPlates);
-                        document.getElementById('multiplePlatesArea').classList.add('active');
-                        showMessage(`Đã nhận diện ${detectedPlates.length} biển số. Vui lòng chọn biển số cần đưa vào bãi.`, 'success');
+                        handleOCRFailure();
                     }
                 } else {
-                    showMessage(result.error || 'Không thể nhận diện biển số', 'danger');
+                    handleOCRFailure();
                 }
-            } catch (error) {
-                console.error('Lỗi khi chụp và nhận diện:', error);
-                showMessage('Lỗi khi chụp và nhận diện: ' + error.message, 'danger');
+            } catch (e) {
+                if (e.message === 'OCR timeout') {
+                    showAlert('<i class="fas fa-clock"></i> Nhận diện quá lâu (>3s). Vui lòng nhập tay.', 'warning');
+                } else {
+                    showAlert('Lỗi kết nối server: ' + e.message, 'danger');
+                }
+                handleOCRFailure();
             } finally {
-                isCapturing = false;
-                document.getElementById('captureProcessing').classList.remove('active');
-                document.getElementById('captureBtn').disabled = isFull;
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-camera"></i> Chụp biển số';
             }
+        }, 'image/jpeg', 0.9);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // XỬ LÝ THẤT BẠI OCR (FALLBACK WORKFLOW)
+    // ══════════════════════════════════════════════════════════════════════
+    function handleOCRFailure() {
+        showAlert('<i class="fas fa-exclamation-triangle"></i> Không nhận diện được biển số. Vui lòng nhập tay hoặc chụp lại.', 'warning');
+        
+        // Tự động bật nút "Nhập tay" nổi bật
+        const btnManual = document.getElementById('btnManualOverride');
+        btnManual.style.animation = 'pulse 1s infinite';
+        btnManual.style.boxShadow = '0 0 20px rgba(245, 159, 0, 0.8)';
+    }
+
+    function enableManualMode() {
+        isManualMode = true;
+        
+        // Bắt buộc chụp ảnh trước khi cho nhập tay
+        if (!capturedSnapshot) {
+            showAlert('Vui lòng chụp ảnh biển số trước khi nhập tay!', 'warning');
+            return;
         }
+        
+        // Mở khóa input biển số
+        const inputPlate = document.getElementById('infoPlate');
+        inputPlate.removeAttribute('readonly');
+        inputPlate.placeholder = 'Nhập biển số thủ công...';
+        inputPlate.focus();
+        inputPlate.style.background = 'rgba(245, 159, 0, 0.2)';
+        inputPlate.style.borderColor = 'rgba(245, 159, 0, 0.6)';
+        
+        // Hiển thị indicator
+        document.getElementById('manualModeIndicator').classList.add('show');
+        document.getElementById('auditTrailInfo').classList.add('show');
+        document.getElementById('suspiciousCheckbox').classList.add('show');
+        
+        // Ẩn nút manual override
+        document.getElementById('btnManualOverride').style.display = 'none';
+        
+        showAlert('<i class="fas fa-keyboard"></i> Chế độ nhập tay đã bật. Vui lòng nhập biển số.', 'info');
+        
+        setStep(2);
+    }
 
-        function displayMultiplePlates(plates) {
-            const container = document.getElementById('platesSelection');
-            const totalCount = document.getElementById('totalPlatesCount');
+    function showComparisonView(plateNumber) {
+        document.getElementById('comparisonSnapshot').src = capturedSnapshot;
+        document.getElementById('comparisonPlate').textContent = plateNumber;
+        document.getElementById('comparisonView').classList.add('show');
+    }
 
-            totalCount.textContent = plates.length;
-            container.innerHTML = '';
-
-            plates.forEach((plate, index) => {
-                const plateCard = document.createElement('div');
-                plateCard.className = 'plate-card';
-
-                const croppedImageContainer = plate.cropped_image_path
-                    ? `<div class="plate-image-preview">
-                         <img src="/${plate.cropped_image_path}" alt="Biển số ${plate.license_plate}">
-                       </div>`
-                    : `<div class="plate-image-preview">
-                         <i class="fas fa-image" style="font-size: 3rem; color: var(--text-secondary);"></i>
-                       </div>`;
-
-                const vehicleTypeIcon = plate.vehicle_type === 'Xe máy'
-                    ? '<i class="fas fa-motorcycle"></i>'
-                    : '<i class="fas fa-car"></i>';
-
-                plateCard.innerHTML = `
-                    ${croppedImageContainer}
-                    <div class="plate-info">
-                        <h6 class="plate-number">${vehicleTypeIcon} ${plate.license_plate}</h6>
-                        <div class="plate-badges">
-                            <span class="plate-badge">${plate.vehicle_type}</span>
-                            <span class="plate-badge">${plate.plate_color}</span>
-                            <span class="plate-badge">${plate.plate_type}</span>
-                            <span class="plate-badge">AI: ${Math.round(plate.confidence * 100)}%</span>
-                        </div>
-                        <div class="plate-selection-input">
-                            <input type="radio" name="selectedPlate" value="${index}" id="plate_${index}">
-                            <label for="plate_${index}">Chọn biển số này</label>
-                        </div>
-                    </div>
-                `;
-
-                container.appendChild(plateCard);
-            });
-
-            document.querySelectorAll('input[name="selectedPlate"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.checked) {
-                        selectedPlate = plates[parseInt(this.value)];
-                        document.getElementById('processSelectedBtn').disabled = false;
-
-                        document.querySelectorAll('.plate-card').forEach(card => {
-                            card.classList.remove('selected');
-                        });
-                        this.closest('.plate-card').classList.add('selected');
-                    }
-                });
-            });
+    function handleSuspiciousChange() {
+        const checkbox = document.getElementById('isSuspicious');
+        if (checkbox.checked) {
+            showAlert('<i class="fas fa-shield-alt"></i> <strong>Cảnh báo:</strong> Xe đã được đánh dấu nghi ngờ. Nhân viên cổng ra sẽ kiểm tra kỹ giấy tờ.', 'warning');
         }
+    }
 
-        document.getElementById('captureBtn').addEventListener('click', captureBothImages);
+    function showPlateResult(plate, color, type, vehicleType) {
+        plateData = { plate, color, type, vehicleType };
+        
+        document.getElementById('plateNumber').textContent = plate;
+        document.getElementById('plateColor').textContent = '🎨 ' + color;
+        document.getElementById('plateType').textContent = type;
+        document.getElementById('vehicleTypeTag').textContent = 
+            vehicleType === 'Xe máy' ? '🏍️ Xe máy' : '🚗 Xe hơi';
+        
+        document.getElementById('plateResult').classList.add('show');
+        
+        document.getElementById('infoPlate').value = plate;
+        document.getElementById('infoVehicleType').value = vehicleType;
+        document.getElementById('infoPlateColor').value = color;
+        document.getElementById('infoPlateType').value = type;
+    }
 
-        document.addEventListener('keydown', function(event) {
-            if ((event.code === 'Space' || event.keyCode === 32) && !isFull) {
-                event.preventDefault();
-                captureBothImages();
+    function confirmPlate() {
+        if (!plateData) return;
+        document.getElementById('plateResult').classList.remove('show');
+        document.getElementById('sectionCamera').style.opacity = '0.7';
+        showAlert('<i class="fas fa-check-circle"></i> Biển số đã xác nhận: <strong>' + plateData.plate + '</strong>', 'success');
+        setStep(2);
+    }
+
+    function retakePlate() {
+        plateData = null;
+        document.getElementById('plateResult').classList.remove('show');
+        document.getElementById('infoPlate').value = '';
+        clearAlert();
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // NHẬP TAY BIỂN SỐ
+    // ══════════════════════════════════════════════════════════════════════
+    function toggleManual() {
+        const elem = document.getElementById('manualInput');
+        elem.style.display = elem.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function useManual() {
+        const rawPlate = document.getElementById('manualPlate').value.trim();
+        if (!rawPlate) {
+            showAlert('Vui lòng nhập biển số!', 'warning');
+            return;
+        }
+        
+        const cleanedPlate = sanitizePlateNumber(rawPlate);
+        if (!cleanedPlate) {
+            showAlert('Biển số không hợp lệ!', 'danger');
+            return;
+        }
+        
+        showPlateResult(
+            cleanedPlate,
+            document.getElementById('manualPlateColor').value,
+            document.getElementById('manualPlateType').value,
+            document.getElementById('manualVehicleType').value
+        );
+        
+        document.getElementById('manualInput').style.display = 'none';
+        setStep(2);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // TRA CỨU THẺ THÀNH VIÊN
+    // ══════════════════════════════════════════════════════════════════════
+    async function lookupCard() {
+        const cardId = document.getElementById('infoCardId').value.trim();
+        if (!cardId) return;
+        
+        try {
+            const response = await fetch('/card/info?card_id=' + encodeURIComponent(cardId));
+            const data = await response.json();
+            
+            if (data.success) {
+                const card = data.card;
+                document.getElementById('cardInfoText').textContent = 
+                    ` ${card.name} | SĐT: ${card.phone || '—'} | Số dư: ${Number(card.balance).toLocaleString('vi-VN')} đ`;
+                document.getElementById('cardInfo').style.display = 'block';
+            } else {
+                showAlert('Không tìm thấy thẻ', 'warning');
             }
-        });
+        } catch (e) {
+            showAlert('Lỗi tra cứu thẻ', 'danger');
+        }
+    }
 
-        document.getElementById('processSelectedBtn').addEventListener('click', async function() {
-            if (!selectedPlate) return;
-
-            this.disabled = true;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-
-            await processEntry(selectedPlate);
-        });
-
-        // Thay thế hàm processEntry trong JavaScript của bạn
-        async function processEntry(plate) {
-            if (!plate || isFull) return;
-
+    // ══════════════════════════════════════════════════════════════════════
+    // XÁC NHẬN XE VÀO BÃI
+    // ══════════════════════════════════════════════════════════════════════
+    async function submitEntry() {
+        const plate = document.getElementById('infoPlate').value.trim();
+        if (!plate) {
+            showAlert('Vui lòng nhận diện hoặc nhập biển số!', 'warning');
+            return;
+        }
+        
+        // Validate biển số nếu là manual mode
+        if (isManualMode) {
+            const cleanedPlate = sanitizePlateNumber(plate);
+            if (!cleanedPlate) {
+                showAlert('Biển số không hợp lệ! Vui lòng kiểm tra lại.', 'danger');
+                return;
+            }
+            document.getElementById('infoPlate').value = cleanedPlate;
+        }
+        
+        const btn = document.getElementById('btnSubmit');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+        
+        // ★ PAYLOAD MỚI VỚI FALLBACK DATA ★
+        const payload = {
+            license_plate: document.getElementById('infoPlate').value.trim(),
+            vehicle_type: document.getElementById('infoVehicleType').value,
+            plate_color: document.getElementById('infoPlateColor').value,
+            plate_type: document.getElementById('infoPlateType').value,
+            card_id: document.getElementById('infoCardId').value.trim() || null,
+            
+            // ★ FALLBACK WORKFLOW DATA ★
+            is_manual_entry: isManualMode,
+            is_suspicious: document.getElementById('isSuspicious')?.checked || false,
+            snapshot_image: capturedSnapshot,
+            capture_timestamp: captureTimestamp,
+            entry_method: isManualMode ? 'manual' : 'ocr',
+            
+            // Audit trail metadata
+            audit_metadata: {
+                ocr_failed: isManualMode,
+                manual_override_reason: isManualMode ? 'OCR failed or timeout' : null,
+                suspicious_flag: document.getElementById('isSuspicious')?.checked || false,
+                operator_notes: isManualMode ? 'Nhập tay do OCR thất bại' : 'Nhận diện tự động',
+                timestamp: new Date().toISOString()
+            }
+        };
+        
+        try {
+            // ═══════════════════════════════════════════════════════════════
+            // GỬI REQUEST VỚI XỬ LÝ LỖI NÂNG CAO
+            // ═══════════════════════════════════════════════════════════════
+            const response = await fetch('/parking', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            // ★ KIỂM TRA CONTENT-TYPE TRƯỚC KHI PARSE ★
+            const contentType = response.headers.get('content-type');
+            
+            if (!contentType || !contentType.includes('application/json')) {
+                // Server trả về HTML thay vì JSON (lỗi 500, 404, etc.)
+                const htmlText = await response.text();
+                console.error('❌ Server trả về HTML thay vì JSON:');
+                console.error(htmlText);
+                
+                showAlert(
+                    '<i class="fas fa-exclamation-triangle"></i> <strong>Lỗi máy chủ:</strong> ' +
+                    'Không thể xử lý yêu cầu. Vui lòng kiểm tra console để biết chi tiết.',
+                    'danger'
+                );
+                
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Xác nhận xe vào bãi';
+                return;
+            }
+            
+            // ★ PARSE JSON AN TOÀN ★
+            let data;
             try {
-                const plateBlob = await fetch(licensePlateImage).then(res => res.blob());
-                const faceBlob = await fetch(faceImage).then(res => res.blob());
-
-                const formData = new FormData();
-                formData.append('action', 'process');
-                formData.append('license_plate', plate.license_plate);
-                formData.append('plate_color', plate.plate_color);
-                formData.append('plate_type', plate.plate_type);
-                formData.append('confidence', plate.confidence);
-                formData.append('plate_image', plateBlob, 'plate.jpg');
-                formData.append('face_image', faceBlob, 'face.jpg');
-
-                const response = await fetch('/parking', {
-                    method: 'POST',
-                    body: formData
+                data = await response.json();
+            } catch (jsonError) {
+                console.error('❌ Lỗi parse JSON:', jsonError);
+                const rawText = await response.text();
+                console.error('Raw response:', rawText);
+                
+                showAlert(
+                    '<i class="fas fa-exclamation-triangle"></i> <strong>Lỗi dữ liệu:</strong> ' +
+                    'Server trả về dữ liệu không hợp lệ.',
+                    'danger'
+                );
+                
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Xác nhận xe vào bãi';
+                return;
+            }
+            
+            // ═══════════════════════════════════════════════════════════════
+            // XỬ LÝ KẾT QUẢ
+            // ═══════════════════════════════════════════════════════════════
+            if (response.ok && data.success) {
+                // ✅ THÀNH CÔNG
+                showResult(data, payload);
+                setStep(3);
+            } else {
+                // ❌ THẤT BẠI (400, 500, etc.)
+                const errorMessage = data.message || 'Lỗi không xác định';
+                const errorCode = data.error_code || 'UNKNOWN';
+                const errorDetails = data.details || '';
+                
+                console.error('❌ Lỗi từ server:', {
+                    code: errorCode,
+                    message: errorMessage,
+                    details: errorDetails,
+                    status: response.status
                 });
-
-                const result = await response.json();
-
-                showMessage(result.message, result.success ? 'success' : 'danger');
-
-                if (result.success) {
-                    // ✅ CẬP NHẬT PHẦN HIỂN THỊ KẾT QUẢ VỚI VỊ TRÍ ĐỖ XE
-                    const zoneIcon = result.vehicle_type === 'Xe máy'
-                        ? '<i class="fas fa-motorcycle"></i>'
-                        : '<i class="fas fa-car"></i>';
-
-                    const zoneName = result.vehicle_type === 'Xe máy' ? 'Khu Xe Máy' : 'Khu Xe Hơi';
-                    const parkingSpot = result.parking_spot || 'N/A';
-
-                    // Hiển thị thông tin vị trí trong QR Result
-                    document.querySelector('#qrResult h5').innerHTML = `
-                        <i class="fas fa-check-circle"></i>
-                        Mời xe vào bãi!
-                        <br>
-                        <span style="font-size: 1.5rem; margin-top: 10px; display: inline-block;">
-                            ${zoneIcon} Mời vào ${zoneName} - Vị trí số ${parkingSpot}
-                        </span>
-                    `;
-
-                    if (result.remaining_spots !== undefined && result.vehicle_type) {
-                        document.getElementById('capacityUpdate').innerHTML = `
-                            <div class="smart-alert" style="background: rgba(79, 172, 254, 0.1); border-color: rgba(79, 172, 254, 0.3); color: #4facfe; margin: 20px 0;">
-                                <h6>${zoneIcon} ${zoneName} - Vị trí ${parkingSpot}</h6>
-                                <p style="margin: 10px 0; font-size: 1.1rem;">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <strong>Đỗ tại ô số ${parkingSpot}</strong>
-                                </p>
-                                <p style="margin: 10px 0;">
-                                    Còn lại <strong>${result.remaining_spots}/${result.total_capacity}</strong> chỗ trong khu này
-                                </p>
-                            </div>
-                        `;
-                    }
-
-                    if (result.qr_code) {
-                        document.getElementById('qrCodeDisplay').innerHTML = `
-                            <img src="${result.qr_code}" alt="QR Code">
-                        `;
-                        document.getElementById('qrResult').classList.add('active');
-                    }
-
-                    // Hiển thị cảnh báo nếu là xe trùng biển
-                    if (result.is_duplicate && result.warning) {
-                        const warningAlert = document.createElement('div');
-                        warningAlert.className = 'smart-alert alert-danger';
-                        warningAlert.innerHTML = `
-                            <h6><i class="fas fa-exclamation-triangle"></i> CẢNH BÁO!</h6>
-                            <p>${result.warning}</p>
-                        `;
-                        document.getElementById('qrResult').insertBefore(
-                            warningAlert,
-                            document.getElementById('capacityUpdate')
-                        );
-                    }
-
-                    document.getElementById('multiplePlatesArea').classList.remove('active');
-                    document.getElementById('statusArea').classList.remove('active');
-
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 5000);
+                
+                // Hiển thị thông báo lỗi thân thiện
+                let userMessage = errorMessage;
+                
+                // Tùy chỉnh thông báo theo mã lỗi
+                switch(errorCode) {
+                    case 'MISSING_PLATE':
+                        userMessage = '<i class="fas fa-exclamation-circle"></i> Vui lòng nhập biển số xe';
+                        break;
+                    case 'ALREADY_PARKED':
+                        userMessage = '<i class="fas fa-car"></i> ' + errorMessage;
+                        break;
+                    case 'PARKING_FULL':
+                        userMessage = '<i class="fas fa-ban"></i> ' + errorMessage;
+                        break;
+                    case 'DB_INSERT_ERROR':
+                    case 'DB_CHECK_ERROR':
+                        userMessage = '<i class="fas fa-database"></i> <strong>Lỗi cơ sở dữ liệu:</strong> ' + errorMessage;
+                        if (errorDetails) {
+                            console.error('Chi tiết lỗi DB:', errorDetails);
+                        }
+                        break;
+                    case 'INTERNAL_ERROR':
+                        userMessage = '<i class="fas fa-exclamation-triangle"></i> <strong>Lỗi hệ thống:</strong> ' + errorMessage;
+                        break;
+                    default:
+                        userMessage = '<i class="fas fa-times-circle"></i> ' + errorMessage;
                 }
-            } catch (error) {
-                console.error('Lỗi khi xử lý:', error);
-                showMessage('Lỗi khi xử lý: ' + error.message, 'danger');
+                
+                showAlert(userMessage, 'danger');
+                
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Xác nhận xe vào bãi';
             }
+            
+        } catch (networkError) {
+            // ═══════════════════════════════════════════════════════════════
+            // LỖI MẠNG (Network Error, Timeout, etc.)
+            // ═══════════════════════════════════════════════════════════════
+            console.error('❌ Lỗi kết nối mạng:', networkError);
+            
+            showAlert(
+                '<i class="fas fa-wifi"></i> <strong>Lỗi kết nối:</strong> ' +
+                'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.',
+                'danger'
+            );
+            
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Xác nhận xe vào bãi';
         }
+    }
 
-        function showMessage(message, type) {
-            const messageArea = document.getElementById('messageArea');
-            messageArea.style.display = 'block';
-            messageArea.textContent = message;
+    function showResult(data, payload) {
+        document.getElementById('sectionCamera').style.display = 'none';
+        document.getElementById('rPlate').textContent = payload.license_plate;
+        document.getElementById('rType').textContent = payload.vehicle_type;
+        document.getElementById('rSpot').textContent = data.parking_spot ? 'Vị trí ' + data.parking_spot : 'Tự động';
+        document.getElementById('rTime2').textContent = new Date().toLocaleTimeString('vi-VN');
+        document.getElementById('rId').textContent = '#' + (data.vehicle_id || '—');
+        document.getElementById('rCard').textContent = payload.card_id || 'Không';
+        document.getElementById('resultTime').textContent = new Date().toLocaleString('vi-VN');
+        document.getElementById('resultCard').classList.add('show');
+    }
 
-            messageArea.classList.remove('alert-danger', 'alert-warning', 'alert-success', 'alert-info');
+    // ══════════════════════════════════════════════════════════════════════
+    // IN VÉ XE (Thermal Printer Style)
+    // ══════════════════════════════════════════════════════════════════════
+    function printTicket() {
+        const plate = document.getElementById('rPlate').textContent;
+        const vehicleId = document.getElementById('rId').textContent;
+        const vehicleType = document.getElementById('rType').textContent;
+        const entryTime = document.getElementById('rTime2').textContent;
+        const spot = document.getElementById('rSpot').textContent;
+        
+        const printWindow = window.open('', '_blank', 'width=400,height=600');
+        printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Vé Xe - ${plate}</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Courier New',monospace;text-align:center;padding:20px;background:white;color:black}.ticket{max-width:350px;margin:0 auto;border:2px dashed #333;padding:20px;background:white}.header{font-size:1.5rem;font-weight:bold;margin-bottom:10px;letter-spacing:2px}.divider{border-top:1px dashed #333;margin:15px 0}.plate-display{font-size:2.2rem;font-weight:900;letter-spacing:5px;border:3px solid #000;padding:15px 20px;display:inline-block;margin:15px 0;background:white}.info-row{display:flex;justify-content:space-between;padding:8px 0;font-size:0.95rem}.info-label{font-weight:bold}.footer{margin-top:20px;font-size:0.85rem;font-style:italic}@media print{body{padding:0}.ticket{border:2px dashed #000}}</style></head><body><div class="ticket"><div class="header">PARKING SYSTEM</div><div style="font-size:0.9rem;margin-bottom:10px;">VÉ XE VÀO BÃI</div><div class="divider"></div><div class="plate-display">${plate}</div><div class="divider"></div><div class="info-row"><span class="info-label">Mã xe:</span><span>${vehicleId}</span></div><div class="info-row"><span class="info-label">Loại xe:</span><span>${vehicleType}</span></div><div class="info-row"><span class="info-label">Vị trí:</span><span>${spot}</span></div><div class="info-row"><span class="info-label">Giờ vào:</span><span>${entryTime}</span></div><div class="divider"></div><div class="footer">Vui lòng giữ vé này để ra bãi<br>Cảm ơn quý khách!</div></div><script>window.onload=function(){window.print()};<\/script></body></html>`);
+        printWindow.document.close();
+    }
 
-            if (type === 'danger') {
-                messageArea.style.background = 'rgba(250, 112, 154, 0.1)';
-                messageArea.style.borderColor = 'rgba(250, 112, 154, 0.3)';
-                messageArea.style.color = '#fa709a';
-            } else if (type === 'warning') {
-                messageArea.style.background = 'rgba(240, 147, 251, 0.1)';
-                messageArea.style.borderColor = 'rgba(240, 147, 251, 0.3)';
-                messageArea.style.color = '#f093fb';
-            } else if (type === 'success') {
-                messageArea.style.background = 'rgba(17, 153, 142, 0.1)';
-                messageArea.style.borderColor = 'rgba(17, 153, 142, 0.3)';
-                messageArea.style.color = '#11998e';
-            } else if (type === 'info') {
-                messageArea.style.background = 'rgba(79, 172, 254, 0.1)';
-                messageArea.style.borderColor = 'rgba(79, 172, 254, 0.3)';
-                messageArea.style.color = '#4facfe';
-            }
-
-            setTimeout(() => {
-                messageArea.style.display = 'none';
-            }, 5000);
+    // ══════════════════════════════════════════════════════════════════════
+    // RESET FORM
+    // ══════════════════════════════════════════════════════════════════════
+    function resetForm() {
+        plateData = null;
+        isManualMode = false;
+        capturedSnapshot = null;
+        captureTimestamp = null;
+        
+        document.getElementById('resultCard').classList.remove('show');
+        document.getElementById('sectionCamera').style.display = 'block';
+        document.getElementById('sectionCamera').style.opacity = '1';
+        document.getElementById('infoPlate').value = '';
+        document.getElementById('infoPlate').setAttribute('readonly', 'readonly');
+        document.getElementById('infoPlate').style.background = 'rgba(255, 255, 255, .15)';
+        document.getElementById('infoPlate').style.borderColor = 'rgba(255, 255, 255, .3)';
+        document.getElementById('infoCardId').value = '';
+        document.getElementById('cardInfo').style.display = 'none';
+        document.getElementById('plateResult').classList.remove('show');
+        
+        // Reset fallback UI
+        document.getElementById('snapshotPreview').classList.remove('show');
+        document.getElementById('manualModeIndicator').classList.remove('show');
+        document.getElementById('comparisonView').classList.remove('show');
+        document.getElementById('auditTrailInfo').classList.remove('show');
+        document.getElementById('suspiciousCheckbox').classList.remove('show');
+        document.getElementById('btnManualOverride').style.display = 'inline-flex';
+        document.getElementById('btnManualOverride').style.animation = 'none';
+        document.getElementById('btnManualOverride').style.boxShadow = 'none';
+        
+        if (document.getElementById('isSuspicious')) {
+            document.getElementById('isSuspicious').checked = false;
         }
+        
+        // Set button state based on parking full status
+        const isFull = {{ 'true' if is_full else 'false' }};
+        document.getElementById('btnSubmit').disabled = isFull;
+        document.getElementById('btnSubmit').innerHTML = '<i class="fas fa-sign-in-alt"></i> Xác nhận xe vào bãi';
+        clearAlert();
+        setStep(1);
+    }
 
-        initCameras();
-
-        window.addEventListener('beforeunload', () => {
-            if (licensePlateStream) {
-                licensePlateStream.getTracks().forEach(track => track.stop());
-            }
-            if (faceStream && faceStream !== licensePlateStream) {
-                faceStream.getTracks().forEach(track => track.stop());
-            }
+    // ══════════════════════════════════════════════════════════════════════
+    // HELPER FUNCTIONS
+    // ══════════════════════════════════════════════════════════════════════
+    function setStep(n) {
+        [1, 2, 3].forEach(i => {
+            const step = document.getElementById('step' + i);
+            step.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
         });
-    });
-</script>
+    }
 
+    function showAlert(msg, type) {
+        document.getElementById('alertArea').innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+    }
+
+    function clearAlert() {
+        document.getElementById('alertArea').innerHTML = '';
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // KHỞI ĐỘNG
+    // ══════════════════════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', initCameras);
+</script>
+{% endblock %}
 {% endblock %}

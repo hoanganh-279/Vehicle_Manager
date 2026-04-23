@@ -1,0 +1,31 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# REQUIREMENTS.TXT - RENDER DEPLOYMENT
+# ═══════════════════════════════════════════════════════════════════════════
+# Python 3.12.9 compatible packages
+
+# Flask Framework
+flask==3.0.0
+flask-mail==0.9.1
+
+# PostgreSQL Database
+psycopg2-binary==2.9.9
+
+# Production Server
+gunicorn==21.2.0
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Payment Gateways
+stripe==7.8.0
+
+# Utilities
+requests==2.31.0
+qrcode[pil]==7.4.2
+Pillow==10.1.0
+
+# Optional (if needed)
+# opencv-python==4.8.1.78
+# pytesseract==0.3.10
+# ultralytics==8.1.0
+# openpyxl==3.1.2

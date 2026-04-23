@@ -1,0 +1,390 @@
+═══════════════════════════════════════════════════════════════════════════
+🏗️  KIẾN TRÚC DUAL-MODE - PARKING MANAGEMENT SYSTEM
+═══════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         DEPLOYMENT ARCHITECTURE                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────┐         ┌──────────────────────────────┐
+│      LOCAL ENVIRONMENT       │         │      RENDER ENVIRONMENT      │
+│         (Windows)            │         │          (Cloud)             │
+└──────────────────────────────┘         └──────────────────────────────┘
+
+┌──────────────────────────────┐         ┌──────────────────────────────┐
+│         Developer            │         │          Users               │
+│      (localhost:5000)        │         │  (your-app.onrender.com)     │
+└──────────────┬───────────────┘         └──────────────┬───────────────┘
+               │                                        │
+               │ HTTP                                   │ HTTPS
+               ▼                                        ▼
+┌──────────────────────────────┐         ┌──────────────────────────────┐
+│         Flask App            │         │         Flask App            │
+│         (app.py)             │         │         (app.py)             │
+│    ┌──────────────────┐      │         │    ┌──────────────────┐      │
+│    │   Routes Layer   │      │         │    │   Routes Layer   │      │
+│    │  - /parking/*    │      │         │    │  - /parking/*    │      │
+│    │  - /admin/*      │      │         │    │  - /admin/*      │      │
+│    │  - /card/*       │      │         │    │  - /card/*       │      │
+│    │  - /payment/*    │      │         │    │  - /payment/*    │      │
+│    └────────┬─────────┘      │         │    └────────┬─────────┘      │
+│             │                 │         │             │                 │
+│             ▼                 │         │             ▼                 │
+│    ┌──────────────────┐      │         │    ┌──────────────────┐      │
+│    │   db_utils.py    │      │         │    │   db_utils.py    │      │
+│    │  (Auto-detect)   │      │         │    │  (Auto-detect)   │      │
+│    │                  │      │         │    │                  │      │
+│    │ DATABASE_URL?    │      │         │    │ DATABASE_URL?    │      │
+│    │   ❌ None        │      │         │    │   ✅ Set         │      │
+│    │                  │      │         │    │                  │      │
+│    │ → SQL Server     │      │         │    │ → PostgreSQL     │      │
+│    └────────┬─────────┘      │         │    └────────┬─────────┘      │
+│             │                 │         │             │                 │
+│             ▼                 │         │             ▼                 │
+│    ┌──────────────────┐      │         │    ┌──────────────────┐      │
+│    │     pyodbc       │      │         │    │    psycopg2      │      │
+│    │  (SQL Driver)    │      │         │    │  (PG Driver)     │      │
+│    └────────┬─────────┘      │         │    └────────┬─────────┘      │
+└─────────────┼─────────────────┘         └─────────────┼─────────────────┘
+              │                                         │
+              ▼                                         ▼
+┌──────────────────────────────┐         ┌──────────────────────────────┐
+│       SQL Server 2019        │         │      PostgreSQL 15           │
+│   (LAPTOP-3J6T1I18\...)      │         │  (Render Managed DB)         │
+│                              │         │                              │
+│  Database: ParkingManagement │         │  Database: parking_db        │
+│  Port: 1433                  │         │  Port: 5432                  │
+│  Auth: Windows Auth          │         │  Auth: User/Password         │
+└──────────────────────────────┘         └──────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════
+📊 DATABASE SCHEMA COMPARISON
+═══════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                            TABLES (7)                                    │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  1. users                  → Admin users                                │
+│  2. parking_config         → System configuration                       │
+│  3. pricing_rules          → Dynamic pricing                            │
+│  4. cards                  → Member cards                               │
+│  5. vehicles               → Parking records                            │
+│  6. topup_transactions     → Card topup history                         │
+│  7. balance_history        → Audit trail (NEW!)                         │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────┬──────────────────────────────────────────┐
+│       SQL SERVER (T-SQL)     │       POSTGRESQL (SQL)                   │
+├──────────────────────────────┼──────────────────────────────────────────┤
+│ IDENTITY(1,1)                │ SERIAL                                   │
+│ NVARCHAR(100)                │ VARCHAR(100)                             │
+│ DATETIME                     │ TIMESTAMP                                │
+│ GETDATE()                    │ CURRENT_TIMESTAMP / NOW()                │
+│ SELECT TOP 10                │ SELECT ... LIMIT 10                      │
+│ ISNULL(col, 0)               │ COALESCE(col, 0)                         │
+│ WITH (UPDLOCK, ROWLOCK)      │ FOR UPDATE                               │
+│ SCOPE_IDENTITY()             │ RETURNING id / lastval()                 │
+│ Placeholder: ?               │ Placeholder: %s                          │
+└──────────────────────────────┴──────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════
+🔄 REQUEST FLOW - PARKING EXIT (Example)
+═══════════════════════════════════════════════════════════════════════════
+
+User Request: POST /parking/exit
+│
+├─► Flask Route: parking_exit_page()
+│   │
+│   ├─► Validate Input (vehicle_id, payment_method)
+│   │
+│   ├─► db_utils.get_db()
+│   │   │
+│   │   ├─► Check DATABASE_URL
+│   │   │   │
+│   │   │   ├─► None? → pyodbc.connect(SQL Server)
+│   │   │   └─► Set?  → psycopg2.connect(PostgreSQL)
+│   │   │
+│   │   └─► Return connection
+│   │
+│   ├─► Lock Vehicle Row
+│   │   │
+│   │   ├─► SQL Server: SELECT ... WITH (UPDLOCK, ROWLOCK)
+│   │   └─► PostgreSQL: SELECT ... FOR UPDATE
+│   │
+│   ├─► Calculate Fee (Backend)
+│   │   │
+│   │   ├─► Get parking_config
+│   │   ├─► Calculate duration
+│   │   └─► Apply rate
+│   │
+│   ├─► Process Payment
+│   │   │
+│   │   ├─► MoMo? → Create payment URL
+│   │   ├─► Card? → Deduct balance
+│   │   └─► Cash? → Mark as paid
+│   │
+│   ├─► Update Vehicle Status
+│   │   │
+│   │   ├─► SQL Server: UPDATE ... SET exit_time = GETDATE()
+│   │   └─► PostgreSQL: UPDATE ... SET exit_time = CURRENT_TIMESTAMP
+│   │
+│   ├─► Commit Transaction
+│   │
+│   └─► Return Response
+│
+└─► User sees: "Xe đã ra bãi thành công"
+
+═══════════════════════════════════════════════════════════════════════════
+💳 MOMO WEBHOOK FLOW
+═══════════════════════════════════════════════════════════════════════════
+
+MoMo Server
+│
+│ POST /payment/result
+│ {
+│   "orderId": "TOPUP-123-1234567890",
+│   "transId": "14012345678",
+│   "resultCode": 0,
+│   "amount": 100000,
+│   "signature": "..."
+│ }
+│
+▼
+Flask App (fix_payment_webhook_dual.py)
+│
+├─► Verify Signature (momo.verify_momo_ipn)
+│   │
+│   ├─► Valid? → Continue
+│   └─► Invalid? → Return 400
+│
+├─► Check Idempotency (momo_trans_id)
+│   │
+│   ├─► Exists? → Return "Already processed"
+│   └─► New? → Continue
+│
+├─► Lock Transaction Row
+│   │
+│   ├─► SQL Server: SELECT ... WITH (UPDLOCK, ROWLOCK)
+│   └─► PostgreSQL: SELECT ... FOR UPDATE
+│
+├─► Process Payment
+│   │
+│   ├─► Update topup_transactions (status = 'completed')
+│   ├─► Lock card row
+│   ├─► Update card balance (balance = balance + amount)
+│   └─► Insert balance_history (audit trail)
+│
+├─► Commit Transaction
+│
+└─► Return 200 OK to MoMo
+    │
+    └─► MoMo stops retrying
+
+═══════════════════════════════════════════════════════════════════════════
+🔐 SECURITY & RACE CONDITION PREVENTION
+═══════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         IDEMPOTENCY CHECK                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  Request 1 (t=0ms)                    Request 2 (t=5ms)                 │
+│  ┌──────────────┐                     ┌──────────────┐                  │
+│  │ MoMo Webhook │                     │ MoMo Webhook │                  │
+│  │ transId: 123 │                     │ transId: 123 │                  │
+│  └──────┬───────┘                     └──────┬───────┘                  │
+│         │                                    │                           │
+│         ▼                                    ▼                           │
+│  ┌──────────────────────┐            ┌──────────────────────┐           │
+│  │ Check momo_trans_id  │            │ Check momo_trans_id  │           │
+│  │ → Not found          │            │ → Found! (by Req 1)  │           │
+│  └──────┬───────────────┘            └──────┬───────────────┘           │
+│         │                                    │                           │
+│         ▼                                    ▼                           │
+│  ┌──────────────────────┐            ┌──────────────────────┐           │
+│  │ Process payment      │            │ Return "Already      │           │
+│  │ Insert momo_trans_id │            │ processed"           │           │
+│  └──────┬───────────────┘            └──────────────────────┘           │
+│         │                                    ✅ Prevented!               │
+│         ▼                                                                │
+│  ┌──────────────────────┐                                               │
+│  │ Commit transaction   │                                               │
+│  └──────────────────────┘                                               │
+│         ✅ Success!                                                      │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           ROW LOCKING                                    │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  Transaction A                        Transaction B                     │
+│  ┌──────────────┐                     ┌──────────────┐                  │
+│  │ Lock card #1 │                     │ Try lock     │                  │
+│  │ FOR UPDATE   │                     │ card #1      │                  │
+│  └──────┬───────┘                     └──────┬───────┘                  │
+│         │                                    │                           │
+│         │ ✅ Locked                          │ ⏳ Waiting...             │
+│         │                                    │                           │
+│         ▼                                    │                           │
+│  ┌──────────────────────┐                   │                           │
+│  │ Update balance       │                   │                           │
+│  │ balance = 100 + 50   │                   │                           │
+│  └──────┬───────────────┘                   │                           │
+│         │                                    │                           │
+│         ▼                                    │                           │
+│  ┌──────────────────────┐                   │                           │
+│  │ Commit & Release     │                   │                           │
+│  └──────┬───────────────┘                   │                           │
+│         │                                    │                           │
+│         │ 🔓 Unlocked                        ▼                           │
+│         │                             ┌──────────────┐                   │
+│         │                             │ Lock acquired│                   │
+│         │                             │ balance = 150│                   │
+│         │                             └──────┬───────┘                   │
+│         │                                    │                           │
+│         │                                    ▼                           │
+│         │                             ┌──────────────────────┐           │
+│         │                             │ Update balance       │           │
+│         │                             │ balance = 150 + 30   │           │
+│         │                             └──────┬───────────────┘           │
+│         │                                    │                           │
+│         │                                    ▼                           │
+│         │                             ┌──────────────────────┐           │
+│         │                             │ Commit               │           │
+│         │                             └──────────────────────┘           │
+│         │                                    ✅ Success!                 │
+│         │                                                                │
+│  Final balance: 180 ✅ Correct!                                         │
+│  (Without locking: Could be 130 or 150 ❌ Race condition!)              │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════
+📦 FILE STRUCTURE
+═══════════════════════════════════════════════════════════════════════════
+
+parking-management/
+│
+├── 🐍 PYTHON FILES
+│   ├── app.py                          # Main Flask application (2153 lines)
+│   ├── db_utils.py                     # ✅ Dual-mode database utilities
+│   ├── fix_payment_webhook_dual.py     # ✅ Dual-mode webhook handler
+│   ├── momo.py                         # MoMo payment integration
+│   ├── config.py                       # Configuration
+│   └── camera_alpr.py                  # License plate recognition
+│
+├── 🗄️  DATABASE FILES
+│   ├── schema_postgresql.sql           # ✅ PostgreSQL schema
+│   └── add_payment_method_column.sql   # Migration script
+│
+├── 🔧 CONFIGURATION FILES
+│   ├── requirements.txt                # ✅ Python dependencies
+│   ├── render.yaml                     # ✅ Render deployment config
+│   ├── .env                            # Environment variables (gitignored)
+│   ├── .env.example                    # ✅ Environment template
+│   └── .gitignore                      # Git ignore rules
+│
+├── 📚 DOCUMENTATION
+│   ├── HUONG_DAN_DEPLOY_RENDER.md      # ✅ Deployment guide (600 lines)
+│   ├── MIGRATION_GUIDE_APP_PY.md       # ✅ Refactoring guide (500 lines)
+│   ├── QUICK_START_RENDER.txt          # ✅ Quick start (150 lines)
+│   ├── SUMMARY_RENDER_DEPLOYMENT.md    # ✅ Project summary
+│   ├── ARCHITECTURE_DIAGRAM.txt        # ✅ This file
+│   └── [Other docs...]
+│
+├── 🎨 TEMPLATES (HTML)
+│   ├── admin/
+│   │   ├── base.html
+│   │   ├── dashboard.html
+│   │   ├── cards.html
+│   │   └── [...]
+│   ├── parking/
+│   │   ├── entry.html
+│   │   └── exit.html
+│   └── payment/
+│       └── result.html
+│
+└── 📁 STATIC FILES
+    ├── css/
+    │   ├── global.css
+    │   └── dark-mode-fix.css
+    ├── js/
+    │   ├── main.js
+    │   └── chart-theme.js
+    └── uploads/
+        └── [User uploads]
+
+═══════════════════════════════════════════════════════════════════════════
+🚀 DEPLOYMENT FLOW
+═══════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         DEPLOYMENT PIPELINE                              │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Developer Machine
+│
+├─► 1. Refactor app.py (MIGRATION_GUIDE_APP_PY.md)
+│   │
+│   ├─► Replace imports
+│   ├─► Refactor queries (TOP N, GETDATE(), etc.)
+│   └─► Test on Local (SQL Server)
+│
+├─► 2. Commit & Push to GitHub
+│   │
+│   └─► git push origin main
+│
+▼
+GitHub Repository
+│
+├─► 3. Render Auto-Deploy (Webhook)
+│   │
+│   ├─► Clone repository
+│   ├─► Install dependencies (pip install -r requirements.txt)
+│   └─► Start app (gunicorn)
+│
+▼
+Render Platform
+│
+├─► 4. Web Service
+│   │
+│   ├─► Build: pip install -r requirements.txt
+│   ├─► Start: gunicorn --bind 0.0.0.0:$PORT app:app
+│   └─► Health Check: GET /
+│
+├─► 5. PostgreSQL Database
+│   │
+│   ├─► Create database: parking_db
+│   ├─► Run schema: schema_postgresql.sql
+│   └─► Link to Web Service (DATABASE_URL)
+│
+└─► 6. Live Application
+    │
+    └─► https://parking-management-app.onrender.com
+
+═══════════════════════════════════════════════════════════════════════════
+✅ SUCCESS INDICATORS
+═══════════════════════════════════════════════════════════════════════════
+
+Local Environment (SQL Server):
+  ✅ App starts without errors
+  ✅ Logs show: "🗄️  Using SQL Server (Local)"
+  ✅ All features work normally
+  ✅ Database queries execute correctly
+
+Render Environment (PostgreSQL):
+  ✅ Build succeeds
+  ✅ App starts without errors
+  ✅ Logs show: "🐘 Using PostgreSQL (Render)"
+  ✅ HTTPS accessible
+  ✅ All features work normally
+  ✅ MoMo webhook receives callbacks
+
+═══════════════════════════════════════════════════════════════════════════
+Tác giả: KIRO AI Assistant
+Ngày tạo: 2026-04-21
+Phiên bản: 1.0.0
+═══════════════════════════════════════════════════════════════════════════

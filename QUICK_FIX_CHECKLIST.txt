@@ -1,0 +1,118 @@
+╔══════════════════════════════════════════════════════════════════╗
+║          🚨 QUICK FIX CHECKLIST - TÀI CHÍNH CRITICAL            ║
+╚══════════════════════════════════════════════════════════════════╝
+
+📅 Ngày: 16/04/2026
+🔴 Mức độ: CRITICAL - Cần fix trước khi go-live
+⏱️  Thời gian: ~11 giờ
+
+══════════════════════════════════════════════════════════════════
+
+📋 CHECKLIST NHANH
+
+[ ] 1. BACKUP DATABASE (5 phút)
+    sqlcmd -S LAPTOP-3J6T1I18\SQLEXPRESS01 -d ParkingManagement -Q "BACKUP DATABASE ParkingManagement TO DISK='C:\Backup\ParkingManagement_before_fix.bak'"
+
+[ ] 2. CHẠY SQL SCRIPT (30 phút)
+    sqlcmd -S LAPTOP-3J6T1I18\SQLEXPRESS01 -d ParkingManagement -i fix_payment_critical.sql
+
+[ ] 3. THÊM CỘT VEHICLES (10 phút)
+    ALTER TABLE vehicles ADD momo_trans_id NVARCHAR(100) NULL;
+
+[ ] 4. UPDATE WEBHOOK (1 giờ)
+    File: app.py dòng 1972-2009
+    Thay bằng code trong fix_payment_webhook.py
+
+[ ] 5. UPDATE CARD TOPUP (2 giờ)
+    File: app.py dòng 1916-1930
+    Thay bằng code trong HUONG_DAN_FIX_TAI_CHINH.md
+
+[ ] 6. TEST WEBHOOK (30 phút)
+    python app.py
+    curl -X POST http://localhost:5000/payment/result ...
+
+[ ] 7. TEST RACE CONDITION (30 phút)
+    python test_race_condition.py
+
+[ ] 8. SETUP CRONJOB (1 giờ)
+    Task Scheduler → check_pending_payments.py (mỗi 5 phút)
+
+[ ] 9. THÊM VALIDATION (30 phút)
+    Xem HUONG_DAN_FIX_TAI_CHINH.md - BƯỚC 5
+
+[ ] 10. THÊM RATE LIMITING (1 giờ)
+     pip install Flask-Limiter
+     Xem HUONG_DAN_FIX_TAI_CHINH.md - BƯỚC 6
+
+[ ] 11. THÊM LOGGING (1 giờ)
+     Xem HUONG_DAN_FIX_TAI_CHINH.md - BƯỚC 7
+
+[ ] 12. TEST TỔNG THỂ (2 giờ)
+     EXEC sp_check_balance_integrity;
+     SELECT * FROM vw_pending_payments;
+
+══════════════════════════════════════════════════════════════════
+
+🔴 4 VẤN ĐỀ CRITICAL
+
+1. ❌ Webhook MoMo thiếu idempotency
+   → Tiền bị cộng nhiều lần
+
+2. ❌ Card Topup chưa implement
+   → Dễ bị race condition
+
+3. ❌ Thiếu bảng balance_history
+   → Không audit được
+
+4. ❌ Thiếu cột momo_trans_id
+   → Không check duplicate
+
+══════════════════════════════════════════════════════════════════
+
+📚 TÀI LIỆU
+
+✅ NEXT_STEPS_TAI_CHINH.md         - Hướng dẫn chi tiết từng bước
+✅ AUDIT_TAI_CHINH_CRITICAL.md     - Báo cáo audit đầy đủ
+✅ HUONG_DAN_FIX_TAI_CHINH.md      - Code mẫu và giải pháp
+✅ fix_payment_critical.sql        - Script SQL
+✅ fix_payment_webhook.py          - Code webhook mới
+✅ check_pending_payments.py       - Cronjob script
+✅ test_race_condition.py          - Test script
+
+══════════════════════════════════════════════════════════════════
+
+⚠️  LƯU Ý QUAN TRỌNG
+
+1. PHẢI backup database trước khi bắt đầu
+2. Test từng bước một, không skip
+3. Kiểm tra log sau mỗi thay đổi
+4. Chuẩn bị rollback plan
+
+══════════════════════════════════════════════════════════════════
+
+🚀 TIMELINE ĐỀ XUẤT
+
+Ngày 1: Bước 1-5 (4 giờ)
+Ngày 2: Bước 6-8 (2 giờ)
+Ngày 3: Bước 9-12 (5 giờ)
+Ngày 4: Testing & QA
+Ngày 5: Go-live
+
+══════════════════════════════════════════════════════════════════
+
+📞 ROLLBACK NẾU CẦN
+
+RESTORE DATABASE ParkingManagement 
+FROM DISK='C:\Backup\ParkingManagement_before_fix.bak'
+WITH REPLACE;
+
+══════════════════════════════════════════════════════════════════
+
+✅ Sau khi hoàn thành, hệ thống sẽ:
+   - An toàn trước race condition
+   - Ngăn chặn duplicate payments
+   - Tự động check pending transactions
+   - Có đầy đủ audit trail
+   - Sẵn sàng cho production
+
+══════════════════════════════════════════════════════════════════

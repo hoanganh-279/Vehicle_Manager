@@ -1,0 +1,7 @@
+﻿--- KIRO PROJECT: QUAN LY BAI XE ---
+Thư mục gốc: E:\Quan_Ly_Bai_Xe\templates
+------------------------------------
+[HTML]  E:\Quan_Ly_Bai_Xe\templates\index.html
+[CSS]   E:\Quan_Ly_Bai_Xe\templates\css\style.css
+[JS]    E:\Quan_Ly_Bai_Xe\templates\js\main.js
+[IMG]   E:\Quan_Ly_Bai_Xe\templates\images

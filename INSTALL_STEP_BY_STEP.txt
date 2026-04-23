@@ -1,0 +1,144 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║          HƯỚNG DẪN CÀI ĐẶT TỪNG BƯỚC - THỰC HIỆN THỦ CÔNG           ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+⚠️  LƯU Ý: Tôi không thể chạy lệnh pip trực tiếp vì bị timeout.
+    Bạn cần tự chạy các lệnh sau trong CMD hoặc PowerShell.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 BƯỚC 1: MỞ CMD HOẶC POWERSHELL
+
+Cách 1: Nhấn Windows + R → Gõ "cmd" → Enter
+Cách 2: Nhấn Windows + X → Chọn "Windows PowerShell"
+Cách 3: Tìm "Command Prompt" trong Start Menu
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 BƯỚC 2: CHUYỂN ĐẾN THƯ MỤC DỰ ÁN
+
+Copy và paste lệnh này vào CMD/PowerShell:
+
+cd E:\Quan_Ly_Bai_Xe
+
+Nhấn Enter
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 BƯỚC 3: CÀI ĐẶT CÁC PACKAGE (CHỌN 1 TRONG 2 CÁCH)
+
+┌─ CÁCH 1: Cài tất cả cùng lúc (NHANH) ──────────────────────────────┐
+│                                                                      │
+│  pip install -r requirements.txt                                    │
+│                                                                      │
+│  Đợi khoảng 2-5 phút để cài đặt xong                               │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ CÁCH 2: Cài từng package (NẾU CÁCH 1 LỖI) ───────────────────────┐
+│                                                                      │
+│  Copy và paste TỪNG LỆNH sau, nhấn Enter sau mỗi lệnh:             │
+│                                                                      │
+│  pip install flask==3.1.3                                           │
+│  pip install flask-mail==0.10.0                                     │
+│  pip install pyodbc==5.3.0                                          │
+│  pip install python-dotenv==1.2.2                                   │
+│  pip install requests==2.33.1                                       │
+│  pip install pdfkit==1.0.0                                          │
+│  pip install openpyxl==3.1.5                                        │
+│  pip install stripe==15.0.1                                         │
+│  pip install qrcode[pil]==8.2                                       │
+│  pip install Pillow==12.2.0                                         │
+│  pip install opencv-python==4.13.0.90                               │
+│  pip install pytesseract==0.3.13                                    │
+│  pip install ultralytics==8.4.33                                    │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 BƯỚC 4: KIỂM TRA ĐÃ CÀI THÀNH CÔNG CHƯA
+
+Chạy lệnh này:
+
+python -c "import pyodbc; print('pyodbc OK')"
+
+✅ Nếu thấy "pyodbc OK" → Thành công!
+❌ Nếu lỗi → Xem phần Troubleshooting bên dưới
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 BƯỚC 5: CHẠY APP
+
+python app.py
+
+✅ Nếu thấy:
+   * Running on http://0.0.0.0:5000
+   * Running on http://127.0.0.1:5000
+   
+   → Thành công! Mở browser: http://localhost:5000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🐛 TROUBLESHOOTING
+
+┌─ Lỗi: pip không được nhận diện ────────────────────────────────────┐
+│                                                                      │
+│  Thử:                                                                │
+│  python -m pip install -r requirements.txt                          │
+│                                                                      │
+│  Hoặc:                                                               │
+│  py -m pip install -r requirements.txt                              │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ Lỗi: Microsoft Visual C++ 14.0 is required ───────────────────────┐
+│                                                                      │
+│  1. Download: https://aka.ms/vs/17/release/vs_BuildTools.exe       │
+│  2. Cài đặt với tùy chọn "Desktop development with C++"            │
+│  3. Chạy lại: pip install pyodbc                                    │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ Lỗi: Cannot find ODBC Driver ─────────────────────────────────────┐
+│                                                                      │
+│  1. Download: https://go.microsoft.com/fwlink/?linkid=2249004      │
+│  2. Cài ODBC Driver 17 for SQL Server                              │
+│  3. Chạy lại: pip install pyodbc                                    │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ Lỗi: Permission denied ───────────────────────────────────────────┐
+│                                                                      │
+│  Chạy CMD/PowerShell với quyền Administrator:                      │
+│  - Nhấn chuột phải vào CMD/PowerShell                              │
+│  - Chọn "Run as administrator"                                      │
+│  - Chạy lại lệnh pip                                                │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 CHECKLIST
+
+[ ] Đã mở CMD/PowerShell
+[ ] Đã chuyển đến thư mục: cd E:\Quan_Ly_Bai_Xe
+[ ] Đã chạy: pip install -r requirements.txt
+[ ] Đã kiểm tra: python -c "import pyodbc; print('OK')"
+[ ] Đã chạy: python app.py
+[ ] Đã mở browser: http://localhost:5000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 TÓM TẮT 5 LỆNH
+
+1. cd E:\Quan_Ly_Bai_Xe
+2. pip install -r requirements.txt
+3. python -c "import pyodbc; print('OK')"
+4. python app.py
+5. Mở: http://localhost:5000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sau khi cài xong và app chạy được, báo cáo kết quả để tiếp tục test
+Giai đoạn 1! 🚀

@@ -1,4 +1,4 @@
-{% extends "admin_base.html" %}
+﻿{% extends "admin/base.html" %}
 
 {% block title %}Lịch Sử Nạp Tiền Thẻ{% endblock %}
 {% block page_title %}Lịch Sử Nạp Tiền Thẻ{% endblock %}
@@ -708,7 +708,7 @@
                         </div>
                     </td>
                     <td>{{ record.phone }}</td>
-                    <td><strong style="color: #667eea;">{{ "{:,}".format(record.amount | int) }} đ</strong></td>
+                    <td><strong style="color: #667eea;">{{ "{:,}".format(record.amount | int) }} d</strong></td>
                     <td>
                         {% if 'momo' in record.payment_method.lower() %}
                             <span class="badge-modern momo"><i class="fas fa-wallet"></i> {{ record.payment_method | capitalize }}</span>
@@ -998,7 +998,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* Empty state */
 .table-modern tbody tr:empty::after {
-    content: '📋 Không có dữ liệu';
+    content: '⚠️ Không có dữ liệu';
     display: block;
     text-align: center;
     padding: 40px;
@@ -1119,46 +1119,7 @@ document.addEventListener('DOMContentLoaded', function() {
     outline-offset: 2px;
 }
 
-/* Dark mode support (optional) */
-@media (prefers-color-scheme: dark) {
-    body {
-        background: linear-gradient(120deg, #1a1a2e 0%, #16213e 100%);
-    }
 
-    .stat-card,
-    .filter-card,
-    .chart-card,
-    .table-card {
-        background: rgba(30, 41, 59, 0.9);
-        border-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .stat-label,
-    .form-label,
-    .chart-title {
-        color: #cbd5e1;
-    }
-
-    .form-control,
-    .form-select {
-        background: rgba(15, 23, 42, 0.5);
-        color: #e2e8f0;
-        border-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .table-modern thead th {
-        background: rgba(15, 23, 42, 0.5);
-        color: #cbd5e1;
-    }
-
-    .table-modern tbody tr {
-        background: rgba(30, 41, 59, 0.5);
-    }
-
-    .customer-name {
-        color: #e2e8f0;
-    }
-}
 
 /* Smooth scroll */
 html {

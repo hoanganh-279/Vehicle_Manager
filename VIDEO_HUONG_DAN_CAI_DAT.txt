@@ -1,0 +1,188 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║              VIDEO HƯỚNG DẪN CÀI ĐẶT - THEO DÕI TỪNG BƯỚC           ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+🎥 Hãy làm theo từng bước dưới đây (như xem video)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[00:00] 🎬 BƯỚC 1: MỞ COMMAND PROMPT
+
+1. Nhấn phím Windows trên bàn phím
+2. Gõ: cmd
+3. Nhấn Enter
+4. Cửa sổ màu đen xuất hiện → Đúng rồi!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[00:30] 📁 BƯỚC 2: CHUYỂN ĐẾN THƯ MỤC DỰ ÁN
+
+1. Trong cửa sổ CMD màu đen
+2. Copy dòng này (Ctrl+C):
+
+   cd E:\Quan_Ly_Bai_Xe
+
+3. Paste vào CMD (Click chuột phải → Paste)
+4. Nhấn Enter
+5. Bạn sẽ thấy: E:\Quan_Ly_Bai_Xe>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[01:00] 📦 BƯỚC 3: CÀI ĐẶT PACKAGES
+
+1. Copy dòng này:
+
+   pip install -r requirements.txt
+
+2. Paste vào CMD
+3. Nhấn Enter
+4. Đợi... (Sẽ thấy nhiều dòng chữ chạy)
+5. Đợi khoảng 2-5 phút
+6. Khi nào thấy "Successfully installed..." → Xong!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[06:00] ✅ BƯỚC 4: KIỂM TRA ĐÃ CÀI XONG CHƯA
+
+1. Copy dòng này:
+
+   python -c "import pyodbc; print('pyodbc OK')"
+
+2. Paste vào CMD
+3. Nhấn Enter
+4. Nếu thấy "pyodbc OK" → Thành công!
+5. Nếu lỗi → Xem phần "Nếu gặp lỗi" bên dưới
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[07:00] 🚀 BƯỚC 5: CHẠY APP
+
+1. Copy dòng này:
+
+   python app.py
+
+2. Paste vào CMD
+3. Nhấn Enter
+4. Đợi vài giây
+5. Nếu thấy:
+   * Running on http://0.0.0.0:5000
+   * Running on http://127.0.0.1:5000
+   
+   → Thành công!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[08:00] 🌐 BƯỚC 6: MỞ BROWSER
+
+1. Mở trình duyệt (Chrome, Edge, Firefox...)
+2. Gõ vào thanh địa chỉ:
+
+   http://localhost:5000
+
+3. Nhấn Enter
+4. Trang web sẽ hiển thị!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[09:00] 🎉 HOÀN THÀNH!
+
+Bạn đã cài đặt thành công!
+
+Tiếp theo:
+→ Đọc file: START_HERE.md
+→ Test theo hướng dẫn trong CHECKLIST_GIAI_DOAN_1.txt
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ NẾU GẶP LỖI
+
+┌─ Lỗi 1: 'pip' is not recognized ──────────────────────────────────┐
+│                                                                      │
+│  Thử lệnh này thay vì pip:                                          │
+│                                                                      │
+│  python -m pip install -r requirements.txt                          │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ Lỗi 2: Microsoft Visual C++ 14.0 is required ────────────────────┐
+│                                                                      │
+│  Bước 1: Mở browser                                                 │
+│  Bước 2: Vào: https://aka.ms/vs/17/release/vs_BuildTools.exe      │
+│  Bước 3: Download file                                              │
+│  Bước 4: Chạy file vừa download                                     │
+│  Bước 5: Chọn "Desktop development with C++"                       │
+│  Bước 6: Click Install                                              │
+│  Bước 7: Đợi cài xong (khoảng 10-20 phút)                          │
+│  Bước 8: Chạy lại: pip install -r requirements.txt                 │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ Lỗi 3: Cannot find ODBC Driver ──────────────────────────────────┐
+│                                                                      │
+│  Bước 1: Mở browser                                                 │
+│  Bước 2: Vào: https://go.microsoft.com/fwlink/?linkid=2249004     │
+│  Bước 3: Download "ODBC Driver 17 for SQL Server"                  │
+│  Bước 4: Chạy file vừa download                                     │
+│  Bước 5: Click Next → Next → Install                               │
+│  Bước 6: Đợi cài xong                                               │
+│  Bước 7: Chạy lại: pip install pyodbc                              │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ Lỗi 4: Permission denied ────────────────────────────────────────┐
+│                                                                      │
+│  Bước 1: Đóng CMD hiện tại                                          │
+│  Bước 2: Nhấn Windows                                               │
+│  Bước 3: Gõ: cmd                                                    │
+│  Bước 4: Nhấn chuột phải vào "Command Prompt"                      │
+│  Bước 5: Chọn "Run as administrator"                               │
+│  Bước 6: Click Yes                                                  │
+│  Bước 7: Chạy lại từ Bước 2 (cd E:\Quan_Ly_Bai_Xe)                │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📸 SCREENSHOT MẪU
+
+[Bước 3 - Đang cài đặt]
+E:\Quan_Ly_Bai_Xe> pip install -r requirements.txt
+Collecting flask==3.1.3
+  Downloading flask-3.1.3-py3-none-any.whl (102 kB)
+Collecting flask-mail==0.10.0
+  Downloading Flask_Mail-0.10.0-py3-none-any.whl (10 kB)
+...
+Installing collected packages: ...
+Successfully installed flask-3.1.3 flask-mail-0.10.0 ...
+
+[Bước 5 - App đang chạy]
+E:\Quan_Ly_Bai_Xe> python app.py
+ * Serving Flask app 'app'
+ * Debug mode: on
+ * Running on http://0.0.0.0:5000
+ * Running on http://127.0.0.1:5000
+Press CTRL+C to quit
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 CHECKLIST NHANH
+
+[ ] Mở CMD
+[ ] cd E:\Quan_Ly_Bai_Xe
+[ ] pip install -r requirements.txt
+[ ] python -c "import pyodbc; print('OK')"
+[ ] python app.py
+[ ] Mở http://localhost:5000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 MẸO
+
+- Nếu copy/paste không được trong CMD, thử click chuột phải
+- Nếu CMD bị đóng, mở lại và làm từ đầu
+- Nếu lỗi, đọc kỹ thông báo lỗi và tìm trong phần "Nếu gặp lỗi"
+- Giữ CMD mở khi app đang chạy (đừng đóng)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chúc bạn cài đặt thành công! 🚀

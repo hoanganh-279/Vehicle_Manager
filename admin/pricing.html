@@ -1,4 +1,4 @@
-{% extends "admin_base.html" %}
+﻿{% extends "admin/base.html" %}
 
 {% block page_title %}Quản lý giá đỗ xe{% endblock %}
 {% block page_subtitle %}Cấu hình khung giờ và mức phí cho xe máy và xe hơi{% endblock %}
@@ -1011,7 +1011,7 @@
                                 <td>Mỗi ngày</td>
                                 <td>
                                     <span class="price-badge danger">
-                                        {{ '{:,}'.format(motorcycle_overnight_fee[1]) }} VND
+                                        {{ '{:,}'.format(motorcycle_overnight_fee[1] if motorcycle_overnight_fee else 0) }} VND
                                     </span>
                                 </td>
                                 <td>{{ motorcycle_overnight_fee[2] if motorcycle_overnight_fee else 'N/A' }}</td>
@@ -1054,7 +1054,7 @@
                                 <td>Mỗi ngày</td>
                                 <td>
                                     <span class="price-badge danger">
-                                        {{ '{:,}'.format(car_overnight_fee[1]) }} VND
+                                        {{ '{:,}'.format(car_overnight_fee[1] if car_overnight_fee else 0) }} VND
                                     </span>
                                 </td>
                                 <td>{{ car_overnight_fee[2] if car_overnight_fee else 'N/A' }}</td>

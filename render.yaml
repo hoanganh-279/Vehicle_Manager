@@ -1,0 +1,146 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# RENDER.COM INFRASTRUCTURE AS CODE
+# Parking Management System - Dual-Mode Deployment
+# ═══════════════════════════════════════════════════════════════════════════
+
+services:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # WEB SERVICE - Flask Application
+  # ═══════════════════════════════════════════════════════════════════════════
+  - type: web
+    name: parking-management-app
+    runtime: python
+    plan: free  # Change to 'starter' or 'standard' for production
+    region: singapore  # Closest to Vietnam
+    
+    # ── Build Configuration ──
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    
+    # ── Start Command ──
+    startCommand: |
+      gunicorn --bind 0.0.0.0:$PORT \
+               --workers 2 \
+               --threads 4 \
+               --timeout 120 \
+               --access-logfile - \
+               --error-logfile - \
+               --log-level info \
+               app:app
+    
+    # ── Environment Variables ──
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      
+      - key: TZ
+        value: Asia/Ho_Chi_Minh
+      
+      - key: FLASK_ENV
+        value: production
+      
+      - key: SECRET_KEY
+        generateValue: true  # Auto-generate secure secret key
+      
+      - key: DATABASE_URL
+        fromDatabase:
+          name: parking-management-db
+          property: connectionString
+      
+      - key: MOMO_ENDPOINT
+        value: https://test-payment.momo.vn/v2/gateway/api/create
+      
+      - key: MOMO_PARTNER_CODE
+        sync: false  # Set manually in Render Dashboard
+      
+      - key: MOMO_ACCESS_KEY
+        sync: false  # Set manually in Render Dashboard
+      
+      - key: MOMO_SECRET_KEY
+        sync: false  # Set manually in Render Dashboard
+      
+      - key: MOMO_REDIRECT_URL
+        value: https://parking-management-app.onrender.com/payment/result
+      
+      - key: MOMO_IPN_URL
+        value: https://parking-management-app.onrender.com/payment/result
+      
+      - key: GUNICORN_WORKERS
+        value: 2
+      
+      - key: GUNICORN_THREADS
+        value: 4
+      
+      - key: GUNICORN_TIMEOUT
+        value: 120
+      
+      - key: LOG_LEVEL
+        value: INFO
+    
+    # ── Health Check ──
+    healthCheckPath: /
+    
+    # ── Auto-Deploy ──
+    autoDeploy: true  # Auto-deploy on git push
+    
+    # ── Disk (for uploads, logs) ──
+    disk:
+      name: parking-uploads
+      mountPath: /opt/render/project/src/static/uploads
+      sizeGB: 1
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # DATABASE - PostgreSQL
+  # ═══════════════════════════════════════════════════════════════════════════
+databases:
+  - name: parking-management-db
+    databaseName: parking_db
+    plan: free  # Change to 'starter' or 'standard' for production
+    region: singapore
+    
+    # ── PostgreSQL Version ──
+    ipAllowList: []  # Empty = allow all (for free tier)
+    
+    # ── Post-Deploy Hook (Run schema) ──
+    # Note: You need to run schema_postgresql.sql manually after first deploy
+    # Or use a migration tool like Alembic
+
+# ═══════════════════════════════════════════════════════════════════════════
+# NOTES
+# ═══════════════════════════════════════════════════════════════════════════
+# 1. Free tier limitations:
+#    - Web service: 512 MB RAM, spins down after 15 min inactivity
+#    - Database: 1 GB storage, expires after 90 days
+#    - Disk: 1 GB persistent storage
+#
+# 2. After first deploy:
+#    - Go to Render Dashboard → Database → Connect
+#    - Run schema_postgresql.sql to create tables
+#    - Or use: psql $DATABASE_URL < schema_postgresql.sql
+#
+# 3. Update MOMO callback URLs:
+#    - Replace 'parking-management-app' with your actual Render app name
+#    - Update in Render Dashboard → Environment Variables
+#    - Update in MoMo Partner Portal
+#
+# 4. Set MoMo credentials:
+#    - Go to Render Dashboard → Environment Variables
+#    - Add MOMO_PARTNER_CODE, MOMO_ACCESS_KEY, MOMO_SECRET_KEY
+#
+# 5. Custom domain (optional):
+#    - Go to Render Dashboard → Settings → Custom Domain
+#    - Add your domain and update DNS records
+#
+# 6. Monitoring:
+#    - Render Dashboard → Logs (real-time)
+#    - Render Dashboard → Metrics (CPU, Memory, Requests)
+#
+# 7. Scaling (Paid plans):
+#    - Change 'plan' to 'starter' or 'standard'
+#    - Increase GUNICORN_WORKERS for more concurrency
+#
+# 8. Backup (Important!):
+#    - Free tier database expires after 90 days
+#    - Export data regularly: pg_dump $DATABASE_URL > backup.sql
+#    - Consider upgrading to paid plan for production

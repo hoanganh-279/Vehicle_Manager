@@ -3,399 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập Admin - Hệ thống quản lý bãi đỗ xe</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Đăng nhập — Parking System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{
+            font-family:'Be Vietnam Pro','Segoe UI',sans-serif;
+            background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            min-height:100vh;display:flex;align-items:center;justify-content:center;
+            padding:20px;-webkit-font-smoothing:antialiased;
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #e0e5ec;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            line-height: 1.6;
+        /* Animated background */
+        body::before{
+            content:'';position:fixed;inset:0;
+            background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events:none;z-index:0;
         }
-
-        .login-container {
-            width: 100%;
-            max-width: 420px;
+        .login-wrapper{position:relative;z-index:1;width:100%;max-width:420px;}
+        .login-card{
+            background:rgba(255,255,255,0.95);
+            border-radius:24px;
+            padding:40px 36px;
+            box-shadow:0 25px 60px rgba(0,0,0,0.25);
         }
-
-        .login-card {
-            background: #e0e5ec;
-            border-radius: 25px;
-            padding: 40px 30px;
-            box-shadow:
-                15px 15px 40px #bec3cf,
-                -15px -15px 40px #ffffff;
-            transition: transform 0.3s ease;
+        .login-logo{
+            text-align:center;margin-bottom:28px;
         }
-
-        .login-card:hover {
-            transform: translateY(-3px);
+        .login-logo .icon-wrap{
+            width:72px;height:72px;border-radius:20px;
+            background:linear-gradient(135deg,#667eea,#764ba2);
+            display:inline-flex;align-items:center;justify-content:center;
+            font-size:32px;color:#fff;margin-bottom:16px;
+            box-shadow:0 8px 24px rgba(102,126,234,0.4);
         }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 30px;
+        .login-logo h1{font-size:1.6rem;font-weight:800;color:#1e293b;margin-bottom:6px;}
+        .login-logo p{font-size:.88rem;color:#64748b;}
+        .form-group{margin-bottom:18px;}
+        .form-group label{font-size:.82rem;font-weight:600;color:#475569;margin-bottom:7px;display:block;}
+        .input-wrap{position:relative;}
+        .input-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:.9rem;}
+        .input-wrap input{
+            width:100%;padding:12px 14px 12px 40px;
+            border:1.5px solid #e2e8f0;border-radius:12px;
+            font-size:.95rem;font-family:inherit;color:#1e293b;
+            background:#f8fafc;transition:all .2s;
         }
-
-        .neu-icon {
-            width: 70px;
-            height: 70px;
-            margin: 0 auto 20px;
-            background: #e0e5ec;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow:
-                6px 6px 15px #bec3cf,
-                -6px -6px 15px #ffffff;
-            transition: box-shadow 0.3s ease;
+        .input-wrap input:focus{outline:none;border-color:#667eea;background:#fff;box-shadow:0 0 0 3px rgba(102,126,234,0.12);}
+        .input-wrap .toggle-pw{position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:#94a3b8;background:none;border:none;font-size:.9rem;}
+        .btn-login{
+            width:100%;padding:13px;border:none;border-radius:12px;
+            background:linear-gradient(135deg,#667eea,#764ba2);
+            color:#fff;font-size:1rem;font-weight:700;font-family:inherit;
+            cursor:pointer;transition:all .25s;
+            display:flex;align-items:center;justify-content:center;gap:8px;
+            box-shadow:0 4px 20px rgba(102,126,234,0.4);
         }
-
-        .neu-icon:hover {
-            box-shadow:
-                3px 3px 8px #bec3cf,
-                -3px -3px 8px #ffffff;
+        .btn-login:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(102,126,234,0.5);}
+        .btn-login:active{transform:translateY(0);}
+        .alert-error{
+            background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+            color:#b91c1c;border-radius:10px;padding:11px 14px;
+            font-size:.87rem;margin-bottom:16px;display:flex;align-items:center;gap:8px;
         }
-
-        .neu-icon i {
-            font-size: 35px;
-            color: #6c7293;
-        }
-
-        .login-header h2 {
-            color: #3d4468;
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-
-        .login-header p {
-            color: #9499b7;
-            font-size: 14px;
-            font-weight: 400;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .neu-input {
-            position: relative;
-            background: #e0e5ec;
-            border-radius: 12px;
-            box-shadow:
-                inset 6px 6px 12px #bec3cf,
-                inset -6px -6px 12px #ffffff;
-            transition: box-shadow 0.3s ease;
-        }
-
-        .neu-input input {
-            width: 100%;
-            background: transparent;
-            border: none;
-            padding: 15px 20px 15px 45px;
-            color: #3d4468;
-            font-size: 15px;
-            font-weight: 500;
-            outline: none;
-        }
-
-        .neu-input input::placeholder {
-            color: #9499b7;
-            opacity: 0.7;
-            font-size: 14px;
-        }
-
-        .neu-input input:focus::placeholder {
-            opacity: 0.5;
-        }
-
-        .input-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9499b7;
-            font-size: 18px;
-            transition: color 0.3s ease;
-        }
-
-        .neu-input input:focus + .input-icon {
-            color: #6c7293;
-        }
-
-        .password-group {
-            position: relative;
-        }
-
-        .neu-toggle {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #e0e5ec;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #9499b7;
-            box-shadow:
-                3px 3px 8px #bec3cf,
-                -3px -3px 8px #ffffff;
-            transition: all 0.3s ease;
-        }
-
-        .neu-toggle:hover {
-            color: #6c7293;
-            box-shadow:
-                2px 2px 5px #bec3cf,
-                -2px -2px 5px #ffffff;
-        }
-
-        .neu-button {
-            width: 100%;
-            background: #e0e5ec;
-            border: none;
-            border-radius: 12px;
-            padding: 15px;
-            color: #3d4468;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow:
-                6px 6px 15px #bec3cf,
-                -6px -6px 15px #ffffff;
-            transition: all 0.3s ease;
-        }
-
-        .neu-button:hover {
-            transform: translateY(-2px);
-            box-shadow:
-                8px 8px 20px #bec3cf,
-                -8px -8px 20px #ffffff;
-        }
-
-        .neu-button:active {
-            box-shadow:
-                inset 3px 3px 8px #bec3cf,
-                inset -3px -3px 8px #ffffff;
-        }
-
-
-
-        .alert {
-            border-radius: 10px;
-            padding: 12px 16px;
-            margin-bottom: 20px;
-            background: #e0e5ec;
-            color: #ff3b5c;
-            box-shadow:
-                inset 3px 3px 8px #ffb8c4,
-                inset -3px -3px 8px #ffffff;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            animation: slideDown 0.3s ease;
-        }
-
-        .alert.success {
-            color: #4CAF50;
-            box-shadow:
-                inset 3px 3px 8px #a5d6a7,
-                inset -3px -3px 8px #ffffff;
-        }
-
-        .btn-close {
-            background: transparent;
-            border: none;
-            font-size: 18px;
-            color: inherit;
-            cursor: pointer;
-            margin-left: auto;
-            opacity: 0.7;
-        }
-
-        .btn-close:hover {
-            opacity: 1;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 15px;
-            }
-
-            .login-card {
-                padding: 30px 20px;
-                border-radius: 20px;
-            }
-
-            .login-header h2 {
-                font-size: 1.6rem;
-            }
-
-            .neu-input input {
-                padding: 12px 15px 12px 40px;
-                font-size: 14px;
-            }
-
-            .input-icon {
-                left: 12px;
-                font-size: 16px;
-            }
-        }
+        .login-footer{text-align:center;margin-top:20px;font-size:.8rem;color:#94a3b8;}
+        .login-footer span{color:#667eea;font-weight:600;}
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-card">
-            <div class="login-header">
-                <div class="neu-icon">
-                    <i class="fas fa-parking"></i>
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="icon-wrap"><i class="fas fa-shield-alt"></i></div>
+            <h1>Đăng nhập Admin</h1>
+            <p>Hệ thống quản lý bãi đỗ xe thông minh</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+            <div class="alert-error"><i class="fas fa-exclamation-circle"></i> {{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST" action="/admin/login">
+            <div class="form-group">
+                <label>Email</label>
+                <div class="input-wrap">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" name="email" placeholder="admin@parking.com" required autocomplete="email">
                 </div>
-                <h2>Đăng nhập Admin</h2>
-                <p>Hệ thống quản lý bãi đỗ xe thông minh</p>
             </div>
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>{{ message }}
-                            <button type="button" class="btn-close" onclick="closeAlert()">×</button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <form method="POST" id="loginForm">
-                <div class="form-group">
-                    <div class="neu-input">
-                        <i class="fas fa-envelope input-icon"></i>
-                        <input type="email" id="email" name="email" placeholder="Nhập email của bạn" required>
-                    </div>
+            <div class="form-group">
+                <label>Mật khẩu</label>
+                <div class="input-wrap">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="password" id="pwInput" placeholder="••••••••" required autocomplete="current-password">
+                    <button type="button" class="toggle-pw" onclick="togglePw()"><i class="fas fa-eye" id="pwIcon"></i></button>
                 </div>
+            </div>
+            <button type="submit" class="btn-login">
+                <i class="fas fa-sign-in-alt"></i> Đăng nhập
+            </button>
+        </form>
 
-                <div class="form-group">
-                    <div class="neu-input password-group">
-                        <i class="fas fa-lock input-icon"></i>
-                        <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" required>
-                        <button type="button" class="neu-toggle" id="passwordToggle">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <button type="submit" class="neu-button">
-                    <i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i>Đăng nhập
-                </button>
-            </form>
-
-
+        <div class="login-footer">
+            Parking System &nbsp;•&nbsp; <span>v1.0</span>
         </div>
     </div>
-
-    <script>
-        // Password toggle functionality
-        const passwordToggle = document.getElementById('passwordToggle');
-        const passwordInput = document.getElementById('password');
-        passwordToggle.addEventListener('click', function() {
-            const type = passwordInput.type === 'password' ? 'text' : 'password';
-            passwordInput.type = type;
-            const icon = this.querySelector('i');
-            icon.classList.toggle('fa-eye');
-            icon.classList.toggle('fa-eye-slash');
-            this.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1)';
-            }, 150);
-        });
-
-        // Input focus effects
-        const inputs = document.querySelectorAll('.neu-input input');
-        inputs.forEach(input => {
-            input.addEventListener('focus', function() {
-                this.closest('.neu-input').style.boxShadow = `
-                    inset 3px 3px 6px #bec3cf,
-                    inset -3px -3px 6px #ffffff
-                `;
-            });
-            input.addEventListener('blur', function() {
-                this.closest('.neu-input').style.boxShadow = `
-                    inset 6px 6px 12px #bec3cf,
-                    inset -6px -6px 12px #ffffff
-                `;
-            });
-        });
-
-        // Form validation (client-side)
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            if (!email || !password) {
-                e.preventDefault();
-                showAlert('Vui lòng điền đầy đủ thông tin đăng nhập');
-                return;
-            }
-
-            if (!isValidEmail(email)) {
-                e.preventDefault();
-                showAlert('Email không hợp lệ');
-                return;
-            }
-
-            // If validation passes, allow form submission to Flask backend
-        });
-
-        function isValidEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email);
-        }
-
-        function showAlert(message) {
-            const alert = document.createElement('div');
-            alert.className = 'alert';
-            alert.innerHTML = `
-                <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>
-                <span>${message}</span>
-                <button type="button" class="btn-close" onclick="closeAlert(this)">×</button>
-            `;
-            document.querySelector('.login-header').insertAdjacentElement('afterend', alert);
-        }
-
-        function closeAlert(button) {
-            const alert = button.closest('.alert');
-            alert.style.animation = 'slideDown 0.3s ease reverse';
-            setTimeout(() => {
-                alert.remove();
-            }, 300);
-        }
-    </script>
+</div>
+<script>
+function togglePw(){
+    const inp=document.getElementById('pwInput');
+    const ico=document.getElementById('pwIcon');
+    if(inp.type==='password'){inp.type='text';ico.className='fas fa-eye-slash';}
+    else{inp.type='password';ico.className='fas fa-eye';}
+}
+</script>
 </body>
 </html>

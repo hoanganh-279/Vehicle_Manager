@@ -1,4 +1,4 @@
-{% extends "admin_base.html" %}
+﻿{% extends "admin/base.html" %}
 
 {% block title %}Quản lý xe - Admin{% endblock %}
 {% block page_title %}Quản lý xe{% endblock %}
@@ -256,6 +256,19 @@
         padding: 15px;
         vertical-align: middle;
         color: #475569;
+    }
+    
+    /* Dark Mode - Table text colors */
+    body[data-theme="dark"] .table tbody td {
+        color: #cbd5e1;
+    }
+    
+    body[data-theme="dark"] .license-plate {
+        color: #e2e8f0;
+    }
+    
+    body[data-theme="dark"] .time-text {
+        color: #94a3b8;
     }
 
     .license-plate {

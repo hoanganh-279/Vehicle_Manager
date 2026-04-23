@@ -1,4 +1,4 @@
-{% extends "admin_base.html" %}
+﻿{% extends "admin/base.html" %}
 
 {% block title %}Dashboard - Admin{% endblock %}
 
@@ -693,17 +693,15 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // ============================================
-// BIỂU ĐỒ TRÒN DOANH THU
+// BIỂU ĐỒ TRÒN DOANH THU (Tự động đổi màu theo theme)
 // ============================================
 const motorbikeRevenue = {{ motorbike_revenue }};
 const carRevenue = {{ car_revenue }};
 const totalRevenue = {{ daily_revenue }};
 
-const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-const revenueChart = new Chart(revenueCtx, {
+const revenueChart = createThemedChart('revenueChart', {
     type: 'doughnut',
     data: {
         labels: ['Xe máy', 'Xe hơi'],
@@ -726,16 +724,6 @@ const revenueChart = new Chart(revenueCtx, {
                 display: false
             },
             tooltip: {
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                padding: 12,
-                cornerRadius: 8,
-                titleFont: {
-                    size: 14,
-                    weight: 'bold'
-                },
-                bodyFont: {
-                    size: 13
-                },
                 callbacks: {
                     label: function(context) {
                         const value = context.parsed;
@@ -750,7 +738,7 @@ const revenueChart = new Chart(revenueCtx, {
 });
 
 // ============================================
-// BIỂU ĐỒ XE VÀO/RA THEO GIỜ
+// BIỂU ĐỒ XE VÀO/RA THEO GIỜ (Tự động đổi màu theo theme)
 // ============================================
 const hourlyEntriesByType = {{ hourly_entries_by_type | tojson | safe }};
 const hourlyExitsByType = {{ hourly_exits_by_type | tojson | safe }};
@@ -784,8 +772,7 @@ const carExitCounts = hours.map(hour => {
     return found ? found[2] : 0;
 });
 
-const ctx = document.getElementById('hourlyChart').getContext('2d');
-const hourlyChart = new Chart(ctx, {
+const hourlyChart = createThemedChart('hourlyChart', {
     type: 'line',
     data: {
         labels: hours.map(h => h + 'h'),
@@ -877,16 +864,6 @@ const hourlyChart = new Chart(ctx, {
                 display: false
             },
             tooltip: {
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                padding: 12,
-                cornerRadius: 8,
-                titleFont: {
-                    size: 14,
-                    weight: 'bold'
-                },
-                bodyFont: {
-                    size: 13
-                },
                 bodySpacing: 6,
                 callbacks: {
                     title: function(context) {
@@ -908,8 +885,7 @@ const hourlyChart = new Chart(ctx, {
                     stepSize: 1,
                     font: {
                         size: 11
-                    },
-                    color: '#64748b'
+                    }
                 },
                 grid: {
                     color: 'rgba(0, 0, 0, 0.05)',
@@ -924,8 +900,7 @@ const hourlyChart = new Chart(ctx, {
                     maxTicksLimit: 12,
                     font: {
                         size: 11
-                    },
-                    color: '#64748b'
+                    }
                 },
                 grid: {
                     display: false,

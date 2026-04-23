@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Theme Polish - Light/Dark Mode</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Theme Polish CSS -->
+    <link rel="stylesheet" href="/static/css/theme-polish.css">
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/smooth-ux.css">
+    
+    <style>
+        .demo-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .demo-header {
+            background: var(--primary-grad);
+            color: white;
+            padding: 30px;
+            border-radius: var(--radius-xl);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .theme-toggle-demo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .theme-toggle-demo button {
+            background: var(--primary-grad);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition-base);
+        }
+        
+        .theme-toggle-demo button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .demo-section {
+            margin-bottom: 50px;
+        }
+        
+        .demo-section h2 {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-light);
+        }
+        
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .color-box {
+            padding: 20px;
+            border-radius: var(--radius-md);
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            border: 1px solid var(--border-light);
+        }
+        
+        .color-primary { background: var(--primary); color: white; }
+        .color-success { background: var(--success); color: white; }
+        .color-warning { background: var(--warning); color: white; }
+        .color-danger { background: var(--danger); color: white; }
+        .color-info { background: var(--info); color: white; }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <div class="theme-toggle-demo">
+        <button onclick="toggleTheme()" id="themeToggleBtn">
+            <i class="fas fa-moon" id="themeIcon"></i>
+            <span id="themeText">Dark Mode</span>
+        </button>
+    </div>
+
+    <div class="demo-container">
+        <!-- Header -->
+        <div class="demo-header">
+            <h1><i class="fas fa-palette"></i> Demo Theme Polish</h1>
+            <p>Hệ thống Light/Dark Mode chuyên nghiệp cho Parking System</p>
+        </div>
+
+        <!-- Color Palette -->
+        <div class="demo-section">
+            <h2><i class="fas fa-swatchbook"></i> Color Palette</h2>
+            <div class="color-palette">
+                <div class="color-box color-primary">Primary</div>
+                <div class="color-box color-success">Success</div>
+                <div class="color-box color-warning">Warning</div>
+                <div class="color-box color-danger">Danger</div>
+                <div class="color-box color-info">Info</div>
+            </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="demo-section">
+            <h2><i class="fas fa-chart-bar"></i> Stat Cards</h2>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="stat-card-nqt">
+                        <div class="stat-icon primary">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <div class="stat-label">Tổng xe đang đỗ</div>
+                        <div class="stat-value">156</div>
+                        <div class="stat-sub">+12% so với hôm qua</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card-nqt">
+                        <div class="stat-icon success">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-label">Doanh thu hôm nay</div>
+                        <div class="stat-value">24.5M</div>
+                        <div class="stat-sub">+8% so với hôm qua</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card-nqt">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-label">Người dùng</div>
+                        <div class="stat-value">1,234</div>
+                        <div class="stat-sub">+45 người mới</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card-nqt">
+                        <div class="stat-icon danger">
+                            <i class="fas fa-parking"></i>
+                        </div>
+                        <div class="stat-label">Chỗ trống</div>
+                        <div class="stat-value">44</div>
+                        <div class="stat-sub">Còn 22% chỗ</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="demo-section">
+            <h2><i class="fas fa-hand-pointer"></i> Buttons</h2>
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn-nqt btn-nqt-primary">
+                    <i class="fas fa-check"></i> Primary
+                </button>
+                <button class="btn-nqt btn-nqt-success">
+                    <i class="fas fa-check-circle"></i> Success
+                </button>
+                <button class="btn-nqt btn-nqt-warning">
+                    <i class="fas fa-exclamation-triangle"></i> Warning
+                </button>
+                <button class="btn-nqt btn-nqt-danger">
+                    <i class="fas fa-trash"></i> Danger
+                </button>
+                <button class="btn-nqt btn-nqt-outline">
+                    <i class="fas fa-edit"></i> Outline
+                </button>
+                <button class="btn-nqt btn-nqt-primary" disabled>
+                    <i class="fas fa-ban"></i> Disabled
+                </button>
+            </div>
+        </div>
+
+        <!-- Badges -->
+        <div class="demo-section">
+            <h2><i class="fas fa-tags"></i> Badges</h2>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge-nqt badge-nqt-primary">
+                    <i class="fas fa-info-circle"></i> Primary
+                </span>
+                <span class="badge-nqt badge-nqt-success">
+                    <i class="fas fa-check"></i> Success
+                </span>
+                <span class="badge-nqt badge-nqt-warning">
+                    <i class="fas fa-exclamation"></i> Warning
+                </span>
+                <span class="badge-nqt badge-nqt-danger">
+                    <i class="fas fa-times"></i> Danger
+                </span>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        <div class="demo-section">
+            <h2><i class="fas fa-bell"></i> Alerts</h2>
+            <div class="alert-nqt alert-nqt-success">
+                <i class="fas fa-check-circle"></i>
+                Thao tác thành công! Dữ liệu đã được lưu.
+            </div>
+            <div class="alert-nqt alert-nqt-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                Có lỗi xảy ra! Vui lòng thử lại.
+            </div>
+            <div class="alert-nqt alert-nqt-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                Cảnh báo: Bãi xe sắp đầy!
+            </div>
+            <div class="alert-nqt alert-nqt-info">
+                <i class="fas fa-info-circle"></i>
+                Thông tin: Hệ thống sẽ bảo trì vào 2h sáng.
+            </div>
+        </div>
+
+        <!-- Form Controls -->
+        <div class="demo-section">
+            <h2><i class="fas fa-keyboard"></i> Form Controls</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-nqt">
+                        <label>Họ và tên</label>
+                        <input type="text" placeholder="Nhập họ tên...">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-nqt">
+                        <label>Email</label>
+                        <input type="email" placeholder="example@email.com">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-nqt">
+                        <label>Loại xe</label>
+                        <select>
+                            <option>Chọn loại xe</option>
+                            <option>Xe máy</option>
+                            <option>Ô tô</option>
+                            <option>Xe đạp</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-nqt">
+                        <label>Ghi chú</label>
+                        <textarea rows="3" placeholder="Nhập ghi chú..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="demo-section">
+            <h2><i class="fas fa-table"></i> Table</h2>
+            <div class="nqt-card">
+                <div class="nqt-card-body">
+                    <table class="table-nqt">
+                        <thead>
+                            <tr>
+                                <th>Biển số</th>
+                                <th>Loại xe</th>
+                                <th>Thời gian vào</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>29A-12345</strong></td>
+                                <td>Ô tô</td>
+                                <td>14:30 - 12/04/2026</td>
+                                <td><span class="badge-nqt badge-nqt-success">Đang đỗ</span></td>
+                                <td>
+                                    <button class="btn-nqt btn-nqt-outline" style="padding: 6px 12px; font-size: 0.8rem;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>30B-67890</strong></td>
+                                <td>Xe máy</td>
+                                <td>15:45 - 12/04/2026</td>
+                                <td><span class="badge-nqt badge-nqt-success">Đang đỗ</span></td>
+                                <td>
+                                    <button class="btn-nqt btn-nqt-outline" style="padding: 6px 12px; font-size: 0.8rem;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>51C-11111</strong></td>
+                                <td>Ô tô</td>
+                                <td>16:20 - 12/04/2026</td>
+                                <td><span class="badge-nqt badge-nqt-warning">Sắp hết giờ</span></td>
+                                <td>
+                                    <button class="btn-nqt btn-nqt-outline" style="padding: 6px 12px; font-size: 0.8rem;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="demo-section">
+            <h2><i class="fas fa-chart-line"></i> Charts (Auto Theme)</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="nqt-card">
+                        <div class="nqt-card-header">
+                            <h5 class="nqt-card-title">
+                                <i class="fas fa-chart-line"></i>
+                                Doanh thu theo tháng
+                            </h5>
+                        </div>
+                        <div class="nqt-card-body">
+                            <div class="chart-container">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="nqt-card">
+                        <div class="nqt-card-header">
+                            <h5 class="nqt-card-title">
+                                <i class="fas fa-chart-bar"></i>
+                                Xe vào/ra theo giờ
+                            </h5>
+                        </div>
+                        <div class="nqt-card-body">
+                            <div class="chart-container">
+                                <canvas id="trafficChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bars -->
+        <div class="demo-section">
+            <h2><i class="fas fa-tasks"></i> Progress Bars</h2>
+            <div class="nqt-card">
+                <div class="nqt-card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Chỗ đỗ đã sử dụng</span>
+                            <span><strong>78%</strong></span>
+                        </div>
+                        <div class="progress-nqt">
+                            <div class="progress-nqt-fill primary" style="width: 78%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Doanh thu mục tiêu</span>
+                            <span><strong>92%</strong></span>
+                        </div>
+                        <div class="progress-nqt">
+                            <div class="progress-nqt-fill success" style="width: 92%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Cảnh báo quá tải</span>
+                            <span><strong>45%</strong></span>
+                        </div>
+                        <div class="progress-nqt">
+                            <div class="progress-nqt-fill danger" style="width: 45%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/static/js/chart-theme.js"></script>
+    <script src="/static/js/smooth-ux.js"></script>
+
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            const newTheme = isDark ? 'light' : 'dark';
+            
+            if (newTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('themeIcon').className = 'fas fa-sun';
+                document.getElementById('themeText').textContent = 'Light Mode';
+            } else {
+                document.body.removeAttribute('data-theme');
+                document.getElementById('themeIcon').className = 'fas fa-moon';
+                document.getElementById('themeText').textContent = 'Dark Mode';
+            }
+            
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Load saved theme
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('themeIcon').className = 'fas fa-sun';
+                document.getElementById('themeText').textContent = 'Light Mode';
+            }
+        })();
+
+        // Initialize Charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Revenue Chart (Line with gradient)
+            const revenueChart = createThemedChart('revenueChart', {
+                type: 'line',
+                data: {
+                    labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6'],
+                    datasets: [{
+                        label: 'Doanh thu (triệu VNĐ)',
+                        data: [12, 19, 15, 25, 22, 30],
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+
+            // Traffic Chart (Bar)
+            const trafficChart = createThemedChart('trafficChart', {
+                type: 'bar',
+                data: {
+                    labels: ['6h', '9h', '12h', '15h', '18h', '21h'],
+                    datasets: [
+                        {
+                            label: 'Xe vào',
+                            data: [45, 89, 67, 78, 92, 56]
+                        },
+                        {
+                            label: 'Xe ra',
+                            data: [32, 76, 54, 65, 87, 43]
+                        }
+                    ]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+
+            console.log('✅ Demo charts initialized');
+        });
+    </script>
+</body>
+</html>

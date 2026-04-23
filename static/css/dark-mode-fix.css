@@ -1,0 +1,482 @@
+/* ============================================
+   DARK MODE FIX - PIXEL PERFECT
+   Tối ưu hóa Dark Theme cho hệ thống quản lý bãi đỗ xe
+   ============================================ */
+
+/* ── 1. CSS VARIABLES - DARK MODE COLOR PALETTE ── */
+:root {
+    /* Light Mode Colors (Default) */
+    --bg-body: #f5f7ff;
+    --bg-card: #ffffff;
+    --bg-input: #ffffff;
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+[data-theme="dark"] {
+    /* Dark Mode - Elevation System (Material Design) */
+    --bg-body: #121212;
+    --bg-card: #1E1E1E;
+    --bg-card-elevated: #2A2A2A;
+    --bg-input: rgba(255,255,255,0.05);
+    --bg-input-focus: rgba(255,255,255,0.08);
+    
+    /* Typography Colors */
+    --text-primary: #F8F9FA;
+    --text-secondary: #B3B3B3;
+    --text-muted: #808080;
+    --text-disabled: #5A5A5A;
+    
+    /* Border & Divider Colors */
+    --border-color: rgba(255,255,255,0.08);
+    --border-color-hover: rgba(255,255,255,0.15);
+    --border-color-focus: rgba(102,126,234,0.5);
+    
+    /* Shadows - Subtle elevation in dark mode */
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
+    
+    /* Chart Colors */
+    --chart-grid-color: rgba(255,255,255,0.05);
+    --chart-text-color: #A0A0A0;
+    --chart-tooltip-bg: #2A2A2A;
+    --chart-tooltip-text: #F8F9FA;
+}
+
+/* ── 2. FORM ELEMENTS - COMPLETE OVERHAUL ── */
+
+/* All Input Types */
+[data-theme="dark"] input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]),
+[data-theme="dark"] select,
+[data-theme="dark"] textarea,
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+    transition: all 0.3s ease;
+}
+
+/* Focus State */
+[data-theme="dark"] input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+    background: var(--bg-input-focus) !important;
+    border-color: var(--border-color-focus) !important;
+    box-shadow: 0 0 0 4px rgba(102,126,234,0.15) !important;
+    outline: none !important;
+}
+
+/* Hover State */
+[data-theme="dark"] input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):hover,
+[data-theme="dark"] select:hover,
+[data-theme="dark"] textarea:hover,
+[data-theme="dark"] .form-control:hover,
+[data-theme="dark"] .form-select:hover {
+    border-color: var(--border-color-hover) !important;
+}
+
+/* Disabled State */
+[data-theme="dark"] input:disabled,
+[data-theme="dark"] select:disabled,
+[data-theme="dark"] textarea:disabled,
+[data-theme="dark"] .form-control:disabled,
+[data-theme="dark"] .form-select:disabled {
+    background: rgba(255,255,255,0.02) !important;
+    color: var(--text-disabled) !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Placeholder Text */
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+    color: var(--text-muted) !important;
+    opacity: 0.7;
+}
+
+/* Autofill Override */
+[data-theme="dark"] input:-webkit-autofill,
+[data-theme="dark"] input:-webkit-autofill:hover,
+[data-theme="dark"] input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #2A2A2A inset !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* ── 3. TYPOGRAPHY - REFINED CONTRAST ── */
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] span:not(.badge):not(.badge-custom):not(.stat-value),
+[data-theme="dark"] div:not(.stat-value):not([class*="gradient"]) {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] label,
+[data-theme="dark"] .form-label,
+[data-theme="dark"] .stat-label,
+[data-theme="dark"] .metric-label {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .text-muted,
+[data-theme="dark"] small,
+[data-theme="dark"] .stat-subtext {
+    color: var(--text-muted) !important;
+}
+
+/* Icons */
+[data-theme="dark"] i.fas,
+[data-theme="dark"] i.far,
+[data-theme="dark"] i.fab {
+    color: inherit;
+}
+
+/* ── 4. CARDS - ELEVATION SYSTEM ── */
+
+[data-theme="dark"] .card,
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .glass-card,
+[data-theme="dark"] .chart-card,
+[data-theme="dark"] .vehicle-type-card,
+[data-theme="dark"] .time-slot-card,
+[data-theme="dark"] .overnight-card,
+[data-theme="dark"] .price-table-card,
+[data-theme="dark"] .vehicle-list-card {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: none !important;
+}
+
+/* Card Hover State */
+[data-theme="dark"] .card:hover,
+[data-theme="dark"] .stat-card:hover,
+[data-theme="dark"] .glass-card:hover,
+[data-theme="dark"] .chart-card:hover,
+[data-theme="dark"] .vehicle-type-card:hover,
+[data-theme="dark"] .time-slot-card:hover {
+    border-color: var(--border-color-hover) !important;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.1) !important;
+}
+
+/* Elevated Cards */
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .dropdown-menu {
+    background: var(--bg-card-elevated) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* ── 5. TABLES - MODERN DARK STYLE ── */
+
+[data-theme="dark"] .table {
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .table thead th {
+    background: rgba(255,255,255,0.03) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .table tbody td {
+    color: var(--text-secondary) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .table tbody tr {
+    background: transparent;
+}
+
+[data-theme="dark"] .table tbody tr:hover {
+    background: rgba(255,255,255,0.03) !important;
+}
+
+[data-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+    background: rgba(255,255,255,0.02);
+}
+
+/* ── 6. SPECIAL COMPONENTS ── */
+
+/* Vehicle Items */
+[data-theme="dark"] .vehicle-item {
+    background: rgba(255,255,255,0.03) !important;
+    border-left-color: transparent !important;
+}
+
+[data-theme="dark"] .vehicle-item:hover {
+    background: rgba(255,255,255,0.05) !important;
+    border-left-color: #667eea !important;
+}
+
+/* Revenue Details */
+[data-theme="dark"] .revenue-detail {
+    background: rgba(255,255,255,0.03) !important;
+}
+
+[data-theme="dark"] .revenue-detail:hover {
+    background: rgba(255,255,255,0.05) !important;
+}
+
+/* Progress Bars */
+[data-theme="dark"] .progress-bar-custom {
+    background: rgba(255,255,255,0.08) !important;
+}
+
+/* Overnight Card Special Styling */
+[data-theme="dark"] .overnight-card {
+    background: rgba(251,191,36,0.08) !important;
+    border-color: rgba(251,191,36,0.3) !important;
+}
+
+[data-theme="dark"] .overnight-title {
+    color: #fbbf24 !important;
+}
+
+/* ── 7. NAVIGATION & SIDEBAR ── */
+
+[data-theme="dark"] .sidebar {
+    background: linear-gradient(180deg, #1e1b4b 0%, #312e81 60%, #1e1b4b 100%) !important;
+}
+
+[data-theme="dark"] .nav-link:not(.active) {
+    color: rgba(255,255,255,0.78) !important;
+}
+
+[data-theme="dark"] .nav-link:hover {
+    color: #fff !important;
+}
+
+/* ── 8. ALERTS & NOTIFICATIONS ── */
+
+[data-theme="dark"] .alert {
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .alert-success {
+    background: rgba(17,153,142,0.15) !important;
+    color: #6ee7b7 !important;
+    border-color: rgba(17,153,142,0.3) !important;
+}
+
+[data-theme="dark"] .alert-danger {
+    background: rgba(239,68,68,0.15) !important;
+    color: #fca5a5 !important;
+    border-color: rgba(239,68,68,0.3) !important;
+}
+
+[data-theme="dark"] .alert-warning {
+    background: rgba(251,191,36,0.15) !important;
+    color: #fcd34d !important;
+    border-color: rgba(251,191,36,0.3) !important;
+}
+
+[data-theme="dark"] .alert-info {
+    background: rgba(79,172,254,0.15) !important;
+    color: #7dd3fc !important;
+    border-color: rgba(79,172,254,0.3) !important;
+}
+
+/* ── 9. BUTTONS - MAINTAIN GRADIENTS ── */
+
+/* Primary buttons keep their gradient */
+[data-theme="dark"] .btn-primary,
+[data-theme="dark"] .btn-modern.success {
+    /* Keep original gradient - no changes needed */
+}
+
+/* Secondary/Outline buttons */
+[data-theme="dark"] .btn-outline-primary {
+    color: #a5b4fc !important;
+    border-color: rgba(102,126,234,0.5) !important;
+}
+
+[data-theme="dark"] .btn-outline-primary:hover {
+    background: rgba(102,126,234,0.15) !important;
+    border-color: rgba(102,126,234,0.8) !important;
+}
+
+/* ── 10. PAGINATION ── */
+
+[data-theme="dark"] .pagination .page-link {
+    background: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .pagination .page-link:hover {
+    background: rgba(102,126,234,0.15) !important;
+    border-color: var(--border-color-hover) !important;
+}
+
+[data-theme="dark"] .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border-color: transparent !important;
+    color: white !important;
+}
+
+/* ── 11. TABS ── */
+
+[data-theme="dark"] .tab-container {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+[data-theme="dark"] .tab-navigation {
+    background: rgba(255,255,255,0.03) !important;
+}
+
+[data-theme="dark"] .tab-button:not(.active) {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .tab-button:hover:not(.active) {
+    background: rgba(255,255,255,0.05) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ── 12. MODALS ── */
+
+[data-theme="dark"] .modal-overlay {
+    background: rgba(0,0,0,0.7) !important;
+}
+
+[data-theme="dark"] .modal-header {
+    background: var(--bg-card-elevated) !important;
+    border-bottom-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .modal-close-btn {
+    background: rgba(255,255,255,0.05) !important;
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .modal-close-btn:hover {
+    background: rgba(239,68,68,0.2) !important;
+    color: #fca5a5 !important;
+}
+
+/* ── 13. CHATBOT ── */
+
+[data-theme="dark"] .chatbot-messages {
+    background: var(--bg-card) !important;
+}
+
+[data-theme="dark"] .chat-message.bot .message-content {
+    background: rgba(255,255,255,0.05) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .chatbot-input-area,
+[data-theme="dark"] .chatbot-input-area input {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .chatbot-window {
+    background: var(--bg-card-elevated) !important;
+}
+
+/* ── 14. SEARCH & FILTERS ── */
+
+[data-theme="dark"] .search-input {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .search-input:focus {
+    background: var(--bg-input-focus) !important;
+    border-color: var(--border-color-focus) !important;
+}
+
+/* ── 15. EMPTY STATES ── */
+
+[data-theme="dark"] .empty-state {
+    color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] .empty-state i {
+    opacity: 0.2;
+}
+
+/* ── 16. DIVIDERS ── */
+
+[data-theme="dark"] .nav-divider,
+[data-theme="dark"] hr {
+    border-color: var(--border-color) !important;
+}
+
+/* ── 17. SECTION HEADERS ── */
+
+[data-theme="dark"] .section-header {
+    border-bottom-color: var(--border-color) !important;
+}
+
+/* ── 18. PRICE TABLE ── */
+
+[data-theme="dark"] .price-table thead {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+}
+
+[data-theme="dark"] .price-table tbody tr {
+    border-bottom-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .price-table tbody tr:hover {
+    background: rgba(255,255,255,0.03) !important;
+}
+
+/* ── 19. SCROLLBAR STYLING (OPTIONAL) ── */
+
+[data-theme="dark"] ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: var(--bg-card);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 5px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* ── 20. SMOOTH TRANSITIONS ── */
+
+[data-theme="dark"] * {
+    transition: background-color 0.3s ease, 
+                border-color 0.3s ease, 
+                color 0.3s ease;
+}
+
+/* Exclude elements that should not transition */
+[data-theme="dark"] .stat-value,
+[data-theme="dark"] [class*="gradient"],
+[data-theme="dark"] .progress-fill {
+    transition: none;
+}

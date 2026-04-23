@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Giai Đoạn 3 - Smooth UX</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/smooth-ux.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(120deg, #f5f7ff 0%, #eef0f8 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .demo-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        .demo-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .demo-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .demo-btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .demo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        .demo-btn.secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .demo-btn.secondary:hover {
+            background: #e2e8f0;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .feature-list li i {
+            color: #11998e;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-section">
+            <h1 style="color: #1e293b; margin-bottom: 10px;">
+                <i class="fas fa-rocket"></i> Demo Giai Đoạn 3: Smooth UX
+            </h1>
+            <p style="color: #64748b; font-size: 1.1rem;">
+                Tối ưu trải nghiệm người dùng với các tính năng mới
+            </p>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div class="demo-section">
+            <h2><i class="fas fa-bell"></i> 1. Toast Notifications</h2>
+            <p style="color: #64748b; margin-bottom: 20px;">
+                Thông báo đẹp mắt, không làm gián đoạn trải nghiệm người dùng
+            </p>
+            <div class="demo-buttons">
+                <button class="demo-btn" onclick="toast.success('Thao tác thành công!')">
+                    <i class="fas fa-check"></i> Success Toast
+                </button>
+                <button class="demo-btn" onclick="toast.error('Có lỗi xảy ra!')">
+                    <i class="fas fa-times"></i> Error Toast
+                </button>
+                <button class="demo-btn" onclick="toast.warning('Cảnh báo: Vui lòng kiểm tra lại!')">
+                    <i class="fas fa-exclamation-triangle"></i> Warning Toast
+                </button>
+                <button class="demo-btn" onclick="toast.info('Thông tin: Hệ thống đang cập nhật')">
+                    <i class="fas fa-info-circle"></i> Info Toast
+                </button>
+            </div>
+            <p style="margin-top: 15px; color: #64748b; font-size: 0.9rem;">
+                <strong>Cách sử dụng:</strong> <code>toast.success('message')</code>, 
+                <code>toast.error('message')</code>, 
+                <code>toast.warning('message')</code>, 
+                <code>toast.info('message')</code>
+            </p>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="demo-section">
+            <h2><i class="fas fa-spinner"></i> 2. Loading Overlay</h2>
+            <p style="color: #64748b; margin-bottom: 20px;">
+                Hiển thị trạng thái loading khi xử lý dữ liệu
+            </p>
+            <div class="demo-buttons">
+                <button class="demo-btn" onclick="demoLoading()">
+                    <i class="fas fa-play"></i> Show Loading (3s)
+                </button>
+                <button class="demo-btn secondary" onclick="loading.show('Đang tải dữ liệu...')">
+                    <i class="fas fa-eye"></i> Show Loading
+                </button>
+                <button class="demo-btn secondary" onclick="loading.hide()">
+                    <i class="fas fa-eye-slash"></i> Hide Loading
+                </button>
+            </div>
+            <p style="margin-top: 15px; color: #64748b; font-size: 0.9rem;">
+                <strong>Cách sử dụng:</strong> <code>loading.show('text')</code>, 
+                <code>loading.hide()</code>
+            </p>
+        </div>
+
+        <!-- Confirm Dialog -->
+        <div class="demo-section">
+            <h2><i class="fas fa-question-circle"></i> 3. Confirm Dialog</h2>
+            <p style="color: #64748b; margin-bottom: 20px;">
+                Hộp thoại xác nhận đẹp mắt thay thế cho confirm() mặc định
+            </p>
+            <div class="demo-buttons">
+                <button class="demo-btn" onclick="demoConfirm()">
+                    <i class="fas fa-trash"></i> Demo Xóa Dữ Liệu
+                </button>
+                <button class="demo-btn" onclick="demoConfirmSave()">
+                    <i class="fas fa-save"></i> Demo Lưu Thay Đổi
+                </button>
+            </div>
+            <p style="margin-top: 15px; color: #64748b; font-size: 0.9rem;">
+                <strong>Cách sử dụng:</strong> <code>confirmAction('message', onConfirm, onCancel)</code>
+            </p>
+        </div>
+
+        <!-- Fetch with Loading -->
+        <div class="demo-section">
+            <h2><i class="fas fa-cloud-download-alt"></i> 4. Fetch with Loading</h2>
+            <p style="color: #64748b; margin-bottom: 20px;">
+                Tự động hiển thị loading khi gọi API
+            </p>
+            <div class="demo-buttons">
+                <button class="demo-btn" onclick="demoFetch()">
+                    <i class="fas fa-download"></i> Demo Fetch API
+                </button>
+            </div>
+            <p style="margin-top: 15px; color: #64748b; font-size: 0.9rem;">
+                <strong>Cách sử dụng:</strong> <code>fetchWithLoading(url, options, loadingText)</code>
+            </p>
+        </div>
+
+        <!-- Auto-save Indicator -->
+        <div class="demo-section">
+            <h2><i class="fas fa-save"></i> 5. Auto-save Indicator</h2>
+            <p style="color: #64748b; margin-bottom: 20px;">
+                Hiển thị trạng thái lưu tự động
+            </p>
+            <div class="demo-buttons">
+                <button class="demo-btn" onclick="autoSave.saving()">
+                    <i class="fas fa-spinner"></i> Đang lưu...
+                </button>
+                <button class="demo-btn" onclick="autoSave.saved()">
+                    <i class="fas fa-check"></i> Đã lưu
+                </button>
+                <button class="demo-btn" onclick="autoSave.error()">
+                    <i class="fas fa-times"></i> Lỗi lưu
+                </button>
+            </div>
+            <p style="margin-top: 15px; color: #64748b; font-size: 0.9rem;">
+                <strong>Cách sử dụng:</strong> <code>autoSave.saving()</code>, 
+                <code>autoSave.saved()</code>, 
+                <code>autoSave.error()</code>
+            </p>
+        </div>
+
+        <!-- Features List -->
+        <div class="demo-section">
+            <h2><i class="fas fa-list-check"></i> Tất cả tính năng Giai Đoạn 3</h2>
+            <ul class="feature-list">
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Toast Notifications:</strong> Thông báo đẹp mắt với 4 loại (success, error, warning, info)</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Loading Overlay:</strong> Hiển thị trạng thái loading toàn màn hình</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Confirm Dialog:</strong> Hộp thoại xác nhận đẹp thay thế confirm()</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Fetch with Loading:</strong> Tự động hiển thị loading khi gọi API</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Auto-save Indicator:</strong> Hiển thị trạng thái lưu tự động</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Form Validation:</strong> Validate form với animation shake</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Smooth Scroll:</strong> Cuộn mượt mà đến phần tử</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Debounce Utility:</strong> Tối ưu performance cho search/filter</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Table Enhancements:</strong> Sắp xếp, hover effects cho bảng</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Dark Mode Support:</strong> Hỗ trợ đầy đủ Dark Mode</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Responsive Design:</strong> Tối ưu cho mobile</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Accessibility:</strong> Hỗ trợ keyboard navigation và screen readers</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Integration Guide -->
+        <div class="demo-section">
+            <h2><i class="fas fa-code"></i> Hướng dẫn tích hợp</h2>
+            <p style="color: #64748b; margin-bottom: 15px;">
+                Để sử dụng các tính năng này trong trang của bạn:
+            </p>
+            <ol style="color: #475569; line-height: 2;">
+                <li>Thêm CSS: <code>&lt;link rel="stylesheet" href="/static/css/smooth-ux.css"&gt;</code></li>
+                <li>Thêm JS: <code>&lt;script src="/static/js/smooth-ux.js"&gt;&lt;/script&gt;</code></li>
+                <li>Sử dụng các function global: <code>toast</code>, <code>loading</code>, <code>confirmAction</code>, etc.</li>
+            </ol>
+        </div>
+    </div>
+
+    <script src="static/js/smooth-ux.js"></script>
+    <script>
+        function demoLoading() {
+            loading.show('Đang xử lý dữ liệu...');
+            setTimeout(() => {
+                loading.hide();
+                toast.success('Hoàn thành!');
+            }, 3000);
+        }
+
+        function demoConfirm() {
+            confirmAction(
+                'Bạn có chắc chắn muốn xóa dữ liệu này không? Hành động này không thể hoàn tác!',
+                () => {
+                    loading.show('Đang xóa...');
+                    setTimeout(() => {
+                        loading.hide();
+                        toast.success('Đã xóa thành công!');
+                    }, 1500);
+                },
+                () => {
+                    toast.info('Đã hủy thao tác xóa');
+                }
+            );
+        }
+
+        function demoConfirmSave() {
+            confirmAction(
+                'Bạn có muốn lưu các thay đổi không?',
+                () => {
+                    autoSave.saving();
+                    setTimeout(() => {
+                        autoSave.saved();
+                        toast.success('Đã lưu thành công!');
+                    }, 2000);
+                },
+                () => {
+                    toast.warning('Các thay đổi chưa được lưu');
+                }
+            );
+        }
+
+        async function demoFetch() {
+            const result = await fetchWithLoading(
+                'https://jsonplaceholder.typicode.com/posts/1',
+                {},
+                'Đang tải dữ liệu từ API...'
+            );
+            
+            if (result.success) {
+                toast.success('Tải dữ liệu thành công!');
+                console.log('Data:', result.data);
+            } else {
+                toast.error('Lỗi tải dữ liệu!');
+            }
+        }
+    </script>
+</body>
+</html>

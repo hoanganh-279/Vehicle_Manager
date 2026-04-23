@@ -1,0 +1,173 @@
+═══════════════════════════════════════════════════════════════════════════
+                    HƯỚNG DẪN TEST NHANH HỆ THỐNG THANH TOÁN
+═══════════════════════════════════════════════════════════════════════════
+
+✅ ĐÃ FIX XONG! BÂY GIỜ HÃY TEST
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 1: KHỞI ĐỘNG LẠI SERVER                                            │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. Dừng Flask server hiện tại (Ctrl+C)
+2. Chạy lại: python app.py
+3. Đợi thấy: "Running on http://127.0.0.1:5000"
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 2: TEST THANH TOÁN BÌNH THƯỜNG                                     │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. Vào: http://localhost:5000/parking/exit
+2. Tìm một xe đang đỗ (quét QR hoặc nhập biển số)
+3. Chọn "Tiền mặt"
+4. Nhấn "Xác nhận thanh toán"
+
+✅ KẾT QUẢ MONG ĐỢI:
+   - Thấy loading spinner: "🔄 Đang xử lý thanh toán..."
+   - Thấy thông báo: "✅ Thanh toán thành công!"
+   - Tự động chuyển sang màn hình kết quả
+   - Console log: "✅ Payment system initialized (Production version)"
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 3: TEST DOUBLE SUBMIT (Quan trọng!)                                │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. Tìm một xe khác
+2. Chọn "Tiền mặt"
+3. BẤM NÚT "XÁC NHẬN THANH TOÁN" 10 LẦN LIÊN TỤC (nhanh nhất có thể)
+
+✅ KẾT QUẢ MONG ĐỢI:
+   - Chỉ 1 request được xử lý
+   - Các lần click sau thấy: "⚠️ Đang xử lý, vui lòng đợi..."
+   - Console log: "⚠️ Đang xử lý thanh toán, vui lòng đợi..."
+   - Kiểm tra database: Xe chỉ bị tính phí 1 lần
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 4: TEST PRICE TAMPERING (Bảo mật!)                                 │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. Mở DevTools (F12)
+2. Vào tab Console
+3. Tìm một xe, chọn "Tiền mặt"
+4. TRƯỚC KHI BẤM "XÁC NHẬN", paste code này vào Console:
+
+// Intercept fetch để sửa giá
+const originalFetch = window.fetch;
+window.fetch = function(...args) {
+    if (args[0] === '/parking/exit') {
+        const body = JSON.parse(args[1].body);
+        console.log('📤 Original payload:', body);
+        // Thử sửa giá (sẽ bị Backend ignore)
+        body.parking_fee = 1000;
+        console.log('🔴 Tampered payload:', body);
+        args[1].body = JSON.stringify(body);
+    }
+    return originalFetch.apply(this, args);
+};
+
+5. Bấm "Xác nhận thanh toán"
+
+✅ KẾT QUẢ MONG ĐỢI:
+   - Backend KHÔNG tin giá 1000 từ Frontend
+   - Backend tự tính lại giá đúng
+   - Console log: "💰 Tính phí xe #X: Yh x Z = [giá đúng]"
+   - Xe bị tính phí đúng (không phải 1000)
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 5: TEST RACE CONDITION                                             │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. Mở 2 browser tabs (hoặc 2 browsers khác nhau)
+2. Cả 2 tabs đều vào: http://localhost:5000/parking/exit
+3. Cả 2 tabs đều tìm CÙNG 1 XE (ví dụ xe #123)
+4. Cả 2 tabs đều chọn "Tiền mặt"
+5. BẤM "XÁC NHẬN THANH TOÁN" Ở CẢ 2 TABS CÙNG LÚC
+
+✅ KẾT QUẢ MONG ĐỢI:
+   - Tab 1: Thanh toán thành công
+   - Tab 2: Báo lỗi "Không tìm thấy xe hoặc xe đã ra bãi"
+   - Kiểm tra database: Xe chỉ bị tính phí 1 lần
+   - Console log: "🔒 Locking vehicle #123..."
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 6: TEST TRANSACTION ROLLBACK                                       │
+└─────────────────────────────────────────────────────────────────────────┘
+
+1. Tìm một xe
+2. Chọn "Thẻ thành viên"
+3. Nhập mã thẻ KHÔNG TỒN TẠI: "FAKE_CARD_999"
+4. Bấm "Xác nhận thanh toán"
+
+✅ KẾT QUẢ MONG ĐỢI:
+   - Báo lỗi: "Không tìm thấy thẻ"
+   - Kiểm tra database: Xe vẫn ở trạng thái 'parked'
+   - Không có dữ liệu bị lệch pha
+   - Console log: "❌ Transaction rolled back: ..."
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 7: KIỂM TRA DATABASE                                               │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Mở SQL Server Management Studio, chạy:
+
+-- Xem xe vừa thanh toán
+SELECT TOP 10
+    id,
+    license_plate AS 'Biển số',
+    actual_fee AS 'Phí',
+    payment_method AS 'Phương thức',
+    payment_status AS 'Trạng thái',
+    exit_time AS 'Giờ ra'
+FROM vehicles
+WHERE status = 'exited'
+  AND payment_method IS NOT NULL
+ORDER BY exit_time DESC;
+
+✅ KẾT QUẢ MONG ĐỢI:
+   - Thấy xe vừa thanh toán
+   - payment_method = 'cash' (hoặc phương thức đã chọn)
+   - payment_status = 'paid'
+   - actual_fee = [giá đúng]
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 8: KIỂM TRA CONSOLE LOG                                            │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Xem terminal Flask server, tìm:
+
+✅ Log thành công:
+   "✅ Xe #123 đã ra bãi - Phí: 15,000 đ - Phương thức: cash"
+   "💰 Tính phí xe #123: 2h x 5000 = 10000"
+   "🔒 Locking vehicle #123..."
+
+❌ Log lỗi (nếu có):
+   "❌ Lỗi xử lý thanh toán xe #123: ..."
+   "❌ Transaction rolled back: ..."
+
+═══════════════════════════════════════════════════════════════════════════
+
+📊 CHECKLIST CUỐI CÙNG
+
+[ ] ✅ Thanh toán bình thường: PASS
+[ ] ✅ Double submit: PASS (chỉ 1 request được xử lý)
+[ ] ✅ Price tampering: PASS (Backend tính lại giá)
+[ ] ✅ Race condition: PASS (chỉ 1 tab thành công)
+[ ] ✅ Transaction rollback: PASS (rollback khi lỗi)
+[ ] ✅ Database đúng: PASS (dữ liệu chính xác)
+[ ] ✅ Console log: PASS (log chi tiết)
+
+═══════════════════════════════════════════════════════════════════════════
+
+🎉 NẾU TẤT CẢ TESTS ĐỀU PASS
+
+→ HỆ THỐNG SẴN SÀNG ĐƯA VÀO PRODUCTION! ✅
+
+═══════════════════════════════════════════════════════════════════════════
+
+🐛 NẾU CÓ LỖI
+
+1. Xem log trong terminal Flask
+2. Xem Console trong browser (F12)
+3. Kiểm tra database
+4. Đọc file: QA_AUDIT_REPORT_PAYMENT_SYSTEM.md
+
+═══════════════════════════════════════════════════════════════════════════

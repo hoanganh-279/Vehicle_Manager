@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,27 +13,32 @@
             padding: 20px;
             text-align: center;
         }
+
         a {
             color: #007bff;
             text-decoration: none;
         }
+
         a:hover {
             text-decoration: underline;
         }
+
         .back-link {
             margin-top: 20px;
             display: inline-block;
         }
     </style>
 </head>
+
 <body>
     <h1>Payment Result</h1>
     {% if pay_url %}
-        <p>Please complete your payment by visiting:</p>
-        <p><a href="{{ pay_url }}" target="_blank">{{ pay_url }}</a></p>
+    <p>Please complete your payment by visiting:</p>
+    <p><a href="{{ pay_url }}" target="_blank">{{ pay_url }}</a></p>
     {% else %}
-        <p>{{ message | default('No payment URL generated') }}</p>
+    <p>{{ message | default('No payment URL generated') }}</p>
     {% endif %}
     <a href="{{ url_for('index') }}" class="back-link">Back to Payment Form</a>
 </body>
+
 </html>

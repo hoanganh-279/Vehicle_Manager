@@ -1,0 +1,134 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                  CHECKLIST GIAI ĐOẠN 1 - IN RA VÀ ĐÁNH DẤU          ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+📅 Ngày: __________
+👤 Người test: __________
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 CHUẨN BỊ
+
+[ ] Python đã cài đặt
+[ ] SQL Server đang chạy
+[ ] Database ParkingManagement đã tạo
+[ ] Đã chạy: pip install -r requirements.txt
+[ ] File .env đã cấu hình đúng
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TEST 1: NÚT "XEM" TOP 5 THẺ
+
+[ ] Chạy: python app.py
+[ ] Mở: http://localhost:5000/admin/login
+[ ] Đăng nhập: admin@nqt.com / admin123
+[ ] Vào: http://localhost:5000/admin/cards
+[ ] Nhấn nút "Xem" ở Top 5 thẻ
+[ ] ✅ Kết quả: Chuyển đến trang chi tiết (không lỗi 404)
+
+Ghi chú: _______________________________________________________
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TEST 2: TRANG /PARKING
+
+[ ] Mở: http://localhost:5000/parking
+[ ] ✅ Trang hiển thị đầy đủ (không trắng)
+[ ] ✅ Header "NQT Parking — Xe Vào Bãi" hiển thị
+[ ] ✅ Phần camera hiển thị
+[ ] ✅ Form nhập liệu hiển thị
+[ ] ✅ Thống kê chỗ trống hiển thị
+
+Nếu vẫn trắng:
+[ ] Xem log trong terminal
+[ ] Mở F12 → Console xem lỗi
+[ ] Clear cache (Ctrl+Shift+Delete)
+[ ] Reload (Ctrl+F5)
+
+Ghi chú: _______________________________________________________
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TEST 3: FONT CHỮ TIẾNG VIỆT
+
+[ ] Vào: http://localhost:5000/admin/cards
+[ ] Kiểm tra cột "Tên Chủ Thẻ"
+[ ] ✅ Tên hiển thị đúng (VD: Nguyễn Văn A)
+[ ] ❌ KHÔNG hiển thị: Nguyá»...n VÄƒn A
+
+[ ] Vào: http://localhost:5000/admin/vehicles
+[ ] Kiểm tra cột "Loại xe", "Màu biển"
+[ ] ✅ Hiển thị đúng: Xe máy, Trắng, Vàng
+
+Nếu vẫn bị lỗi:
+[ ] Chạy: python fix_encoding_complete.py
+[ ] Mở SQL Server Management Studio
+[ ] Chạy file: fix_database_encoding.sql
+[ ] Uncomment các lệnh ALTER TABLE
+[ ] Chạy lệnh
+[ ] Kiểm tra lại
+
+Ghi chú: _______________________________________________________
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TEST 4: DARK MODE
+
+[ ] Vào bất kỳ trang Admin nào
+[ ] Click icon mặt trăng (góc trên trái)
+[ ] ✅ Sidebar chuyển sang màu tối
+[ ] ⚠️  Content vẫn trắng (sẽ sửa Giai đoạn 2)
+[ ] Click icon mặt trời
+[ ] ✅ Sidebar chuyển về màu gradient tím
+
+Ghi chú: _______________________________________________________
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 TỔNG KẾT
+
+Số test PASS: _____ / 4
+Số test FAIL: _____ / 4
+
+[ ] ✅ GIAI ĐOẠN 1 HOÀN THÀNH - Chuyển sang Giai đoạn 2
+[ ] ❌ CẦN SỬA THÊM - Xem phần ghi chú
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 GHI CHÚ VÀ VẤN ĐỀ GẶP PHẢI
+
+_________________________________________________________________
+
+_________________________________________________________________
+
+_________________________________________________________________
+
+_________________________________________________________________
+
+_________________________________________________________________
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📸 SCREENSHOT ĐÃ CHỤP
+
+[ ] Trang /parking
+[ ] Trang admin/cards
+[ ] Trang admin/vehicles
+[ ] Log lỗi (nếu có)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 BƯỚC TIẾP THEO
+
+Nếu tất cả test PASS:
+→ Báo cáo: "Đã test xong Giai đoạn 1, đi tiếp"
+→ Chuyển sang: GIAI ĐOẠN 2 - Đồng bộ Giao diện & Dark Mode
+
+Nếu có test FAIL:
+→ Xem lại phần ghi chú
+→ Đọc file: HUONG_DAN_TEST.md
+→ Hoặc báo cáo lỗi để được hỗ trợ
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chúc bạn test thành công! 🚀

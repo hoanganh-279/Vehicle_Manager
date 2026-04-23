@@ -1,0 +1,169 @@
+═══════════════════════════════════════════════════════════════════════════
+                    CHECKLIST: SỬA LỖI THANH TOÁN XE RA BÃI
+═══════════════════════════════════════════════════════════════════════════
+
+📋 DANH SÁCH CÔNG VIỆC CẦN LÀM
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 1: CẬP NHẬT DATABASE (BẮT BUỘC)                                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+[ ] 1.1. Mở SQL Server Management Studio (SSMS)
+[ ] 1.2. Kết nối đến: LAPTOP-3J6T1I18\SQLEXPRESS01
+[ ] 1.3. Chọn database: ParkingManagement
+[ ] 1.4. File → Open → File → Chọn: add_payment_method_column.sql
+[ ] 1.5. Nhấn F5 để chạy script
+[ ] 1.6. Kiểm tra kết quả:
+        ✅ Đã thêm cột payment_method vào bảng vehicles
+        ✅ Đã thêm constraint CK_vehicles_payment_method
+        ✅ Đã tạo index IX_vehicles_payment_method
+        ✅ Đã cập nhật X xe đã thanh toán trước đó
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 2: TEST DATABASE (TÙY CHỌN)                                        │
+└─────────────────────────────────────────────────────────────────────────┘
+
+[ ] 2.1. Mở terminal/command prompt
+[ ] 2.2. Chạy: python test_payment_method_column.py
+[ ] 2.3. Kiểm tra kết quả:
+        ✅ Kết nối thành công
+        ✅ Cột payment_method TỒN TẠI!
+        ✅ Constraint TỒN TẠI!
+        ✅ Index TỒN TẠI!
+        ✅ INSERT thành công!
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 3: KHỞI ĐỘNG LẠI FLASK SERVER                                      │
+└─────────────────────────────────────────────────────────────────────────┘
+
+[ ] 3.1. Dừng Flask server hiện tại (Ctrl+C trong terminal)
+[ ] 3.2. Chạy lại: python app.py
+[ ] 3.3. Kiểm tra server đã khởi động:
+        ✅ Thấy: "Running on http://127.0.0.1:5000"
+        ✅ Thấy: "Running on http://192.168.2.3:5000"
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 4: TEST CHỨC NĂNG THANH TOÁN                                       │
+└─────────────────────────────────────────────────────────────────────────┘
+
+[ ] 4.1. Mở trình duyệt: http://localhost:5000/parking/exit
+[ ] 4.2. Test Case 1: Thanh toán tiền mặt
+        [ ] Tìm xe (quét QR hoặc nhập biển số)
+        [ ] Chọn "Tiền mặt"
+        [ ] Nhấn "Xác nhận thanh toán"
+        [ ] ✅ Thấy loading spinner: "🔄 Đang xử lý thanh toán..."
+        [ ] ✅ Thấy thông báo: "✅ Thanh toán thành công!"
+        [ ] ✅ Tự động chuyển sang màn hình kết quả
+        [ ] ✅ KHÔNG thấy lỗi SQL
+
+[ ] 4.3. Test Case 2: Thanh toán thẻ thành viên
+        [ ] Tìm xe có card_id
+        [ ] Chọn "Thẻ thành viên"
+        [ ] Nhập mã thẻ → Nhấn ✓
+        [ ] ✅ Hiển thị số dư thẻ
+        [ ] Nhấn "Xác nhận thanh toán"
+        [ ] ✅ Trừ tiền từ thẻ thành công
+
+[ ] 4.4. Test Case 3: Thanh toán MoMo
+        [ ] Chọn "MoMo"
+        [ ] Nhấn "Xác nhận thanh toán"
+        [ ] ✅ Mở popup trang thanh toán MoMo
+        [ ] ✅ Hiển thị thông báo "Đã mở trang thanh toán..."
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 5: KIỂM TRA DATABASE SAU KHI THANH TOÁN                            │
+└─────────────────────────────────────────────────────────────────────────┘
+
+[ ] 5.1. Mở SSMS
+[ ] 5.2. Chạy query:
+        SELECT TOP 10
+            license_plate AS 'Biển số',
+            actual_fee AS 'Phí',
+            payment_method AS 'Phương thức',
+            exit_time AS 'Giờ ra'
+        FROM vehicles
+        WHERE status = 'exited'
+          AND payment_method IS NOT NULL
+        ORDER BY exit_time DESC;
+
+[ ] 5.3. Kiểm tra kết quả:
+        ✅ Thấy xe vừa thanh toán
+        ✅ Cột payment_method có giá trị: cash, member_card, momo, vnpay...
+        ✅ Không có giá trị NULL (nếu đã thanh toán)
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 6: KIỂM TRA LOG                                                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+[ ] 6.1. Xem terminal Flask server
+[ ] 6.2. Tìm log thành công:
+        ✅ Xe #123 đã ra bãi - Phí: 15000 - Phương thức: cash
+
+[ ] 6.3. Nếu có lỗi, tìm log lỗi:
+        ❌ Lỗi cập nhật xe #123 ra bãi: [chi tiết lỗi]
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ BƯỚC 7: THỐNG KÊ THEO PHƯƠNG THỨC THANH TOÁN                            │
+└─────────────────────────────────────────────────────────────────────────┘
+
+[ ] 7.1. Chạy query thống kê:
+        SELECT 
+            payment_method AS 'Phương thức',
+            COUNT(*) AS 'Số lượng',
+            SUM(actual_fee) AS 'Tổng tiền'
+        FROM vehicles
+        WHERE payment_method IS NOT NULL
+        GROUP BY payment_method
+        ORDER BY COUNT(*) DESC;
+
+[ ] 7.2. Kiểm tra kết quả:
+        ✅ Thấy thống kê theo từng phương thức
+        ✅ Số liệu chính xác
+
+═══════════════════════════════════════════════════════════════════════════
+
+📊 KẾT QUẢ MONG ĐỢI
+
+✅ Không còn lỗi: "[SQL Server]Invalid column name 'payment_method'"
+✅ Không còn lỗi: "Unexpected token '<'"
+✅ Thanh toán thành công với tất cả phương thức
+✅ Hiển thị loading spinner khi đang xử lý
+✅ Hiển thị thông báo thành công/lỗi đẹp mắt
+✅ Tự động chuyển màn hình kết quả
+✅ Database lưu đúng payment_method
+✅ Log chi tiết trong terminal
+
+═══════════════════════════════════════════════════════════════════════════
+
+🐛 XỬ LÝ LỖI
+
+Nếu vẫn gặp lỗi "Invalid column name 'payment_method'":
+→ Chưa chạy SQL script hoặc chạy sai database
+→ Giải pháp: Kiểm tra lại database đang kết nối, chạy lại script
+
+Nếu gặp lỗi "Unexpected token '<'":
+→ Backend trả về HTML thay vì JSON
+→ Giải pháp: Khởi động lại Flask server, kiểm tra code đã cập nhật
+
+Nếu thấy "Lỗi hệ thống: Không thể ghi nhận thanh toán":
+→ Lỗi database hoặc kết nối
+→ Giải pháp: Xem log trong terminal Flask để biết chi tiết
+
+═══════════════════════════════════════════════════════════════════════════
+
+📚 TÀI LIỆU THAM KHẢO
+
+1. FIX_PAYMENT_METHOD_SUMMARY.md - Tóm tắt nhanh
+2. HUONG_DAN_SUA_LOI_THANH_TOAN.md - Hướng dẫn chi tiết
+3. BEFORE_AFTER_COMPARISON.md - So sánh trước/sau
+4. add_payment_method_column.sql - SQL script
+5. test_payment_method_column.py - Test script
+
+═══════════════════════════════════════════════════════════════════════════
+
+✅ HOÀN THÀNH!
+
+Sau khi hoàn thành tất cả các bước trên, hệ thống thanh toán xe ra bãi
+sẽ hoạt động hoàn hảo với error handling chuyên nghiệp và UX tốt!
+
+═══════════════════════════════════════════════════════════════════════════

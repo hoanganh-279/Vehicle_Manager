@@ -1,0 +1,111 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                  GIAI ĐOẠN 1: VÁ LỖI CORE LOGIC                      ║
+║                      QUICK START GUIDE                               ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+📋 CÁC LỖI ĐÃ SỬA:
+  ✅ Nút "Xem" Top 5 thẻ bị lỗi 404
+  ✅ Trang /parking trắng
+  ⚠️  Font chữ tiếng Việt (cần kiểm tra DB)
+  ✅ Lệch Port MoMo
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 CÁCH TEST NHANH (3 BƯỚC):
+
+┌─ BƯỚC 1: Kiểm tra Database ─────────────────────────────────────────┐
+│                                                                      │
+│  python fix_encoding_complete.py                                    │
+│                                                                      │
+│  → Xem dữ liệu có hiển thị đúng tiếng Việt không                   │
+│  → Kiểm tra cột có phải NVARCHAR không                              │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ BƯỚC 2: Test Routes ───────────────────────────────────────────────┐
+│                                                                      │
+│  # Terminal 1:                                                       │
+│  python app.py                                                       │
+│                                                                      │
+│  # Terminal 2:                                                       │
+│  python test_routes.py                                               │
+│                                                                      │
+│  → Tất cả routes phải PASS                                          │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ BƯỚC 3: Test trên Browser ─────────────────────────────────────────┐
+│                                                                      │
+│  1. http://localhost:5000/parking                                   │
+│     ✓ Trang hiển thị đầy đủ (không trắng)                          │
+│                                                                      │
+│  2. http://localhost:5000/admin/login                               │
+│     → Đăng nhập: admin@nqt.com / admin123                          │
+│                                                                      │
+│  3. http://localhost:5000/admin/cards                               │
+│     ✓ Nhấn nút "Xem" ở Top 5 thẻ → Không lỗi 404                  │
+│     ✓ Tên tiếng Việt hiển thị đúng                                 │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 NẾU CÓ LỖI FONT CHỮ:
+
+  1. Chạy script SQL trong SQL Server Management Studio:
+     → Mở file: fix_database_encoding.sql
+     → Đọc hướng dẫn và uncomment các lệnh ALTER TABLE
+
+  2. Hoặc chạy lệnh SQL trực tiếp:
+
+     ALTER TABLE cards ALTER COLUMN name NVARCHAR(255);
+     ALTER TABLE vehicles ALTER COLUMN vehicle_type NVARCHAR(50);
+
+  3. Khi INSERT dữ liệu mới, LUÔN dùng N prefix:
+
+     INSERT INTO cards (name) VALUES (N'Nguyễn Văn A');
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 CÁC FILE QUAN TRỌNG:
+
+  📄 README_GIAI_DOAN_1.md           → Hướng dẫn đầy đủ
+  📄 HUONG_DAN_SUA_LOI_GIAI_DOAN_1.md → Chi tiết từng lỗi
+  📄 fix_encoding_complete.py         → Script kiểm tra DB
+  📄 fix_database_encoding.sql        → Script SQL sửa lỗi
+  📄 test_routes.py                   → Script test routes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ CHECKLIST HOÀN THÀNH:
+
+  [ ] Chạy fix_encoding_complete.py → Dữ liệu hiển thị đúng
+  [ ] Chạy test_routes.py → Tất cả PASS
+  [ ] Trang /parking hiển thị đúng
+  [ ] Nút "Xem" Top 5 thẻ hoạt động
+  [ ] Font tiếng Việt hiển thị đúng
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 SAU KHI TEST XONG:
+
+  Hãy báo cáo kết quả:
+  ✅ Những lỗi nào đã được sửa
+  ❌ Những lỗi nào vẫn còn
+  📸 Screenshot (nếu có)
+
+  → Sau đó chuyển sang GIAI ĐOẠN 2: Đồng bộ Giao diện & Dark Mode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 MỤC TIÊU GIAI ĐOẠN 1:
+
+  Sửa các lỗi nghiêm trọng ảnh hưởng đến chức năng cốt lõi:
+  • Routing hoạt động đúng
+  • Database encoding đúng
+  • Trang không còn trắng
+  • Config đồng bộ
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Chúc bạn thành công! 🚀

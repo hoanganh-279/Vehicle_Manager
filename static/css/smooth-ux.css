@@ -1,0 +1,511 @@
+/**
+ * ============================================
+ * SMOOTH UX STYLES - GIAI ĐOẠN 3
+ * Styling cho các tính năng UX mới
+ * ============================================
+ */
+
+/* ── TOAST NOTIFICATIONS ── */
+.toast {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 300px;
+    opacity: 0;
+    transform: translateX(400px);
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    border-left: 4px solid #667eea;
+    position: relative;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.toast i:first-child {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.toast span {
+    flex: 1;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.toast-close:hover {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.toast-success {
+    border-left-color: #11998e;
+}
+
+.toast-success i:first-child {
+    color: #11998e;
+}
+
+.toast-error {
+    border-left-color: #ef4444;
+}
+
+.toast-error i:first-child {
+    color: #ef4444;
+}
+
+.toast-warning {
+    border-left-color: #f59f00;
+}
+
+.toast-warning i:first-child {
+    color: #f59f00;
+}
+
+.toast-info {
+    border-left-color: #667eea;
+}
+
+.toast-info i:first-child {
+    color: #667eea;
+}
+
+/* ── LOADING OVERLAY ── */
+#loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+#loading-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.loading-spinner {
+    text-align: center;
+    position: relative;
+}
+
+.spinner-ring {
+    width: 80px;
+    height: 80px;
+    border: 4px solid transparent;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+.spinner-ring:nth-child(1) {
+    animation-delay: -0.45s;
+    border-top-color: #667eea;
+}
+
+.spinner-ring:nth-child(2) {
+    animation-delay: -0.3s;
+    border-top-color: #764ba2;
+}
+
+.spinner-ring:nth-child(3) {
+    animation-delay: -0.15s;
+    border-top-color: #11998e;
+}
+
+@keyframes spin {
+    0% {
+        transform: translateX(-50%) rotate(0deg);
+    }
+    100% {
+        transform: translateX(-50%) rotate(360deg);
+    }
+}
+
+.loading-text {
+    margin-top: 100px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* ── CONFIRM DIALOG ── */
+.confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.confirm-overlay.show {
+    opacity: 1;
+}
+
+.confirm-dialog {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.confirm-overlay.show .confirm-dialog {
+    transform: scale(1);
+}
+
+.confirm-icon {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.confirm-icon i {
+    font-size: 4rem;
+    color: #667eea;
+}
+
+.confirm-message {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #1e293b;
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.confirm-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn-confirm-cancel,
+.btn-confirm-ok {
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-confirm-cancel {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.btn-confirm-cancel:hover {
+    background: #e2e8f0;
+    transform: translateY(-2px);
+}
+
+.btn-confirm-ok {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-confirm-ok:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* ── AUTOSAVE INDICATOR ── */
+#autosave-indicator {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: white;
+    padding: 12px 20px;
+    border-radius: 30px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+#autosave-indicator.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#autosave-indicator.autosave-success {
+    color: #11998e;
+    border: 2px solid #11998e;
+}
+
+#autosave-indicator.autosave-saving {
+    color: #667eea;
+    border: 2px solid #667eea;
+}
+
+#autosave-indicator.autosave-error {
+    color: #ef4444;
+    border: 2px solid #ef4444;
+}
+
+/* ── FORM VALIDATION ── */
+.is-invalid {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-5px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(5px);
+    }
+}
+
+/* ── TABLE ENHANCEMENTS ── */
+table[data-enhance] thead th {
+    user-select: none;
+    position: relative;
+}
+
+table[data-enhance] thead th .sort-icon {
+    margin-left: 8px;
+    opacity: 0.3;
+    transition: opacity 0.2s;
+}
+
+table[data-enhance] thead th:hover .sort-icon {
+    opacity: 0.6;
+}
+
+table[data-enhance] thead th.sort-asc .sort-icon::before {
+    content: '\f0de';
+    opacity: 1;
+}
+
+table[data-enhance] thead th.sort-desc .sort-icon::before {
+    content: '\f0dd';
+    opacity: 1;
+}
+
+table[data-enhance] tbody tr {
+    transition: all 0.3s ease;
+}
+
+table[data-enhance] tbody tr:hover {
+    transform: translateX(4px);
+    box-shadow: -4px 0 0 0 #667eea;
+}
+
+/* ── SMOOTH ANIMATIONS ── */
+.fade-in {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.5s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.scale-in {
+    animation: scaleIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ── BUTTON LOADING STATE ── */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+/* ── DARK MODE SUPPORT ── */
+[data-theme="dark"] .toast {
+    background: rgba(30, 27, 75, 0.95);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+[data-theme="dark"] .toast span {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .toast-close {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .toast-close:hover {
+    background: rgba(102, 126, 234, 0.2);
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .confirm-dialog {
+    background: rgba(30, 27, 75, 0.98);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+[data-theme="dark"] .confirm-message {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .btn-confirm-cancel {
+    background: rgba(15, 23, 42, 0.8);
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .btn-confirm-cancel:hover {
+    background: rgba(102, 126, 234, 0.2);
+}
+
+[data-theme="dark"] #autosave-indicator {
+    background: rgba(30, 27, 75, 0.95);
+    border-color: rgba(102, 126, 234, 0.5);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+    .toast {
+        min-width: auto;
+        max-width: calc(100vw - 40px);
+    }
+
+    .confirm-dialog {
+        padding: 20px;
+    }
+
+    .confirm-buttons {
+        flex-direction: column;
+    }
+
+    .btn-confirm-cancel,
+    .btn-confirm-ok {
+        width: 100%;
+        justify-content: center;
+    }
+
+    #autosave-indicator {
+        bottom: 20px;
+        right: 20px;
+        font-size: 0.85rem;
+        padding: 10px 16px;
+    }
+}
+
+/* ── ACCESSIBILITY ── */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus visible for keyboard navigation */
+.btn-confirm-cancel:focus-visible,
+.btn-confirm-ok:focus-visible,
+.toast-close:focus-visible {
+    outline: 3px solid rgba(102, 126, 234, 0.5);
+    outline-offset: 2px;
+}

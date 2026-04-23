@@ -1,0 +1,60 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║              CÀI ĐẶT TRỰC TIẾP - KHÔNG CẦN requirements.txt          ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+Bạn đang ở: E:\Quan_Ly_Bai_Xe>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ COPY VÀ PASTE LỆNH NÀY (1 LỆNH DUY NHẤT):
+
+pip install pyodbc flask flask-mail python-dotenv requests pdfkit openpyxl stripe qrcode[pil] Pillow opencv-python pytesseract ultralytics
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Hoặc cài từng package (copy từng dòng):
+
+pip install pyodbc
+pip install flask
+pip install flask-mail
+pip install python-dotenv
+pip install requests
+pip install pdfkit
+pip install openpyxl
+pip install stripe
+pip install qrcode[pil]
+pip install Pillow
+pip install opencv-python
+pip install pytesseract
+pip install ultralytics
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ SAU KHI CÀI XONG:
+
+Kiểm tra:
+python -c "import pyodbc; print('pyodbc OK')"
+
+Chạy app:
+python app.py
+
+Mở browser:
+http://localhost:5000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  NẾU LỖI "Microsoft Visual C++ 14.0 is required":
+
+Download và cài:
+https://aka.ms/vs/17/release/vs_BuildTools.exe
+
+Chọn: "Desktop development with C++"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  NẾU LỖI "Cannot find ODBC Driver":
+
+Download và cài:
+https://go.microsoft.com/fwlink/?linkid=2249004
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

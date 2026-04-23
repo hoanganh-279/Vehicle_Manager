@@ -1,0 +1,80 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║              FIX LỖI: KHÔNG CHUYỂN ĐƯỢC SANG Ổ E:\                   ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+❌ LỖI BẠN GẶP:
+
+C:\Users\ASUS> cd E:\Quan_Ly_Bai_Xe
+C:\Users\ASUS> pip install -r requirements.txt
+ERROR: Could not open requirements file
+
+→ Lệnh cd không chuyển được sang ổ đĩa khác trong Windows!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ GIẢI PHÁP ĐÚNG (3 LỆNH):
+
+Copy và paste TỪNG LỆNH sau vào CMD:
+
+┌─ Lệnh 1: Chuyển sang ổ E: ─────────────────────────────────────────┐
+│                                                                      │
+│  E:                                                                  │
+│                                                                      │
+│  Nhấn Enter                                                          │
+│  → Bạn sẽ thấy: E:\>                                                │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ Lệnh 2: Chuyển vào thư mục dự án ────────────────────────────────┐
+│                                                                      │
+│  cd Quan_Ly_Bai_Xe                                                  │
+│                                                                      │
+│  Nhấn Enter                                                          │
+│  → Bạn sẽ thấy: E:\Quan_Ly_Bai_Xe>                                 │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ Lệnh 3: Cài đặt packages ─────────────────────────────────────────┐
+│                                                                      │
+│  pip install -r requirements.txt                                    │
+│                                                                      │
+│  Nhấn Enter                                                          │
+│  → Đợi 2-5 phút để cài đặt                                         │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 HOẶC CÁCH NHANH HƠN (1 LỆNH DUY NHẤT):
+
+┌─ Lệnh kết hợp: ────────────────────────────────────────────────────┐
+│                                                                      │
+│  E: && cd Quan_Ly_Bai_Xe && pip install -r requirements.txt        │
+│                                                                      │
+│  Copy toàn bộ dòng trên, paste vào CMD, nhấn Enter                 │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ SAU KHI CÀI XONG:
+
+Kiểm tra:
+
+python -c "import pyodbc; print('pyodbc OK')"
+
+Nếu thấy "pyodbc OK" → Thành công!
+
+Chạy app:
+
+python app.py
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 TÓM TẮT:
+
+Trong Windows, để chuyển sang ổ đĩa khác:
+- ĐÚNG: E: (rồi mới cd Quan_Ly_Bai_Xe)
+- SAI: cd E:\Quan_Ly_Bai_Xe (không chuyển được)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

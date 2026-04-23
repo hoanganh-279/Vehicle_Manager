@@ -1,0 +1,238 @@
+/* =============================================================================
+   global.css — NQT Parking System
+   Tông màu chủ đạo: xanh tím gradient #667eea → #764ba2
+   ============================================================================= */
+
+/* ── DESIGN TOKENS ── */
+:root {
+    --primary:        #667eea;
+    --primary-dark:   #764ba2;
+    --primary-grad:   linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success:        #11998e;
+    --success-grad:   linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --warning:        #f59f00;
+    --warning-grad:   linear-gradient(135deg, #f59f00 0%, #fd7e14 100%);
+    --danger:         #ef4444;
+    --danger-grad:    linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    --info-grad:      linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+
+    --text-primary:   #1e293b;
+    --text-secondary: #64748b;
+    --text-muted:     #94a3b8;
+
+    --bg-light:       #f8fafc;
+    --bg-card:        #ffffff;
+    --border-light:   #e2e8f0;
+
+    --shadow-sm:  0 2px 8px  rgba(0,0,0,0.06);
+    --shadow-md:  0 4px 16px rgba(0,0,0,0.10);
+    --shadow-lg:  0 8px 32px rgba(0,0,0,0.14);
+    --shadow-primary: 0 4px 20px rgba(102,126,234,0.35);
+
+    --radius-sm:  8px;
+    --radius-md:  12px;
+    --radius-lg:  16px;
+    --radius-xl:  20px;
+
+    --transition: all 0.25s ease;
+}
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-light); }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+
+/* ── TYPOGRAPHY ── */
+body { font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; }
+h1,h2,h3,h4,h5,h6 { font-weight: 700; color: var(--text-primary); }
+
+/* ── BUTTONS ── */
+.btn-nqt {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px; border: none; border-radius: var(--radius-md);
+    font-weight: 600; font-size: 0.9rem; cursor: pointer;
+    transition: var(--transition); text-decoration: none;
+}
+.btn-nqt:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.btn-nqt:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-nqt:active:not(:disabled) { transform: translateY(0); }
+
+.btn-nqt-primary  { background: var(--primary-grad); color: #fff; }
+.btn-nqt-success  { background: var(--success-grad);  color: #fff; }
+.btn-nqt-warning  { background: var(--warning-grad);  color: #fff; }
+.btn-nqt-danger   { background: var(--danger-grad);   color: #fff; }
+.btn-nqt-outline  { background: transparent; border: 2px solid var(--border-light); color: var(--text-secondary); }
+.btn-nqt-outline:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); background: rgba(102,126,234,0.06); }
+.btn-nqt-full     { width: 100%; justify-content: center; padding: 13px; font-size: 1rem; }
+
+/* ── CARDS ── */
+.nqt-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+.nqt-card:hover { box-shadow: var(--shadow-md); }
+.nqt-card-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.nqt-card-title {
+    font-size: 1rem; font-weight: 700; color: var(--text-primary);
+    display: flex; align-items: center; gap: 10px; margin: 0;
+}
+.nqt-card-title i { color: var(--primary); }
+.nqt-card-body { padding: 20px 22px; }
+
+/* ── STAT CARDS ── */
+.stat-card-nqt {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+    position: relative; overflow: hidden;
+    transition: var(--transition);
+}
+.stat-card-nqt::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 100%; height: 4px;
+    background: var(--primary-grad);
+}
+.stat-card-nqt:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.stat-card-nqt .stat-icon {
+    width: 52px; height: 52px; border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: #fff; margin-bottom: 14px;
+}
+.stat-card-nqt .stat-icon.primary { background: var(--primary-grad); }
+.stat-card-nqt .stat-icon.success { background: var(--success-grad); }
+.stat-card-nqt .stat-icon.warning { background: var(--warning-grad); }
+.stat-card-nqt .stat-icon.danger  { background: var(--danger-grad);  }
+.stat-card-nqt .stat-icon.info    { background: var(--info-grad);    }
+.stat-card-nqt .stat-value {
+    font-size: 2rem; font-weight: 800; line-height: 1;
+    background: var(--primary-grad);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.stat-card-nqt .stat-label {
+    font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+}
+.stat-card-nqt .stat-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; }
+
+/* ── BADGES ── */
+.badge-nqt {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 0.75rem; font-weight: 600;
+}
+.badge-nqt-primary { background: rgba(102,126,234,0.12); color: var(--primary); border: 1px solid rgba(102,126,234,0.3); }
+.badge-nqt-success { background: rgba(17,153,142,0.12);  color: var(--success); border: 1px solid rgba(17,153,142,0.3); }
+.badge-nqt-warning { background: rgba(245,159,0,0.12);   color: var(--warning); border: 1px solid rgba(245,159,0,0.3); }
+.badge-nqt-danger  { background: rgba(239,68,68,0.12);   color: var(--danger);  border: 1px solid rgba(239,68,68,0.3); }
+
+/* ── FORM CONTROLS ── */
+.form-nqt label {
+    font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);
+    margin-bottom: 6px; display: block;
+}
+.form-nqt input,
+.form-nqt select,
+.form-nqt textarea {
+    width: 100%; padding: 10px 14px;
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--radius-md);
+    font-size: 0.9rem; color: var(--text-primary);
+    background: var(--bg-card);
+    transition: var(--transition);
+}
+.form-nqt input:focus,
+.form-nqt select:focus,
+.form-nqt textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.12);
+}
+
+/* ── ALERTS ── */
+.alert-nqt {
+    padding: 12px 16px; border-radius: var(--radius-md);
+    font-size: 0.88rem; display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+}
+.alert-nqt-success { background: rgba(17,153,142,0.1);  border: 1px solid rgba(17,153,142,0.3);  color: #0d7c65; }
+.alert-nqt-danger  { background: rgba(239,68,68,0.1);   border: 1px solid rgba(239,68,68,0.3);   color: #b91c1c; }
+.alert-nqt-warning { background: rgba(245,159,0,0.1);   border: 1px solid rgba(245,159,0,0.3);   color: #92400e; }
+.alert-nqt-info    { background: rgba(102,126,234,0.1); border: 1px solid rgba(102,126,234,0.3); color: var(--primary); }
+
+/* ── TABLE ── */
+.table-nqt { width: 100%; border-collapse: collapse; }
+.table-nqt thead th {
+    background: var(--bg-light); color: var(--text-secondary);
+    font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; padding: 12px 16px; border-bottom: 2px solid var(--border-light);
+}
+.table-nqt tbody tr { border-bottom: 1px solid var(--border-light); transition: var(--transition); }
+.table-nqt tbody tr:hover { background: rgba(102,126,234,0.04); }
+.table-nqt tbody td { padding: 13px 16px; font-size: 0.88rem; color: var(--text-primary); vertical-align: middle; }
+
+/* ── PROGRESS BAR ── */
+.progress-nqt { height: 8px; background: var(--border-light); border-radius: 4px; overflow: hidden; }
+.progress-nqt-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+.progress-nqt-fill.primary { background: var(--primary-grad); }
+.progress-nqt-fill.success { background: var(--success-grad); }
+.progress-nqt-fill.danger  { background: var(--danger-grad);  }
+
+/* ── STEP INDICATOR ── */
+.steps-nqt { display: flex; margin-bottom: 20px; }
+.step-nqt {
+    flex: 1; text-align: center; padding: 10px 6px;
+    font-size: 0.78rem; font-weight: 600; color: var(--text-muted);
+    border-bottom: 3px solid var(--border-light); transition: var(--transition);
+}
+.step-nqt.active { color: var(--primary); border-bottom-color: var(--primary); }
+.step-nqt.done   { color: var(--success); border-bottom-color: var(--success); }
+.step-nqt .step-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--border-light); display: inline-flex;
+    align-items: center; justify-content: center; margin-bottom: 4px; font-size: 0.8rem;
+}
+.step-nqt.active .step-num { background: var(--primary); color: #fff; }
+.step-nqt.done   .step-num { background: var(--success); color: #fff; }
+
+/* ── LOADING SPINNER ── */
+.spinner-nqt {
+    width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin 0.7s linear infinite; display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fadeInUp 0.4s ease forwards; }
+
+@keyframes pulse-glow {
+    0%,100% { box-shadow: 0 0 0 0 rgba(102,126,234,0.4); }
+    50%      { box-shadow: 0 0 0 8px rgba(102,126,234,0); }
+}
+.pulse-primary { animation: pulse-glow 2s infinite; }
+
+/* ── ADMIN LAYOUT OVERRIDES ── */
+.admin-page-bg { background: linear-gradient(120deg, #f5f7ff 0%, #eef0f8 100%); min-height: 100vh; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+    .stat-card-nqt .stat-value { font-size: 1.6rem; }
+    .nqt-card-body { padding: 14px 16px; }
+}

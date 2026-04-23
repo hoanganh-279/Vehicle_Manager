@@ -5,96 +5,283 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Admin - Quản lý bãi đỗ xe{% endblock %}</title>
+    <!-- Google Fonts — hỗ trợ đầy đủ tiếng Việt -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Thêm TRƯỚC các file CSS khác -->
+    <link rel="stylesheet" href="/static/css/theme-polish.css">
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="/static/css/global.css">
+    <!-- Smooth UX CSS - Giai Đoạn 3 -->
+    <link rel="stylesheet" href="/static/css/smooth-ux.css">
+    <!-- Dark Mode Fix - Pixel Perfect -->
+    <link rel="stylesheet" href="/static/css/dark-mode-fix.css">
+    <style>
+        /* ── DARK MODE — dùng data-theme attribute, không dùng class ── */
+        [data-theme="dark"] {
+            --text-primary:   #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted:     #64748b;
+            --bg-light:       #1e1b4b;
+            --bg-card:        rgba(30,27,75,0.9);
+            --border-light:   rgba(102,126,234,0.2);
+        }
+        [data-theme="dark"] body,
+        body[data-theme="dark"] {
+            background: linear-gradient(120deg, #0f0c29 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e2e8f0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+        }
+        body[data-theme="dark"] { background: linear-gradient(120deg, #0f0c29 0%, #1a1a2e 50%, #16213e 100%); }
+        body[data-theme="dark"] .sidebar {
+            background: linear-gradient(180deg, #1e1b4b 0%, #312e81 60%, #1e1b4b 100%);
+        }
+        body[data-theme="dark"] .admin-header {
+            background: linear-gradient(135deg, #4338ca, #6d28d9);
+        }
+        body[data-theme="dark"] .card,
+        body[data-theme="dark"] .nqt-card,
+        body[data-theme="dark"] .stat-card,
+        body[data-theme="dark"] .stat-card-nqt,
+        body[data-theme="dark"] .filter-card,
+        body[data-theme="dark"] .chart-card,
+        body[data-theme="dark"] .table-card,
+        body[data-theme="dark"] .config-card,
+        body[data-theme="dark"] .content-area {
+            background: rgba(30,27,75,0.85);
+            border-color: rgba(102,126,234,0.2);
+        }
+        /* Chỉ đổi màu chữ thông thường, KHÔNG đụng vào gradient text hay badge */
+        body[data-theme="dark"] h1,
+        body[data-theme="dark"] h2,
+        body[data-theme="dark"] h3,
+        body[data-theme="dark"] h4,
+        body[data-theme="dark"] h5,
+        body[data-theme="dark"] h6 { color: #e2e8f0; }
+        body[data-theme="dark"] .card-title,
+        body[data-theme="dark"] .nqt-card-title,
+        body[data-theme="dark"] .chart-title { color: #e2e8f0; }
+        body[data-theme="dark"] .stat-label,
+        body[data-theme="dark"] .form-label,
+        body[data-theme="dark"] label { color: #94a3b8; }
+        body[data-theme="dark"] .text-muted,
+        body[data-theme="dark"] small { color: #64748b; }
+        body[data-theme="dark"] .form-control,
+        body[data-theme="dark"] .form-select,
+        body[data-theme="dark"] input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]),
+        body[data-theme="dark"] select,
+        body[data-theme="dark"] textarea {
+            background: rgba(15,23,42,0.6);
+            color: #e2e8f0;
+            border-color: rgba(102,126,234,0.3);
+        }
+        body[data-theme="dark"] .table thead th {
+            background: rgba(15,23,42,0.5);
+            color: #94a3b8;
+            border-color: rgba(255,255,255,0.06);
+        }
+        body[data-theme="dark"] .table tbody td {
+            color: #cbd5e1;
+            border-color: rgba(255,255,255,0.05);
+        }
+        body[data-theme="dark"] .table tbody tr:hover { background: rgba(102,126,234,0.08); }
+        body[data-theme="dark"] .table-modern tbody tr {
+            background: rgba(30,27,75,0.6);
+        }
+        body[data-theme="dark"] .table-modern tbody tr:hover {
+            background: rgba(102,126,234,0.15);
+        }
+        body[data-theme="dark"] .nav-tabs { border-color: rgba(255,255,255,0.1); }
+        body[data-theme="dark"] .nav-link:not(.active) { color: #94a3b8; }
+        body[data-theme="dark"] .pagination .page-link {
+            background: rgba(30,27,75,0.8);
+            border-color: rgba(102,126,234,0.3);
+            color: #a5b4fc;
+        }
+        body[data-theme="dark"] .chatbot-messages { background: #1e1b4b; }
+        body[data-theme="dark"] .chat-message.bot .message-content {
+            background: rgba(30,27,75,0.9);
+            color: #e2e8f0;
+            border-color: rgba(102,126,234,0.3);
+        }
+        body[data-theme="dark"] .chatbot-input-area,
+        body[data-theme="dark"] .chatbot-input-area input {
+            background: #1e1b4b;
+            color: #e2e8f0;
+            border-color: rgba(102,126,234,0.3);
+        }
+        body[data-theme="dark"] .badge-pill {
+            background: rgba(102,126,234,0.3);
+            color: #a5b4fc;
+        }
+        body[data-theme="dark"] .badge-balance {
+            background: rgba(17,153,142,0.3);
+            color: #6ee7b7;
+        }
+        body[data-theme="dark"] .badge-vehicles {
+            background: rgba(245,159,0,0.3);
+            color: #fbbf24;
+        }
+        body[data-theme="dark"] .badge-total {
+            background: rgba(79,172,254,0.3);
+            color: #7dd3fc;
+        }
+        body[data-theme="dark"] .card-code {
+            background: rgba(15,23,42,0.6);
+            color: #a5b4fc;
+        }
+        body[data-theme="dark"] .time-text {
+            color: #94a3b8;
+        }
+        body[data-theme="dark"] .action-btn {
+            background: rgba(30,27,75,0.8);
+            border-color: rgba(102,126,234,0.3);
+            color: #a5b4fc;
+        }
+        body[data-theme="dark"] .action-btn:hover {
+            background: rgba(102,126,234,0.3);
+            color: #e2e8f0;
+        }
+        body[data-theme="dark"] .search-input {
+            background: rgba(15,23,42,0.6);
+            color: #e2e8f0;
+            border-color: rgba(102,126,234,0.3);
+        }
+        body[data-theme="dark"] .table-header {
+            background: rgba(15,23,42,0.5);
+        }
+        body[data-theme="dark"] .empty-state {
+            color: #64748b;
+        }
+
+        /* ── TOGGLE BUTTON — nằm trong brand-logo, không fixed ── */
+        .theme-toggle-btn {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white; border-radius: 8px;
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 14px;
+            transition: all 0.25s ease; flex-shrink: 0;
+        }
+        .theme-toggle-btn:hover {
+            background: rgba(255,255,255,0.28);
+            transform: scale(1.1);
+        }
+    </style>
 
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
+            font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(120deg, #f5f7ff 0%, #eef0f8 100%);
+            min-height: 100vh;
         }
 
+        /* ── SIDEBAR ── */
         .sidebar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 60%, #5a3d8a 100%);
             min-height: 100vh;
             padding: 0;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            box-shadow: 3px 0 15px rgba(102,126,234,0.25);
+            position: sticky; top: 0; height: 100vh; overflow-y: auto;
         }
 
         .sidebar .nav-link {
-            color: rgba(255,255,255,0.8);
-            padding: 12px 20px;
+            color: rgba(255,255,255,0.78);
+            padding: 11px 20px;
             border-radius: 0;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
             border-left: 3px solid transparent;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex; align-items: center;
         }
 
         .sidebar .nav-link:hover {
             color: #fff;
-            background-color: rgba(255,255,255,0.1);
-            border-left-color: #fff;
+            background: rgba(255,255,255,0.12);
+            border-left-color: rgba(255,255,255,0.6);
+            padding-left: 24px;
         }
 
         .sidebar .nav-link.active {
             color: #fff;
-            background-color: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.18);
             border-left-color: #ffc107;
+            font-weight: 700;
         }
 
         .sidebar .nav-link i {
-            width: 20px;
-            margin-right: 10px;
+            width: 20px; margin-right: 10px;
+            font-size: 0.95rem; opacity: 0.9;
         }
 
-        .admin-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 25px;
-            margin: -20px -20px 20px -20px;
-            border-radius: 0 0 10px 10px;
+        .nav-divider {
+            border-top: 1px solid rgba(255,255,255,0.15);
+            margin: 8px 0;
         }
+
+        /* ── BRAND ── */
+        .brand-logo {
+            color: white; text-decoration: none;
+            font-size: 1.25rem; font-weight: 800;
+            padding: 20px 20px 18px;
+            display: flex; align-items: center; gap: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            letter-spacing: -0.3px;
+        }
+        .brand-logo:hover { color: #ffc107; }
+        .brand-logo i { font-size: 1.4rem; }
+
+        /* ── MAIN CONTENT ── */
+        .main-content { padding: 20px; }
 
         .content-area {
-            padding: 20px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 0;
+            background: transparent;
             margin-bottom: 20px;
         }
 
-        .main-content {
-            padding: 20px;
-        }
-
-        .brand-logo {
+        /* ── ADMIN HEADER ── */
+        .admin-header {
+            background: var(--primary-grad);
             color: white;
-            text-decoration: none;
-            font-size: 1.5rem;
-            font-weight: bold;
-            padding: 20px;
-            display: block;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding: 18px 24px;
+            margin-bottom: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(102,126,234,0.3);
         }
+        .admin-header h3 { font-size: 1.4rem; font-weight: 800; margin: 0; }
+        .admin-header small { opacity: 0.85; font-size: 0.85rem; }
 
-        .brand-logo:hover {
-            color: #ffc107;
-        }
-
+        /* ── CARDS ── */
         .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
 
-        .btn {
-            border-radius: 6px;
-        }
+        /* ── BUTTONS ── */
+        .btn { border-radius: 10px; font-weight: 600; }
+        .btn-primary { background: var(--primary-grad); border: none; }
+        .btn-primary:hover { background: linear-gradient(135deg, #5a6fd6, #6a3d96); box-shadow: 0 4px 15px rgba(102,126,234,0.4); }
 
-        .alert {
-            border-radius: 8px;
-        }
+        /* ── ALERTS ── */
+        .alert { border-radius: 12px; }
 
-        /* Chatbot Button Styles */
+        /* ── TABLE ── */
+        .table thead th {
+            background: #f8fafc; color: #64748b;
+            font-size: 0.78rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .table tbody tr:hover { background: rgba(102,126,234,0.04); }
+
+        /* ── CHATBOT BUTTON ── */
         .chatbot-button {
             position: fixed;
             bottom: 30px;
@@ -107,7 +294,7 @@
             border: none;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
             cursor: pointer;
-            z-index: 1000;
+            z-index: 9999;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
@@ -143,7 +330,7 @@
             background: white;
             border-radius: 15px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            z-index: 999;
+            z-index: 9998;
             display: none;
             flex-direction: column;
             overflow: hidden;
@@ -349,36 +536,44 @@
             <!-- Sidebar -->
             <div class="col-md-2 sidebar">
                 <a href="/admin" class="brand-logo">
-                    <i class="fas fa-shield-alt"></i> Quản lý bãi xe
+                    <i class="fas fa-shield-alt"></i>
+                    <span style="flex:1;">Quản lý bãi xe</span>
+                    <button class="theme-toggle-btn" id="themeToggle" onclick="toggleTheme()" title="Chuyển sáng/tối">
+                        <i id="themeIcon" class="fas fa-moon"></i>
+                    </button>
                 </a>
 
                 <nav class="nav flex-column mt-3">
-                   <a class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}" href="/admin/dashboard">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                    <a class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}" href="/admin/dashboard">
+                        <i class="fas fa-tachometer-alt"></i> Trang chủ
                     </a>
 
                     <a class="nav-link {% if request.endpoint == 'admin_pricing' %}active{% endif %}" href="/admin/pricing">
                         <i class="fas fa-dollar-sign"></i> Quản lý giá
                     </a>
 
-                    <a class="nav-link {% if request.endpoint == 'admin_vehicles' or request.endpoint == 'admin_vehicle_detail' %}active{% endif %}" href="/admin/vehicles">
+                    <a class="nav-link {% if request.endpoint in ['admin_vehicles', 'admin_vehicle_detail'] %}active{% endif %}" href="/admin/vehicles">
                         <i class="fas fa-car"></i> Quản lý xe
                     </a>
-                    <a class="nav-link {% if request.endpoint == 'admin_cards' or request.endpoint == 'admin_card_detail' %}active{% endif %}" href="/admin/cards">
+
+                    <a class="nav-link {% if request.endpoint in ['admin_cards', 'admin_card_detail'] %}active{% endif %}" href="/admin/cards">
                         <i class="fas fa-id-card"></i> Quản lý người dùng
                     </a>
 
-                     <a class="nav-link" href="/admin/parking_spaces">
+                    <a class="nav-link {% if request.endpoint == 'admin_parking_spaces' %}active{% endif %}" href="/admin/parking_spaces">
                         <i class="fas fa-parking"></i> Quản lý bãi đỗ
                     </a>
-                     <a class="nav-link" href="/admin/revenue">
-                        <i class="fas fa-file-invoice-dollar"></i>Quản lý doanh thu
+
+                    <a class="nav-link {% if request.endpoint == 'admin_revenue' %}active{% endif %}" href="/admin/revenue">
+                        <i class="fas fa-file-invoice-dollar"></i> Quản lý doanh thu
                     </a>
-                     <a class="nav-link {% if request.endpoint == 'admin_transactions' %}active{% endif %}" href="/admin/transactions">
+
+                    <a class="nav-link {% if request.endpoint == 'admin_transactions' %}active{% endif %}" href="/admin/transactions">
                         <i class="fas fa-receipt"></i> Quản lý giao dịch
                     </a>
-                     <a class="nav-link" href="/admin/card_topup_history">
-                        <i class="fas fa-chart-line"></i> Quản lý nạp tiền
+
+                    <a class="nav-link {% if request.endpoint == 'admin_card_topup_history' %}active{% endif %}" href="/admin/card/topup/history">
+                        <i class="fas fa-money-bill-wave"></i> Quản lý nạp tiền
                     </a>
 
                     <div class="nav-divider my-3" style="border-top: 1px solid rgba(255,255,255,0.2);"></div>
@@ -387,15 +582,16 @@
                         <i class="fas fa-home"></i> Về trang chính
                     </a>
 
-                    <a class="nav-link" href="/parking">
+                    <a class="nav-link {% if request.endpoint == 'parking_entry_page' %}active{% endif %}" href="/parking">
                         <i class="fas fa-sign-in-alt"></i> Xe vào bãi
                     </a>
 
-                    <a class="nav-link" href="/parking/exit">
+                    <a class="nav-link {% if request.endpoint == 'parking_exit_page' %}active{% endif %}" href="/parking/exit">
                         <i class="fas fa-sign-out-alt"></i> Xe ra bãi
                     </a>
+
                     <a class="nav-link" href="/admin/logout">
-                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        <i class="fas fa-right-from-bracket"></i> Đăng xuất
                     </a>
                 </nav>
             </div>
@@ -468,185 +664,116 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
+    <!-- Chart.js - Thư viện biểu đồ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Chart Theme Manager - Tự động đổi màu biểu đồ theo theme -->
+    <script src="/static/js/chart-theme.js"></script>
 
-        function updateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleString('vi-VN', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            document.getElementById('currentTime').textContent = timeString;
+    <!-- Smooth UX JS - Giai Đoạn 3 -->
+    <script src="/static/js/smooth-ux.js"></script>
+
+    <script>
+        // ── DARK / LIGHT MODE ──
+        function applyTheme(dark) {
+            const icon = document.getElementById('themeIcon');
+            if (dark) {
+                document.body.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                document.getElementById('themeToggle').title = 'Chuyển sang sáng';
+            } else {
+                document.body.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                document.getElementById('themeToggle').title = 'Chuyển sang tối';
+            }
         }
 
+        function toggleTheme() {
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            localStorage.setItem('nqt_theme', isDark ? 'light' : 'dark');
+            applyTheme(!isDark);
+        }
+
+        // Áp dụng theme đã lưu khi load trang
+        (function() {
+            applyTheme(localStorage.getItem('nqt_theme') === 'dark');
+        })();
+
+        // ── CLOCK ──
+        function updateTime() {
+            const el = document.getElementById('currentTime');
+            if (!el) return;
+            el.textContent = new Date().toLocaleString('vi-VN', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+        }
         updateTime();
         setInterval(updateTime, 1000);
 
+        // ── CHATBOT ──
+        const chatbotButton  = document.getElementById('chatbotButton');
+        const chatbotWindow  = document.getElementById('chatbotWindow');
+        const chatbotClose   = document.getElementById('chatbotClose');
+        const chatbotInput   = document.getElementById('chatbotInput');
+        const chatbotSend    = document.getElementById('chatbotSend');
+        const chatbotMessages= document.getElementById('chatbotMessages');
 
-        function updateWelcomeTimestamp() {
-            const now = new Date();
-            const timeString = now.toLocaleString('vi-VN', {
-                hour: '2-digit',
-                minute: '2-digit',
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-            document.getElementById('welcomeTimestamp').textContent = timeString;
-        }
-        updateWelcomeTimestamp();
-
-
-        const chatbotButton = document.getElementById('chatbotButton');
-        const chatbotWindow = document.getElementById('chatbotWindow');
-        const chatbotClose = document.getElementById('chatbotClose');
-        const chatbotInput = document.getElementById('chatbotInput');
-        const chatbotSend = document.getElementById('chatbotSend');
-        const chatbotMessages = document.getElementById('chatbotMessages');
-
+        // Welcome timestamp
+        document.getElementById('welcomeTimestamp').textContent =
+            new Date().toLocaleString('vi-VN', { hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit', year:'numeric' });
 
         chatbotButton.addEventListener('click', () => {
             chatbotWindow.classList.toggle('show');
-            if (chatbotWindow.classList.contains('show')) {
-                chatbotInput.focus();
-            }
+            if (chatbotWindow.classList.contains('show')) chatbotInput.focus();
         });
-
-        chatbotClose.addEventListener('click', () => {
-            chatbotWindow.classList.remove('show');
-        });
-
+        chatbotClose.addEventListener('click', () => chatbotWindow.classList.remove('show'));
 
         function showTypingIndicator() {
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'chat-message bot';
-            typingDiv.id = 'typingIndicator';
-            typingDiv.innerHTML = `
-                <div class="typing-indicator show">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            `;
-            chatbotMessages.appendChild(typingDiv);
+            const d = document.createElement('div');
+            d.className = 'chat-message bot'; d.id = 'typingIndicator';
+            d.innerHTML = '<div class="typing-indicator show"><span></span><span></span><span></span></div>';
+            chatbotMessages.appendChild(d);
             chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
         }
-
         function hideTypingIndicator() {
-            const typingIndicator = document.getElementById('typingIndicator');
-            if (typingIndicator) {
-                typingIndicator.remove();
-            }
+            const el = document.getElementById('typingIndicator');
+            if (el) el.remove();
         }
-
-
         function addMessage(content, isUser = false) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `chat-message ${isUser ? 'user' : 'bot'}`;
-
-            const now = new Date();
-            const timeString = now.toLocaleString('vi-VN', {
-                hour: '2-digit',
-                minute: '2-digit',
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-
-            messageDiv.innerHTML = `
-                <div class="message-content">${content}</div>
-                <div class="timestamp">${timeString}</div>
-            `;
-
-            chatbotMessages.appendChild(messageDiv);
+            const d = document.createElement('div');
+            d.className = `chat-message ${isUser ? 'user' : 'bot'}`;
+            d.innerHTML = `<div class="message-content">${content}</div>
+                <div class="timestamp">${new Date().toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric'})}</div>`;
+            chatbotMessages.appendChild(d);
             chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
         }
-
-
         async function sendMessage() {
             const question = chatbotInput.value.trim();
             if (!question) return;
-
-
             addMessage(question, true);
             chatbotInput.value = '';
             chatbotSend.disabled = true;
-
-
             showTypingIndicator();
-
             try {
-                console.log('Đang gửi câu hỏi:', question);
-
-                const response = await fetch('/api/chatbot/ask', {
+                const res = await fetch('/api/chatbot/ask', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ question: question })
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ question })
                 });
-
-                console.log('Response status:', response.status);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('Response data:', data);
-
-
+                const data = await res.json();
                 hideTypingIndicator();
-
-                if (data.success) {
-                    addMessage(data.answer, false);
-                } else {
-                    addMessage(`Xin lỗi, có lỗi xảy ra: ${data.error}`, false);
-                }
-            } catch (error) {
+                addMessage(data.answer || data.error || 'Không có phản hồi.', false);
+            } catch(e) {
                 hideTypingIndicator();
-                console.error('Full error:', error);
-
-
-                let errorMsg = 'Xin lỗi, không thể kết nối đến server.';
-                if (error.message.includes('404')) {
-                    errorMsg = 'Lỗi 404: API endpoint không tồn tại. Vui lòng kiểm tra route /api/chatbot/ask';
-                } else if (error.message.includes('500')) {
-                    errorMsg = 'Lỗi 500: Server gặp sự cố xử lý. Vui lòng kiểm tra terminal/console.';
-                }
-
-                addMessage(errorMsg, false);
+                addMessage('Không thể kết nối server. Vui lòng thử lại.', false);
             } finally {
                 chatbotSend.disabled = false;
                 chatbotInput.focus();
             }
         }
-
-
-        async function testChatbotAPI() {
-            try {
-                const response = await fetch('/api/chatbot/test');
-                const data = await response.json();
-                console.log('✅ Chatbot API test:', data);
-            } catch (error) {
-                console.error('❌ Chatbot API test failed:', error);
-            }
-        }
-
-
-        testChatbotAPI();
-
-
         chatbotSend.addEventListener('click', sendMessage);
-        chatbotInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
+        chatbotInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
     </script>
 
     {% block scripts %}{% endblock %}
