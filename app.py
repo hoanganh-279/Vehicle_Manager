@@ -74,6 +74,52 @@ from fix_payment_webhook_dual import payment_result_route
 # ═══════════════════════════════════════════════════════════════════════════
 # ⚠️  MANUAL REVIEW REQUIRED: PLACEHOLDERS
 # ═══════════════════════════════════════════════════════════════════════════
+# Found 81 '?' placeholders in queries
+# 
+# ACTION REQUIRED:
+# Replace all '?' with conditional placeholders:
+#   cursor.execute(f"SELECT * FROM table WHERE id = {'%s' if IS_POSTGRESQL else '?'}", [id])
+# 
+# Or use query_db() / execute_db() from db_utils which handles this automatically
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# DUAL-MODE DATABASE UTILITIES
+# ═══════════════════════════════════════════════════════════════════════════
+from db_utils import (
+    get_db,
+    query_db,
+    execute_db,
+    transaction,
+    sql_limit,
+    sql_limit_clause,
+    sql_now,
+    sql_isnull,
+    sql_lock_row,
+    IS_POSTGRESQL,
+    init_db,
+    close_db,
+    return_pg_connection
+)
+
+# ✅ Dual-mode webhook
+from fix_payment_webhook_dual import payment_result_route
+# ═══════════════════════════════════════════════════════════════════════════
+# ⚠️  MANUAL REVIEW REQUIRED: PLACEHOLDERS
+# ═══════════════════════════════════════════════════════════════════════════
+# Found 81 '?' placeholders in queries
+# 
+# ACTION REQUIRED:
+# Replace all '?' with conditional placeholders:
+#   cursor.execute(f"SELECT * FROM table WHERE id = {'%s' if IS_POSTGRESQL else '?'}", [id])
+# 
+# Or use query_db() / execute_db() from db_utils which handles this automatically
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ⚠️  MANUAL REVIEW REQUIRED: PLACEHOLDERS
+# ═══════════════════════════════════════════════════════════════════════════
 # Found 78 '?' placeholders in queries
 # 
 # ACTION REQUIRED:
@@ -107,69 +153,72 @@ DB_DATABASE = os.getenv('DB_DATABASE', 'ParkingManagement')
 DB_DRIVER   = 'ODBC Driver 17 for SQL Server'
 
 # ✅ get_db() now imported from db_utils.py (dual-mode)
+# # ✅ get_db() now imported from db_utils.py (dual-mode)
 # def get_db():
-#     conn = pyodbc.connect(
-#         f'DRIVER={{{DB_DRIVER}}};'
-#         f'SERVER={DB_SERVER};'
-#         f'DATABASE={DB_DATABASE};'
-#         f'Trusted_Connection=yes;'
-#     )
-#     # Đọc NVARCHAR đúng UTF-16LE (chuẩn SQL Server)
-#     conn.setdecoding(pyodbc.SQL_WCHAR, encoding='utf-16-le')
-#     # Ghi string Python vào NVARCHAR đúng UTF-16LE
-#     conn.setencoding(encoding='utf-16-le')
-#     return conn
+# #     conn = pyodbc.connect(
+# #         f'DRIVER={{{DB_DRIVER}}};'
+# #         f'SERVER={DB_SERVER};'
+# #         f'DATABASE={DB_DATABASE};'
+# #         f'Trusted_Connection=yes;'
+# #     )
+# #     # Đọc NVARCHAR đúng UTF-16LE (chuẩn SQL Server)
+# #     conn.setdecoding(pyodbc.SQL_WCHAR, encoding='utf-16-le')
+# #     # Ghi string Python vào NVARCHAR đúng UTF-16LE
+# #     conn.setencoding(encoding='utf-16-le')
+# #     return conn
 
 # ✅ query_db() now imported from db_utils.py (dual-mode)
+# # ✅ query_db() now imported from db_utils.py (dual-mode)
 # def query_db(query, args=(), one=False):
-#     conn = get_db()
-#     cursor = conn.cursor()
-#     cursor.execute(query, args)
-#     columns = [col[0] for col in cursor.description]
-#     rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
-#     conn.close()
-#     return (rows[0] if rows else None) if one else rows
-# 
+# #     conn = get_db()
+# #     cursor = conn.cursor()
+# #     cursor.execute(query, args)
+# #     columns = [col[0] for col in cursor.description]
+# #     rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
+# #     conn.close()
+# #     return (rows[0] if rows else None) if one else rows
+# # 
 # ✅ execute_db() now imported from db_utils.py (dual-mode)
+# # ✅ execute_db() now imported from db_utils.py (dual-mode)
 # def execute_db(query, args=(), conn=None):
-#     """
-#     Thực thi query đơn lẻ
-#     Nếu cần transaction, dùng execute_transaction() thay thế
-#     """
-#     should_close = False
-#     if conn is None:
-#         conn = get_db()
-#         should_close = True
-#     
-#     cursor = conn.cursor()
-#     
-#     try:
-#         cursor.execute(query, args)
-#         
-#         last_id = None
-#         try:
-#             # Dùng @@IDENTITY thay vì SCOPE_IDENTITY()
-#             cursor.execute("SELECT CAST(@@IDENTITY AS INT) AS id")
-#             row = cursor.fetchone()
-#             if row and row[0] is not None:
-#                 last_id = int(row[0])
-#                 print(f"✅ Lấy ID thành công: {last_id}")
-#             else:
-#                 print(f"⚠️  @@IDENTITY trả về None")
-#         except Exception as e:
-#             print(f"❌ Lỗi lấy @@IDENTITY: {str(e)}")
-#         
-#         conn.commit()
-#         return last_id
-#         
-#     except Exception as e:
-#         conn.rollback()
-#         app.logger.error(f"❌ Execute DB failed: {str(e)}")
-#         raise
-#         
-#     finally:
-#         if should_close:
-#             conn.close()
+# #     """
+# #     Thực thi query đơn lẻ
+# #     Nếu cần transaction, dùng execute_transaction() thay thế
+# #     """
+# #     should_close = False
+# #     if conn is None:
+# #         conn = get_db()
+# #         should_close = True
+# #     
+# #     cursor = conn.cursor()
+# #     
+# #     try:
+# #         cursor.execute(query, args)
+# #         
+# #         last_id = None
+# #         try:
+# #             # Dùng @@IDENTITY thay vì SCOPE_IDENTITY()
+# #             cursor.execute("SELECT CAST(@@IDENTITY AS INT) AS id")
+# #             row = cursor.fetchone()
+# #             if row and row[0] is not None:
+# #                 last_id = int(row[0])
+# #                 print(f"✅ Lấy ID thành công: {last_id}")
+# #             else:
+# #                 print(f"⚠️  @@IDENTITY trả về None")
+# #         except Exception as e:
+# #             print(f"❌ Lỗi lấy @@IDENTITY: {str(e)}")
+# #         
+# #         conn.commit()
+# #         return last_id
+# #         
+# #     except Exception as e:
+# #         conn.rollback()
+# #         app.logger.error(f"❌ Execute DB failed: {str(e)}")
+# #         raise
+# #         
+# #     finally:
+# #         if should_close:
+# #             conn.close()
 
 
 def execute_transaction(operations):
@@ -849,8 +898,7 @@ def export_transactions_excel():
 def admin_vehicles():
     today = str(date.today())
     parked_vehicles_raw = query_db("SELECT * FROM vehicles WHERE status='parked' ORDER BY entry_time DESC")
-    exit_history        = query_db("SELECT {sql_limit(  # ⚠️  MANUAL: Add {sql_limit_clause(N)} at end of query
-1)}00 * FROM vehicles WHERE status='exited' ORDER BY exit_time DESC")
+    exit_history = query_db(f"SELECT {sql_limit(100)} * FROM vehicles WHERE status='exited' ORDER BY exit_time DESC {sql_limit_clause(100)}")
     today_vehicles      = query_db("SELECT * FROM vehicles WHERE CAST(entry_time AS DATE)=? ORDER BY entry_time DESC", [today])
 
     vehicles_in_parking = len(parked_vehicles_raw)
@@ -961,13 +1009,13 @@ def admin_cards():
     today    = str(date.today())
     week_ago = str(date.today() - timedelta(days=7))
 
-    cards = query_db(
-        """SELECT {sql_limit(  # ⚠️  MANUAL: Add {sql_limit_clause(N)} at end of query
-30)} c.*,
-             (SELECT COUNT(*) FROM vehicles v WHERE v.card_id=c.id AND v.status='parked') AS vehicles_count,
-             (SELECT COUNT(*) FROM vehicles v WHERE v.card_id=c.id) AS total_parked
-           FROM cards c ORDER BY c.created_at DESC"""
-    )
+    cards = query_db(f"""SELECT {sql_limit(30)} c.*, 
+    (SELECT COUNT(*) FROM vehicles v WHERE v.card_id=c.id AND v.status='parked') AS vehicles_count,
+    (SELECT COUNT(*) FROM vehicles v WHERE v.card_id=c.id) AS total_parked
+    FROM cards c 
+    ORDER BY c.created_at DESC 
+    {sql_limit_clause(30)}
+    """)
     for c in cards:
         if isinstance(c.get('created_at'), str):
             try: c['created_at'] = datetime.fromisoformat(c['created_at'])
@@ -977,8 +1025,7 @@ def admin_cards():
     today_new_cards = (query_db("SELECT COUNT(*) AS cnt FROM cards WHERE CAST(created_at AS DATE)=?", [today], one=True) or {}).get('cnt', 0)
     total_balance   = (query_db("SELECT ISNULL(SUM(balance),0) AS total FROM cards", one=True) or {}).get('total', 0)
     avg_balance     = round(total_balance / total_cards, 0) if total_cards > 0 else 0
-    top_cards       = query_db("SELECT {sql_limit(  # ⚠️  MANUAL: Add {sql_limit_clause(N)} at end of query
-5)} * FROM cards ORDER BY balance DESC")
+    top_cards = query_db(f"SELECT {sql_limit(10)} id, name, balance FROM cards ORDER BY balance DESC {sql_limit_clause(10)}")
 
     daily_registrations = query_db(
         """SELECT CAST(created_at AS DATE) AS date, COUNT(*) AS count
@@ -1013,18 +1060,30 @@ def admin_card_detail(card_id):
     if not card:
         flash('Không tìm thấy thẻ!', 'error')
         return redirect(url_for('admin_cards'))
-    return render_template('admin/card/detail.html', card=card)
+        
+    # 1. Tính tổng tiền đã nạp
+    topup_record = query_db(
+        "SELECT ISNULL(SUM(amount), 0) AS total FROM topup_transactions WHERE card_id=? AND status='completed'", 
+        [card_id], 
+        one=True
+    )
+    total_topup = topup_record.get('total', 0) if topup_record else 0
 
+    # 2. Tính tổng tiền đã trả phí gửi xe (THÊM MỚI ĐOẠN NÀY)
+    fee_record = query_db(
+        "SELECT ISNULL(SUM(fee), 0) AS total FROM vehicles WHERE card_id=? AND status='exited'", 
+        [card_id], 
+        one=True
+    )
+    total_parking_fee = fee_record.get('total', 0) if fee_record else 0
 
-@app.route('/admin/cards/<card_id>/delete', methods=['POST'])
-@login_required
-def admin_card_delete(card_id):
-    try:
-        execute_db('DELETE FROM cards WHERE id=?', [card_id])
-        return jsonify({'success': True, 'message': 'Đã xóa thẻ thành công'})
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)})
-
+    # 3. Truyền cả 2 biến sang giao diện
+    return render_template(
+        'admin/card/detail.html', 
+        card=card, 
+        total_topup=total_topup, 
+        total_parking_fee=total_parking_fee
+    )
 # =============================================================================
 # ── ADMIN: LỊCH SỬ NẠP TIỀN THẺ ──
 # =============================================================================
@@ -1221,8 +1280,8 @@ def send_invoice_email(transaction_id):
 @app.route('/admin/parking_spaces')
 @login_required
 def admin_parking_spaces():
-    cfg = query_db("SELECT {sql_limit(  # ⚠️  MANUAL: Add {sql_limit_clause(N)} at end of query
-1)} * FROM parking_config", one=True) or {}
+    cfg = query_db(f"SELECT {sql_limit(1)} * FROM parking_config {sql_limit_clause(1)}", one=True) or {}
+
     motorbike_max   = cfg.get('motorbike_capacity', 100)
     car_max         = cfg.get('car_capacity', 50)
     motorbike_daily = motorbike_max
@@ -1280,8 +1339,7 @@ def admin_parking_spaces_update_config():
 @app.route('/admin/parking_spaces/api/realtime')
 @login_required
 def admin_parking_spaces_realtime():
-    cfg = query_db("SELECT {sql_limit(  # ⚠️  MANUAL: Add {sql_limit_clause(N)} at end of query
-1)} * FROM parking_config", one=True) or {}
+    cfg = query_db(f"SELECT {sql_limit(1)} * FROM parking_config {sql_limit_clause(1)}", one=True) or {}
     motorbike_daily = cfg.get('motorbike_capacity', 100)
     car_daily       = cfg.get('car_capacity', 50)
 
@@ -1580,8 +1638,7 @@ def parking_entry_page():
             # BƯỚC 3: KIỂM TRA SỨC CHỨA
             # ═══════════════════════════════════════════════════════════════
             try:
-                cfg = query_db("SELECT {sql_limit(  # ⚠️  MANUAL: Add {sql_limit_clause(N)} at end of query
-1)} * FROM parking_config", one=True) or {}
+                cfg = query_db(f"SELECT {sql_limit(1)} * FROM parking_config {sql_limit_clause(1)}", one=True) or {}
                 capacity = cfg.get('motorbike_capacity' if vehicle_type == 'Xe máy' else 'car_capacity', 100)
                 current  = query_db(
                     "SELECT COUNT(*) AS cnt FROM vehicles WHERE status='parked' AND vehicle_type=?",
@@ -1719,8 +1776,7 @@ def parking_entry_page():
             }), 500
 
     # GET — hiển thị trang
-    cfg = query_db("SELECT {sql_limit(  # ⚠️  MANUAL: Add {sql_limit_clause(N)} at end of query
-1)} * FROM parking_config", one=True) or {}
+    cfg = query_db(f"SELECT {sql_limit(1)} * FROM parking_config {sql_limit_clause(1)}", one=True) or {}
     motorbike_capacity = cfg.get('motorbike_capacity', 100)
     car_capacity       = cfg.get('car_capacity', 50)
     motorbike_count = query_db("SELECT COUNT(*) AS cnt FROM vehicles WHERE status='parked' AND vehicle_type='Xe máy'", one=True)['cnt'] or 0
@@ -2107,8 +2163,21 @@ def kiosk_payment():
 # ── THANH TOÁN: KẾT QUẢ ──
 # =============================================================================
 
-# from fix_payment_webhook import payment_result_route  # ✅ Old version
-from fix_payment_webhook_dual import payment_result_route  # ✅ Dual-mode version
+# # from fix_payment_webhook import payment_result_route  # ✅ Old version
+from fix_payment_webhook_dual import payment_result_route  # ✅ Dual-mode version  # ✅ Old version
+from fix_payment_webhook_dual import payment_result_route
+# ═══════════════════════════════════════════════════════════════════════════
+# ⚠️  MANUAL REVIEW REQUIRED: PLACEHOLDERS
+# ═══════════════════════════════════════════════════════════════════════════
+# Found 81 '?' placeholders in queries
+# 
+# ACTION REQUIRED:
+# Replace all '?' with conditional placeholders:
+#   cursor.execute(f"SELECT * FROM table WHERE id = {'%s' if IS_POSTGRESQL else '?'}", [id])
+# 
+# Or use query_db() / execute_db() from db_utils which handles this automatically
+# ═══════════════════════════════════════════════════════════════════════════
+  # ✅ Dual-mode version
 
 @app.route('/payment/result', methods=['GET', 'POST'])
 def payment_result():
@@ -2198,9 +2267,8 @@ def chatbot_test():
 # APPLICATION LIFECYCLE - DUAL-MODE
 # ═══════════════════════════════════════════════════════════════════════════
 
-@app.before_first_request
-def before_first_request():
-    """Initialize database connection pool (PostgreSQL)"""
+with app.app_context():
+    # Initialize database connection pool (PostgreSQL)
     init_db()
     app.logger.info("✅ Database initialized (dual-mode)")
 
@@ -2217,9 +2285,6 @@ atexit.register(close_db)
 if __name__ == '__main__':
     # Tạo thư mục uploads nếu chưa có
     os.makedirs(os.path.join('static', 'uploads'), exist_ok=True)
-    
-    # ✅ Initialize database (dual-mode)
-    init_db()
     
     # Run app
     app.run(debug=True, host='0.0.0.0', port=5000)
