@@ -29,3 +29,10 @@ Pillow==10.1.0
 # pytesseract==0.3.10
 # ultralytics==8.1.0
 # openpyxl==3.1.2
+
+werkzeug==3.0.1
+
+# PDF Export - WeasyPrint (pure Python, compatible with Render)
+weasyprint==60.2
+cffi==1.16.0
+pycairo==1.25.1

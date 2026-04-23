@@ -39,7 +39,6 @@
 import os
 import io
 import json
-# import pdfkit
 import stripe
 from database import (
     init_connection_pool,
@@ -54,6 +53,8 @@ from datetime import datetime, timedelta, date
 from functools import wraps
 from dotenv import load_dotenv
 from momo import create_momo_payment, verify_momo_ipn
+from werkzeug.security import check_password_hash
+from weasyprint import HTML, CSS
 
 # Load biến môi trường từ file .env
 load_dotenv()
@@ -356,6 +357,47 @@ def validate_payment_request(data):
     
     return len(errors) == 0, errors
 
+#=============================================================================
+# HEALTH CHECK ENDPOINT (Cho Render monitoring)
+#=============================================================================
+@app.route('/health')
+def health_check():
+    """
+    Health check endpoint cho Render.com monitoring.
+    Trả về 200 nếu app + database hoạt động bình thường.
+    """
+    try:
+        # Test database connection
+        result = query_db('SELECT 1', one=True)
+        if result:
+            return jsonify({
+                'status': 'healthy',
+                'service': 'parking-management',
+                'database': 'connected',
+                'timestamp': datetime.now().isoformat(),
+                'version': '1.0.0'
+            }), 200
+    except Exception as e:
+        logger.error(f"❌ Health check failed: {e}")
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 503
+    
+    # Fallback nếu query_db không hoạt động
+    return jsonify({
+        'status': 'degraded',
+        'message': 'Database check skipped',
+        'timestamp': datetime.now().isoformat()
+    }), 200
+
+# Endpoint ping đơn giản (nhẹ hơn, không query DB)
+@app.route('/ping')
+def ping():
+    """Ping endpoint - chỉ trả về OK, không check DB."""
+    return jsonify({'status': 'ok', 'timestamp': datetime.now().isoformat()}), 200
+
 # =============================================================================
 # DECORATOR XÁC THỰC ADMIN
 # =============================================================================
@@ -373,27 +415,20 @@ def login_required(f):
 # ── ADMIN: ĐĂNG NHẬP / ĐĂNG XUẤT ──
 # =============================================================================
 
-@app.route('/admin/login', methods=['GET', 'POST'])
+@app.route('/admin/login', methods=['POST'])
 def admin_login():
-    """
-    GET : Hiển thị form đăng nhập
-    POST: Xử lý đăng nhập
-    Template: templates/admin/login.html
-    """
-    if request.method == 'POST':
-        email    = request.form.get('email', '').strip()
-        password = request.form.get('password', '').strip()
-
-        # TODO: Thay bằng truy vấn DB thực tế
-        # admin = query_db('SELECT * FROM admins WHERE email=%s', [email], one=True)
-        # if admin and check_password_hash(admin['password'], password):
-        if email == 'admin@parking.com' and password == 'admin123':
-            session['admin_logged_in'] = True
-            session['admin_email']     = email
-            return redirect(url_for('admin_dashboard'))
-        else:
-            flash('Email hoặc mật khẩu không đúng!', 'error')
-
+    email = request.form.get('email', '').strip()
+    password = request.form.get('password', '').strip()
+    
+    # Query từ database
+    admin = query_db('SELECT * FROM users WHERE username=%s', [email], one=True)
+    
+    if admin and check_password_hash(admin['password_hash'], password):
+        session['admin_logged_in'] = True
+        session['admin_email'] = email
+        return redirect(url_for('admin_dashboard'))
+    
+    flash('Email hoặc mật khẩu không đúng!', 'error')
     return render_template('admin/login.html')
 
 
@@ -1097,20 +1132,16 @@ def admin_invoice_detail(transaction_id):
 @app.route('/admin/invoice/export/<int:transaction_id>')
 @login_required
 def export_invoice(transaction_id):
-    """
-    Xuất hóa đơn ra file PDF dùng pdfkit.
-    Template: templates/admin/invoice/pdf_template.html
-    """
+    """Xuất hóa đơn ra file PDF dùng WeasyPrint."""
     transaction = query_db(
         '''SELECT t.id, t.card_id, c.name, c.phone, c.email,
-                  t.amount, t.payment_method, t.transaction_id,
-                  t.status, t.created_at
+           t.amount, t.payment_method, t.transaction_id,
+           t.status, t.created_at
            FROM topup_transactions t
            LEFT JOIN cards c ON t.card_id = c.id
            WHERE t.id = %s''',
         [transaction_id], one=True
     )
-
     if not transaction:
         return jsonify({'error': 'Không tìm thấy giao dịch'}), 404
 
@@ -1118,28 +1149,28 @@ def export_invoice(transaction_id):
 
     html = render_template(
         'admin/invoice/pdf_template.html',
-        transaction      = transaction,
-        invoice_number   = invoice_number,
-        amount_formatted = format_amount(transaction[5]),
-        status_text      = get_status_text(transaction[8]),
-        now              = datetime.now(),
+        transaction=transaction,
+        invoice_number=invoice_number,
+        amount_formatted=format_amount(transaction[5]),
+        status_text=get_status_text(transaction[8]),
+        now=datetime.now(),
     )
 
     try:
-        pdf = pdfkit.from_string(
-            html, False,
-            configuration = PDFKIT_CONFIG,
-            options       = PDFKIT_OPTIONS
-        )
+        # ✅ Tạo PDF với WeasyPrint
+        css = CSS(string='''
+            @page { size: A4; margin: 2cm; }
+            body { font-family: "DejaVu Sans", Arial, sans-serif; }
+        ''')
+        pdf = HTML(string=html).write_pdf(stylesheets=[css])
+        
         return Response(
             pdf,
-            mimetype = 'application/pdf',
-            headers  = {
-                'Content-Disposition':
-                    f'attachment; filename=HoaDon_{invoice_number}.pdf'
-            }
+            mimetype='application/pdf',
+            headers={'Content-Disposition': f'attachment; filename=HoaDon_{invoice_number}.pdf'}
         )
     except Exception as e:
+        app.logger.error(f"❌ WeasyPrint error: {e}")
         return jsonify({'error': f'Lỗi xuất PDF: {str(e)}'}), 500
 
 
